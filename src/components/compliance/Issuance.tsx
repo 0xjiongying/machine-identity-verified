@@ -2,31 +2,53 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Section, Shell, Eyebrow, Heading, Lede, Reveal, DemoTag } from "@/components/primitives";
 import { demoMachine } from "@/data/demoMachine";
-import { issuer } from "@/data/demoParticipants";
-import { cleanverse, type CheckResult } from "@/lib/cleanverse-adapter";
+import {
+  previewEvaluation,
+  requestEvaluation,
+  type RuleResult,
+} from "@/lib/cleanverse-adapter";
+import { useCleanverse } from "@/lib/cleanverse-state";
+import { useAssetState } from "@/lib/asset-state";
 import { CheckSequence, type SequenceState } from "./CheckSequence";
 
 export function Issuance() {
+  const { issuer: issuerCredential, asset, mode, recordDecision } = useCleanverse();
+  const { markIssued } = useAssetState();
   const [state, setState] = useState<SequenceState>("idle");
-  const [checks, setChecks] = useState<CheckResult[]>([]);
+  const [checks, setChecks] = useState<RuleResult[]>([]);
   const [revealed, setRevealed] = useState(0);
   const [txRef, setTxRef] = useState<string | null>(null);
+
+  const preview = previewEvaluation({
+    kind: "issuance",
+    sender: issuerCredential,
+    recipient: null,
+    asset,
+  }).rules;
 
   async function run() {
     if (state === "running") return;
     setState("running");
     setRevealed(0);
     setTxRef(null);
-    const result = await cleanverse.evaluateIssuance({
-      issuerVerified: issuer.cvi,
-      assetEligible: true,
+    const result = await requestEvaluation({
+      kind: "issuance",
+      sender: issuerCredential,
+      recipient: null,
+      asset,
     });
-    setChecks(result.checks);
-    for (let i = 1; i <= result.checks.length; i++) {
-      await new Promise((r) => setTimeout(r, 420));
+    setChecks(result.rules);
+    for (let i = 1; i <= result.rules.length; i++) {
+      await new Promise((r) => setTimeout(r, 300));
       setRevealed(i);
+      if (result.rules[i - 1]?.status === "fail") {
+        setRevealed(result.rules.length);
+        break;
+      }
     }
-    setTxRef(result.txRef ?? null);
+    setTxRef(result.settlement?.txRef ?? null);
+    recordDecision(result);
+    if (result.approved) markIssued();
     setState("done");
   }
 
@@ -38,8 +60,8 @@ export function Issuance() {
             <Eyebrow index="06">RWA issuance</Eyebrow>
             <Heading>Issue the machine as a compliant asset.</Heading>
             <Lede>
-              Issuance is not a mint button. The issuer identity and the asset record are both
-              evaluated before anything is written to the settlement layer.
+              Issuance is not a mint button. The issuer's CVI credential and every CVA attestation
+              on the passport are evaluated before anything is written to the settlement layer.
             </Lede>
             <div className="mt-8 border border-border bg-surface/50">
               <div className="border-b border-border px-5 py-4">
@@ -56,7 +78,7 @@ export function Issuance() {
                 </div>
                 <div className="bg-background px-5 py-4">
                   <p className="mt-label">Issuer</p>
-                  <p className="mt-1.5 text-[13px]">{issuer.name}</p>
+                  <p className="mt-1.5 text-[13px]">{issuerCredential.holder.name}</p>
                 </div>
               </div>
             </div>
@@ -74,18 +96,24 @@ export function Issuance() {
 
               <div className="mt-6 grid grid-cols-2 gap-px bg-border">
                 <div className="bg-background px-4 py-4">
-                  <p className="mt-label">Verify issuer · CVI</p>
-                  <p className="mt-mono mt-1.5 text-[12px] text-success">✓ PASS</p>
+                  <p className="mt-label">Issuer · CVI</p>
+                  <p className="mt-mono mt-1.5 text-[12px] text-success">
+                    {issuerCredential.status.toUpperCase()} · TIER {issuerCredential.kycTier}
+                  </p>
                 </div>
                 <div className="bg-background px-4 py-4">
-                  <p className="mt-label">Asset status · CVA</p>
-                  <p className="mt-mono mt-1.5 text-[12px] text-success">✓ ELIGIBLE</p>
+                  <p className="mt-label">Asset · CVA</p>
+                  <p className="mt-mono mt-1.5 text-[12px] text-success">
+                    {asset.status.toUpperCase()} ·{" "}
+                    {asset.attestations.filter((a) => a.status === "valid").length}/
+                    {asset.attestations.length} ATT
+                  </p>
                 </div>
               </div>
 
               <div className="mt-7">
                 <CheckSequence
-                  checks={checks.length ? checks : placeholder}
+                  checks={checks.length ? checks : preview}
                   revealed={revealed}
                   state={state}
                 />
@@ -104,7 +132,7 @@ export function Issuance() {
                       Machine asset issued
                     </p>
                     <p className="mt-mono mt-2 text-[12px] text-muted-foreground">
-                      {txRef} · simulated settlement
+                      {txRef} · simulated settlement · policy MT-POLICY-ISSUANCE-v1 · mode {mode}
                     </p>
                   </motion.div>
                 ) : null}
@@ -127,14 +155,3 @@ export function Issuance() {
   );
 }
 
-const placeholder: CheckResult[] = [
-  { id: "identity", label: "Identity check", detail: "CVI — issuer credential", status: "pass" },
-  { id: "asset", label: "Asset check", detail: "CVA — machine passport attested", status: "pass" },
-  {
-    id: "compliance",
-    label: "Compliance policy",
-    detail: "Issuance policy MT-ISS-01",
-    status: "pass",
-  },
-  { id: "settlement", label: "Monad", detail: "Execution of approved issuance", status: "pass" },
-];
