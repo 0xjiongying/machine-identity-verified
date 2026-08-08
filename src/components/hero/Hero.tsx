@@ -18,7 +18,7 @@ const STAGES = [
   { at: 0.2, key: "wireframe", label: "Technical scan", note: "Geometry → wireframe" },
   { at: 0.4, key: "metadata", label: "Machine metadata", note: "Identity record forming" },
   { at: 0.6, key: "components", label: "Component identity", note: "Chip · board · enclosure" },
-  { at: 0.8, key: "asset", label: "Passport-ready asset", note: "MACHINE 042 · demo" },
+  { at: 0.8, key: "asset", label: "Ready for RWA", note: "CVI · CVA · CCP" },
 ] as const;
 
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
@@ -81,8 +81,11 @@ export function Hero() {
           <div className="relative w-full" style={{ maxWidth: "min(560px, 90vw)" }}>
             <div style={{ opacity: 1 - introOut }}>
               <motion.div {...rise(0.15)} className="mb-8 flex flex-wrap items-center gap-3">
+                <span className="text-[13px] font-medium tracking-[-0.01em] text-foreground">
+                  Machine Trust
+                </span>
                 <span className="mt-mono border border-border px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  RWA · Machine infrastructure
+                  Track 1 RWA
                 </span>
                 <DemoTag />
               </motion.div>
@@ -121,8 +124,8 @@ export function Hero() {
                 {...rise(0.56)}
                 className="mt-6 max-w-[42ch] text-[15px] leading-relaxed text-muted-foreground"
               >
-                Machine Trust turns physical machines into verified, programmable RWA assets —
-                passport identity, Cleanverse compliance, Monad settlement.
+                Turn physical machines into verified, programmable assets — Machine Passport,
+                Cleanverse CVI / CVA / CCP, Monad settlement.
               </motion.p>
 
               <motion.div {...rise(0.68)} className="mt-7 flex flex-wrap items-center gap-3">
