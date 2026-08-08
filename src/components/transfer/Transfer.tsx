@@ -9,6 +9,7 @@ import {
   Reveal,
   StatusDot,
   DemoTag,
+  IntegrationModeTag,
 } from "@/components/primitives";
 import { demoMachine } from "@/data/demoMachine";
 import {
@@ -129,10 +130,14 @@ export function Transfer() {
           <Eyebrow index="09">Restricted transfer</Eyebrow>
           <Heading>Trust is enforced at the point of transfer.</Heading>
           <Lede>
-            The transfer is graded server-side against the asset's CVA restrictions and the
-            counterparty's CVI credential. Compliance is not a badge on the page — it decides
+            The transfer is graded server-side: buyer CVI → CVA eligibility → CCP{" "}
+            <code>verify_apass</code> (<code>data.code === 4</code> only). Compliance decides
             whether the transaction exists at all.
           </Lede>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <IntegrationModeTag mode={mode === "live" ? "sandbox" : "demo"} />
+            <DemoTag />
+          </div>
         </Reveal>
 
         <div className="mt-14 grid gap-8 lg:grid-cols-[1fr_1fr] lg:gap-12">
@@ -239,7 +244,6 @@ export function Transfer() {
                 <p className="mt-mono mt-3 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                   CVI → CVA → CCP → Monad · evaluated server-side · mode {mode}
                 </p>
-                <DemoTag className="mt-3" />
               </div>
             </div>
           </Reveal>

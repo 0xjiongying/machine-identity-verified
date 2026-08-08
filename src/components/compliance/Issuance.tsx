@@ -1,6 +1,15 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Section, Shell, Eyebrow, Heading, Lede, Reveal, DemoTag } from "@/components/primitives";
+import {
+  Section,
+  Shell,
+  Eyebrow,
+  Heading,
+  Lede,
+  Reveal,
+  DemoTag,
+  IntegrationModeTag,
+} from "@/components/primitives";
 import { demoMachine } from "@/data/demoMachine";
 import {
   previewEvaluation,
@@ -29,6 +38,7 @@ export function Issuance() {
   const [checks, setChecks] = useState<RuleResult[]>([]);
   const [revealed, setRevealed] = useState(0);
   const [result, setResult] = useState<Evaluation | null>(null);
+  const runningRef = useRef(false);
   const stage = derivePipelineStage("issuance", state, result, revealed);
 
   const preview = previewEvaluation({
@@ -38,19 +48,20 @@ export function Issuance() {
     asset,
   }).rules;
 
-  async function run() {
-    if (state === "running") return;
+  const run = useCallback(async () => {
+    if (runningRef.current) return;
+    runningRef.current = true;
     setState("running");
     setRevealed(0);
     setResult(null);
     try {
-      const result = await requestEvaluation({
+      const evaluation = await requestEvaluation({
         kind: "issuance",
         sender: issuerCredential,
         recipient: null,
         asset,
       });
-      const rules = result.rules ?? [];
+      const rules = evaluation.rules ?? [];
       setChecks(rules);
       for (let i = 1; i <= rules.length; i++) {
         await new Promise((r) => setTimeout(r, 300));
@@ -60,32 +71,34 @@ export function Issuance() {
           break;
         }
       }
-      setResult(result);
-      if (result.aToken) setAToken(result.aToken);
-      recordDecision(result);
-      if (result.approved) {
+      setResult(evaluation);
+      if (evaluation.aToken) setAToken(evaluation.aToken);
+      recordDecision(evaluation);
+      if (evaluation.approved) {
         markVerified();
         markIssued({
-          tokenId: result.aToken?.tokenId ?? "—",
-          txRef: result.settlement?.txRef ?? "0x",
+          tokenId: evaluation.aToken?.tokenId ?? "—",
+          txRef: evaluation.settlement?.txRef ?? "0x",
         });
       }
     } catch (error) {
       console.error("[MachineTrust] issuance failed", error);
       setResult(null);
       setChecks([]);
+    } finally {
+      runningRef.current = false;
+      setState("done");
     }
-    setState("done");
-  }
+  }, [issuerCredential, asset, setAToken, recordDecision, markVerified, markIssued]);
 
-  // The guided demo runner can trigger issuance without touching internals.
+  // Guided demo runner — stable listener.
   useEffect(() => {
     function onDemo() {
       void run();
     }
     window.addEventListener("mt:issuance", onDemo);
     return () => window.removeEventListener("mt:issuance", onDemo);
-  });
+  }, [run]);
 
   return (
     <Section id="issuance" label="RWA issuance" className="scroll-mt-16">
@@ -95,9 +108,13 @@ export function Issuance() {
             <Eyebrow index="08">RWA issuance</Eyebrow>
             <Heading>Issue the machine as a compliant asset.</Heading>
             <Lede>
-              Issuance is not a mint button. The issuer's CVI credential and every CVA attestation
-              on the passport are evaluated before anything is written to the settlement layer.
+              Issuance starts with Cleanverse: issuer CVI / A-Pass, CVA / A-Token bind, then CCP
+              pre-transaction. RWA ISSUED only appears when those gates actually pass.
             </Lede>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <IntegrationModeTag mode={mode === "live" ? "sandbox" : "demo"} />
+              <DemoTag />
+            </div>
             <div className="mt-8 border border-border bg-surface/50">
               <div className="border-b border-border px-5 py-4">
                 <p className="mt-label">Machine</p>
@@ -117,7 +134,11 @@ export function Issuance() {
                 </div>
               </div>
             </div>
-            <DemoTag className="mt-5" />
+            <p className="mt-5 text-[12px] leading-relaxed text-muted-foreground">
+              CVA: Sandbox binds the registered Monad aUSDC A-Token for CCP. Custom{" "}
+              <code>/atoken/launch</code> currently returns <code>ISSUE_FAILED</code> on Monad UAT —
+              that limitation is exposed, never fabricated as ISSUED.
+            </p>
           </Reveal>
 
           <Reveal delay={0.12}>
