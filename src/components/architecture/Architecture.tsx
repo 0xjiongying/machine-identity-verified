@@ -9,14 +9,14 @@ type NodeKey =
 const NOTES: Record<NodeKey, string> = {
   mt: "Machine Trust owns the product surface and orchestration — never Cleanverse secrets.",
   passport: "What is the machine? Identity, provenance, maintenance, parts, ownership context.",
-  cvi: "Who may participate? Active A-Pass via POST /query_apass. Fail → stop.",
-  cva: "What is the asset? Registered A-Token bound for compliance (aUSDC on Monad).",
-  ccp: "May the transaction proceed? POST /verify_apass — only data.code 4 approves.",
+  cvi: "Cleanverse Verified Identity — wallet bound to a verified financial identity (A-Pass / query_apass).",
+  cva: "Cleanverse Verified Asset — digital value entered via an approved pathway (bound A-Token / aUSDC).",
+  ccp: "Programmed Governance via CCP — eligibility on interlocking CVI+CVA before value moves (verify_apass · code 4 only).",
   block: "Invalid participant or failed CCP. Nothing reaches Monad. Ownership unchanged.",
-  approve: "CVI + CVA + CCP cleared. Transaction may execute.",
+  approve: "CVI + CVA + CCP cleared. Trust established — transaction may execute.",
   monad: "On-chain execution layer. Sandbox UAT records a labelled settlement reference.",
   ownership: "Canonical owner updates only after an approved path.",
-  audit: "Immutable event trail: issue, block, approve, settle, ownership.",
+  audit: "Continuously traceable records: issue, block, approve, settle, ownership.",
 };
 
 function Arrow() {
@@ -107,7 +107,7 @@ function FlowDiagram({ active, onFocus }: { active: NodeKey; onFocus: (k: NodeKe
 
       <Node
         id="ccp"
-        label="CCP / Compliance"
+        label="CCP · Programmed Governance"
         sub="verify_apass · data.code 4 only"
         active={active === "ccp"}
         onFocus={onFocus}
@@ -171,9 +171,10 @@ export function Architecture() {
           <Eyebrow index="11">Architecture</Eyebrow>
           <Heading>One path. Two outcomes.</Heading>
           <Lede>
-            Machine Trust asks what the machine is. Cleanverse asks who may act and whether the
-            transaction may proceed. Monad executes only after approval — then ownership and the
-            audit trail update.
+            Machine Trust asks what the machine is. Cleanverse Trust Framework interlocking CVI,
+            CVA and Programmed Governance (CCP) asks who may act — and whether value may move —
+            before issuance, transfer or settlement. Monad executes only after approval; ownership
+            and the audit trail follow.
           </Lede>
         </Reveal>
 
@@ -198,7 +199,7 @@ CVI / A-PASS  CVA / A-TOKEN
 │             │
 └──────┬──────┘
        ▼
-CCP / COMPLIANCE
+CCP · PROGRAMMED GOVERNANCE
        │
  ┌─────┴─────┐
  ▼           ▼

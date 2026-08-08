@@ -129,8 +129,8 @@ export function Hero() {
                 {...rise(0.56)}
                 className="mt-6 max-w-[42ch] text-[15px] leading-relaxed text-muted-foreground"
               >
-                Turn physical machines into verified, programmable assets — Machine Passport,
-                Cleanverse CVI / CVA / CCP, Monad settlement.
+                Turn physical machines into verified, programmable RWAs — Machine Passport, then
+                Cleanverse CVI + CVA under CCP before value moves; Monad settles after approval.
               </motion.p>
 
               <motion.div {...rise(0.68)} className="mt-7 flex flex-wrap items-center gap-3">

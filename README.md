@@ -2,7 +2,7 @@
 
 **Trust infrastructure for programmable machine assets.**
 
-Turn high-value physical machines into verified, traceable, compliance-aware programmable RWAs — with Cleanverse CVI / CVA / CCP in the core issuance and transfer path, and Monad as the settlement layer.
+Turn high-value physical machines into verified, traceable, compliance-aware programmable RWAs — with the Cleanverse Trust Framework (CVI + CVA + Programmed Governance via CCP) in the core issuance and transfer path, and Monad as the settlement layer. Trust before value moves.
 
 Built for the **Cleanverse Build: Trusted Assets Hackathon — Track 1 RWA**.
 
@@ -36,7 +36,7 @@ CVI / A-PASS  CVA / A-TOKEN
 │             │
 └──────┬──────┘
        ▼
-CCP / COMPLIANCE
+CCP · PROGRAMMED GOVERNANCE
        │
  ┌─────┴─────┐
  ▼           ▼
@@ -53,8 +53,8 @@ BLOCK      APPROVE
 ```
 
 **Machine Trust** answers: _What is the machine?_  
-**Cleanverse** answers: _Who may participate, and may this transaction proceed?_  
-**Monad** answers: _Where does ownership settle?_
+**Cleanverse** answers: _Who may participate, and may this transaction proceed?_ (CVI + CVA interlocking under CCP)  
+**Monad** answers: _Where does ownership settle — only after approval?_
 
 ---
 

@@ -11,8 +11,9 @@ export function FooterCTA() {
             Trust the machine. Program the asset.
           </h2>
           <p className="mt-7 max-w-[54ch] text-[15px] leading-relaxed text-muted-foreground">
-            Machine Trust connects Machine Passports to Cleanverse CVI / CVA / CCP and Monad
-            settlement — so issuance and transfer only happen when compliance actually clears.
+            Machine Trust connects Machine Passports to Cleanverse CVI + CVA under CCP — trust
+            before value moves — then Monad settlement. Issuance and transfer only happen when
+            compliance actually clears.
           </p>
           <div className="mt-10 flex flex-wrap gap-3">
             <a

@@ -8,13 +8,13 @@ const LAYERS = [
   },
   {
     k: "Cleanverse",
-    q: "Who may transact?",
-    v: "CVI credentials for participants, CVA attestations for the asset, and the policy decision itself.",
+    q: "Who may transact — before value moves?",
+    v: "Trust Framework interlocking CVI (verified identity), CVA (verified asset), and Programmed Governance via CCP — eligibility checked before issuance, transfer, or settlement.",
   },
   {
     k: "Monad",
     q: "What executes?",
-    v: "Settlement after CCP approval. In Sandbox UAT this is a labelled settlement reference until a custody contract is deployed.",
+    v: "Settlement only after CCP approval. In Sandbox UAT this is a labelled settlement reference until a custody contract is deployed.",
   },
 ];
 
@@ -34,12 +34,13 @@ export function Overview() {
             </p>
             <p className="mt-6 max-w-[54ch] text-[15px] leading-relaxed text-muted-foreground">
               Machine Trust gives an industrial machine a verifiable passport — identity, parts,
-              service history, ownership. Cleanverse verifies the participants and the asset itself,
-              and returns the compliance decision. Monad executes only what Cleanverse approved.
+              service history, ownership. Cleanverse interlocking CVI and CVA under Programmed
+              Governance (CCP) establishes trust before value moves. Monad executes only what
+              Cleanverse approved — with a continuous audit trail.
             </p>
             <p className="mt-4 max-w-[54ch] text-[15px] leading-relaxed text-muted-foreground">
-              Without verified identity, a tokenised machine is a picture of a machine. That is the
-              gap this product closes.
+              Without verified identity and a pre-transaction gate, a tokenised machine is a picture
+              of a machine. That is the gap this product closes.
             </p>
             <DemoTag className="mt-7" />
           </Reveal>

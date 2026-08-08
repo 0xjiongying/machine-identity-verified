@@ -2,8 +2,8 @@ import type { Evaluation } from "@/lib/cleanverse-adapter";
 import { cn } from "@/lib/utils";
 
 /**
- * The three Cleanverse primitives behind one decision, made traceable:
- * CVI (A-Pass) → CVA (A-Token) → CCP decision → Monad execution.
+ * Cleanverse Trust Framework behind one decision, made traceable:
+ * CVI (A-Pass) → CVA (A-Token) → CCP Programmed Governance → Monad execution.
  */
 export function TraceStrip({ result, className }: { result: Evaluation; className?: string }) {
   const rows: Array<{ tag: string; label: string; value: string; ok: boolean }> = [

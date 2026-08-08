@@ -110,8 +110,9 @@ export function Issuance() {
             <Eyebrow index="08">RWA issuance</Eyebrow>
             <Heading>Issue the machine as a compliant asset.</Heading>
             <Lede>
-              Issuance starts with Cleanverse: issuer CVI / A-Pass, CVA / A-Token bind, then CCP
-              pre-transaction. RWA ISSUED only appears when those gates actually pass.
+              Issuance starts with the Cleanverse Trust Framework: issuer CVI / A-Pass, CVA /
+              A-Token bind, then CCP Programmed Governance before value moves. RWA ISSUED only
+              appears when those gates actually pass.
             </Lede>
             <div className="mt-4 flex flex-wrap gap-2">
               <IntegrationModeTag mode={mode === "live" ? "sandbox" : "demo"} />
