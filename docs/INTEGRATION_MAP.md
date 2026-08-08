@@ -10,7 +10,8 @@ Source of truth: https://docs.cleanverse.com (Cooperate API **v5.6**, revision 2
 | Encryption      | AES/CBC/PKCS5Padding, zero IV, body `{"data":"<Base64>"}` for documented write endpoints; **api-key never transmitted** |
 | Chain used      | `monad`                                                                                                                 |
 | Envelope        | `code "0000"` = API call OK — **not** compliance approval                                                               |
-| CCP approval    | `POST /verify_apass` → `data.code === 4` only                                                                           |
+| CCP approval    | `POST /verify_apass` → `data.code === 4` only; live transport failure → fail-closed                                     |
+| On-chain registry | `contracts/MachineTrustRegistry.sol` — **NOT DEPLOYED**; settlement refs remain DEMO                                  |
 
 ## Endpoints used by Machine Trust
 

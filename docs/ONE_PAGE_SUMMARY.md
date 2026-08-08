@@ -16,7 +16,7 @@ Machine Trust creates a **Machine Passport** for a physical machine and connects
 
 **Physical Machine → Passport → CVI → CVA → CCP → RWA → Verified Buyer → CCP → Monad → Ownership**
 
-Aligned with the Cleanverse Trust Framework: interlocking **CVI** (verified identity), **CVA** (verified asset), and **Programmed Governance** operationalised by the **CCP** — so trust is established before value is issued, transferred, or settled.
+Aligned with the Cleanverse Trust Framework: interlocking **CVI** (verified identity), **CVA** (verified asset), and **Programmed Governance** operationalised by the **CCP** — trust before value is issued, transferred, or settled.
 
 ## CVI / A-PASS
 
@@ -32,25 +32,23 @@ Aligned with the Cleanverse Trust Framework: interlocking **CVI** (verified iden
 
 **What it represents:** Cleanverse verified asset layer via registered Monad **aUSDC** (`POST /query_deposit_atoken_list`). Issuance **binds** that A-Token for CCP (status `bound`). Custom `/atoken/launch` is not claimed as ISSUED — Sandbox history shows `ISSUE_FAILED`; never fabricated.
 
-## CCP / PROGRAMMED GOVERNANCE
+## CCP / VALIDATOR COMPLIANCE
 
-**Where:** Pre-transaction gate for issuance and transfer via `POST /verify_apass` — Cleanverse Compliance Protocol enforcing eligibility on interlocking CVI + CVA.
+**Where:** Pre-transaction gate for issuance and transfer via `POST /verify_apass` — Programmed Governance on interlocking CVI + CVA.
 
-**Rule:** HTTP 200 / envelope `0000` is **not** approval. Only `data.code === 4` allows the transaction. Codes 1–3 → **BLOCKED**. On-chain validator pools are adapter-ready but unavailable without an owned registered pool.
+**Rule:** HTTP 200 / envelope `0000` is **not** approval. Only `data.code === 4` allows the transaction. Codes 1–3 → **BLOCKED**. Live Sandbox transport failure → **fail-closed**. On-chain validator pools are adapter-ready but unavailable without an owned registered pool.
 
 ## DEPLOYED CHAINS
 
-| Layer                                  | Status                                                                                                            |
-| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Cleanverse Sandbox (Monad chain param) | **REAL** API calls                                                                                                |
-| Monad settlement                       | **Demo settlement reference** after CCP approval (no fabricated tx hash; custody write when contract is deployed) |
+| Layer | Status |
+| --- | --- |
+| Cleanverse Sandbox (Monad chain param) | **REAL** API calls |
+| Monad settlement | **Demo settlement reference** after CCP approval (no fabricated tx hash) |
+| `MachineTrustRegistry` | **NOT DEPLOYED** — source in `contracts/` for Testnet/Mainnet when ready |
 
 ## CORE FLOW
 
 ```
-MACHINE TRUST
-       │
-       ▼
 MACHINE PASSPORT
        │
 ┌──────┴──────┐
@@ -75,21 +73,26 @@ BLOCK      APPROVE
           AUDIT TRAIL
 ```
 
-## DEMO (≤ 2 min)
+**Passport → CVI → CVA → CCP → BLOCK | APPROVE → Monad → Ownership → Audit**
 
-1. Explore Machine Passport (ABB IRB 6700 — demo metadata)
+## DEMO (2–4 min)
+
+1. Explore Machine Asset (3D · COMPACT → READY)
 2. Issue Machine Asset (issuer CVI → CVA bind → CCP → RWA ISSUED)
 3. Transfer to Unknown Wallet → **BLOCKED**
-4. Transfer to Equipment Fund B → **APPROVED** → ownership + audit update
+4. Transfer to Equipment Fund B → **APPROVED** → ownership + audit
+5. Architecture
+
+Open `/?demo=1` — see `docs/DEMO_SCRIPT.md`.
 
 ## HONESTY LABELS
 
-| REAL                                   | SANDBOX                | DEMO ONLY                                           | ROADMAP                                                     |
-| -------------------------------------- | ---------------------- | --------------------------------------------------- | ----------------------------------------------------------- |
-| CVI/CVA/CCP API calls with credentials | UAT Cooperate API v5.6 | Passport/maintenance metadata; Monad settlement ref | Custom A-Token ISSUED; validator pool CCP; custody contract |
+| REAL | SANDBOX | DEMO ONLY | ROADMAP |
+| --- | --- | --- | --- |
+| CVI/CVA/CCP API calls with credentials | UAT Cooperate API v5.6 | Passport/maintenance metadata; Monad settlement ref | Custom A-Token ISSUED; validator pool CCP; registry deploy |
 
-**Live demo:** _add deployed URL (Lovable / Vercel / Cloudflare Workers)_  
-**Demo video:** _add 2–4 min link — see docs/DEMO_SCRIPT.md_  
+**Live demo:** _add deployed URL_  
+**Demo video:** _add 2–4 min link_  
 **Repo:** https://github.com/0xjiongying/machine-identity-verified
 
-> **Submission blocker:** GitHub currently reports the repository as **private**. Hackathon rules require a **public** repo — flip visibility in GitHub Settings before submit.
+> **Submission blocker:** GitHub currently reports the repository as **private**. Hackathon rules require a **public** repo.
