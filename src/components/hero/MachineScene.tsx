@@ -62,7 +62,7 @@ function Region({
       if (!mat || !("emissiveIntensity" in mat)) return;
       mat.emissiveIntensity = damp(
         mat.emissiveIntensity ?? 0,
-        active ? 0.5 : muted ? 0 : 0.015 + phase * 0.14,
+        active ? 0.3 : muted ? 0 : 0.015 + phase * 0.14,
         6,
         dt,
       );
@@ -106,7 +106,7 @@ function Machine({ phase, hovered, selected, onHover, onSelect }: Props) {
     const targetX = -pointer.current.y * 0.22;
     g.rotation.y = damp(g.rotation.y, targetY, 2.6, dt);
     g.rotation.x = damp(g.rotation.x, targetX, 2.6, dt);
-    g.position.y = damp(g.position.y, -1.35 + Math.sin(state.clock.elapsedTime * 0.6) * 0.02, 4, dt);
+    g.position.y = damp(g.position.y, -1.25 + Math.sin(state.clock.elapsedTime * 0.6) * 0.02, 4, dt);
 
     // Scroll pushes the camera back; selecting a part pulls it in.
     const dist = selected ? 5.2 : 7.4 + phase * 1.6;
@@ -118,7 +118,7 @@ function Machine({ phase, hovered, selected, onHover, onSelect }: Props) {
   const wire = useMemo(() => new THREE.Color(ACCENT), []);
 
   return (
-    <group ref={root} position={[-0.62, -1.35, 0]} scale={0.62}>
+    <group ref={root} position={[-0.55, -1.25, 0]} scale={0.55}>
       {/* base + column: controller */}
       <Region
         id="controller"
@@ -238,11 +238,11 @@ function ScanPlane({ phase }: { phase: number }) {
     const t = (state.clock.elapsedTime * 0.35) % 1;
     m.position.y = t * 3.4;
     const mat = m.material as THREE.MeshBasicMaterial;
-    mat.opacity = (0.5 + phase * 0.4) * Math.sin(t * Math.PI);
+    mat.opacity = (0.35 + phase * 0.35) * Math.sin(t * Math.PI);
   });
   return (
     <mesh ref={ref} rotation={[-Math.PI / 2, 0, 0]}>
-      <ringGeometry args={[1.55, 1.68, 96]} />
+      <ringGeometry args={[1.28, 1.36, 96]} />
       <meshBasicMaterial color={ACCENT} transparent opacity={0.2} side={THREE.DoubleSide} />
     </mesh>
   );
