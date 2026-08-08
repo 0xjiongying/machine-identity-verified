@@ -30,6 +30,12 @@ export type TrustSceneProps = {
   hideHotspots?: boolean;
   autoRotate?: boolean;
   zoomEnabled?: boolean;
+  /** Touch/coarse pointer device — tunes controls and disables cursor parallax. */
+  coarse?: boolean;
+  /** Honour prefers-reduced-motion: static pose, no idle drift, no auto frames. */
+  reducedMotion?: boolean;
+  /** Stop rendering entirely when the scene is off-screen. */
+  paused?: boolean;
   controlsRef?: React.MutableRefObject<OrbitControlsImpl | null>;
   scale?: number;
   offsetX?: number;
@@ -592,6 +598,8 @@ function Rig({
   scale,
   offsetX,
   tier,
+  coarse,
+  reducedMotion,
 }: TrustSceneProps) {
   const root = useRef<THREE.Group>(null);
   const assembly = useRef(0);
@@ -600,19 +608,31 @@ function Rig({
   const low = tier === "reduced";
 
   useFrame((s, dt) => {
+    const node = root.current;
+    if (reducedMotion) {
+      // Static, fully-assembled pose — no drift, no parallax.
+      assembly.current = 1;
+      if (node) {
+        node.rotation.set(0.08, -0.5 + p * 1.0, 0);
+        node.position.y = -0.5;
+      }
+      return;
+    }
     // coil → unfold: driven by scroll, with a small automatic wake-up.
     const target = clamp01(Math.max(p * 2.2, Math.min(1, s.clock.elapsedTime / 2.2)));
     assembly.current = damp(assembly.current, target, 2.4, dt);
 
-    const node = root.current;
     if (!node) return;
+    // Cursor parallax only on fine pointers — on touch it fights orbit drag.
+    const px = coarse ? 0 : pointer.x;
+    const py = coarse ? 0 : pointer.y;
     node.rotation.y = damp(
       node.rotation.y,
-      -0.5 + p * 1.0 + pointer.x * 0.35,
+      -0.5 + p * 1.0 + px * 0.35,
       3,
       dt,
     );
-    node.rotation.x = damp(node.rotation.x, 0.08 - pointer.y * 0.14, 3, dt);
+    node.rotation.x = damp(node.rotation.x, 0.08 - py * 0.14, 3, dt);
     node.position.y = damp(node.position.y, -0.5 + Math.sin(s.clock.elapsedTime * 0.6) * 0.02, 3, dt);
   });
 
@@ -745,15 +765,20 @@ function Rig({
 /* ---------------------------------------------------------------- canvas */
 
 export default function TrustModuleScene(props: TrustSceneProps) {
-  const { controlsRef, autoRotate, zoomEnabled, tier } = props;
+  const { controlsRef, autoRotate, zoomEnabled, tier, coarse, reducedMotion, paused } = props;
   const low = tier === "reduced";
+  // Touch devices get pinch-to-zoom by default; reduced motion renders on demand.
+  const zoom = zoomEnabled ?? Boolean(coarse);
+  const frameloop = paused ? "never" : reducedMotion ? "demand" : "always";
   return (
     <Canvas
       className="!absolute inset-0"
-      dpr={low ? [1, 1.3] : [1, 1.9]}
+      style={{ touchAction: "none" }}
+      frameloop={frameloop}
+      dpr={low ? [1, 1.25] : [1, 1.9]}
       shadows={!low}
       camera={{ position: [4.0, 2.6, 5.6], fov: 32 }}
-      gl={{ antialias: !low, alpha: true }}
+      gl={{ antialias: !low, alpha: true, powerPreference: "high-performance" }}
     >
       <color attach="background" args={["#07080b"]} />
       <ambientLight intensity={0.5} />
@@ -776,10 +801,14 @@ export default function TrustModuleScene(props: TrustSceneProps) {
         ref={controlsRef as never}
         makeDefault
         enablePan={false}
-        enableZoom={zoomEnabled ?? false}
+        enableZoom={zoom}
+        enableDamping
+        dampingFactor={coarse ? 0.12 : 0.08}
+        rotateSpeed={coarse ? 0.55 : 0.9}
+        zoomSpeed={coarse ? 0.5 : 0.8}
         minDistance={3.4}
         maxDistance={9}
-        autoRotate={autoRotate ?? false}
+        autoRotate={reducedMotion ? false : (autoRotate ?? false)}
         autoRotateSpeed={0.5}
         minPolarAngle={Math.PI / 5}
         maxPolarAngle={Math.PI / 2.05}

@@ -40,6 +40,7 @@ export function MachineTrustModule() {
 
   const [webgl, setWebgl] = useState<boolean | null>(null);
   const [p, setP] = useState(0);
+  const [visible, setVisible] = useState(true);
   const [hovered, setHovered] = useState<ModuleKey | null>(null);
   const [selected, setSelected] = useState<ModuleKey | null>(null);
 
@@ -53,6 +54,17 @@ export function MachineTrustModule() {
     } catch {
       setWebgl(false);
     }
+  }, []);
+
+  // Stop rendering the canvas while the band is off-screen (big mobile win).
+  useEffect(() => {
+    const el = track.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([e]) => setVisible(Boolean(e?.isIntersecting)), {
+      rootMargin: "10% 0px",
+    });
+    io.observe(el);
+    return () => io.disconnect();
   }, []);
 
   const step = STEP_AT.reduce((acc, at, i) => (p >= at ? i : acc), 0);
@@ -81,6 +93,9 @@ export function MachineTrustModule() {
                 progress={reduced ? 0.85 : p}
                 step={reduced ? 5 : step}
                 tier={tier}
+                coarse={!fine}
+                reducedMotion={reduced}
+                paused={!visible}
                 hovered={hovered}
                 selected={selected}
                 onHover={(k) => {
