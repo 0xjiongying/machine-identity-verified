@@ -27,7 +27,7 @@ export function TrustGap() {
     <Section id="machines" label="The trust gap">
       <Shell>
         <Reveal>
-          <Eyebrow index="01">The trust gap</Eyebrow>
+          <Eyebrow index="02">The trust gap</Eyebrow>
           <Heading>
             A machine has a history.
             <br />

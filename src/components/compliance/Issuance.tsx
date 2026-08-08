@@ -57,7 +57,7 @@ export function Issuance() {
       <Shell>
         <div className="grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
           <Reveal>
-            <Eyebrow index="06">RWA issuance</Eyebrow>
+            <Eyebrow index="08">RWA issuance</Eyebrow>
             <Heading>Issue the machine as a compliant asset.</Heading>
             <Lede>
               Issuance is not a mint button. The issuer's CVI credential and every CVA attestation

@@ -108,7 +108,7 @@ export function Transfer() {
     <Section id="transfer" label="Compliant transfer" className="scroll-mt-16">
       <Shell>
         <Reveal>
-          <Eyebrow index="07">Restricted transfer</Eyebrow>
+          <Eyebrow index="09">Restricted transfer</Eyebrow>
           <Heading>Trust is enforced at the point of transfer.</Heading>
           <Lede>
             The transfer is graded server-side against the asset's CVA restrictions and the

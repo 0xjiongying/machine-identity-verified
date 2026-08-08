@@ -132,7 +132,7 @@ export function Credentials() {
     <Section id="credentials" label="Cleanverse credentials" className="scroll-mt-16">
       <Shell>
         <Reveal>
-          <Eyebrow index="06">Cleanverse credentials</Eyebrow>
+          <Eyebrow index="07">Cleanverse credentials</Eyebrow>
           <Heading>CVI verifies the party. CVA verifies the asset.</Heading>
           <Lede>
             These are the exact objects the policy engine reads. Change one and re-run the transfer:

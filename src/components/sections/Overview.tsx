@@ -28,7 +28,7 @@ export function Overview() {
       <Shell>
         <div className="grid gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
           <Reveal>
-            <Eyebrow index="00">In one paragraph</Eyebrow>
+            <Eyebrow index="01">In one paragraph</Eyebrow>
             <p className="mt-6 max-w-[34ch] text-[length:var(--text-display)] font-medium leading-[1.05]">
               A machine is worth financing only if someone can prove what it is and who may own it.
             </p>

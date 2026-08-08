@@ -47,7 +47,7 @@ export function Inspection() {
     <Section id="inspect" label="Interactive machine inspection">
       <Shell>
         <Reveal>
-          <Eyebrow index="02">Machine inspection</Eyebrow>
+          <Eyebrow index="03">Machine inspection</Eyebrow>
           <Heading>Rotate it. Take it apart. Read its record.</Heading>
           <p className="mt-5 max-w-[52ch] text-[15px] text-muted-foreground">
             Drag to orbit the machine, separate the assembly and open any component. Every part maps

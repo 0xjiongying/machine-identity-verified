@@ -21,7 +21,7 @@ export function Scale() {
     <Section label="Scale">
       <Shell>
         <Reveal>
-          <Eyebrow index="10">Scale</Eyebrow>
+          <Eyebrow index="12">Scale</Eyebrow>
           <Heading>Start with robots. Build for machines.</Heading>
           <Lede>Robotics is the initial wedge, not the market boundary.</Lede>
         </Reveal>
