@@ -41,13 +41,14 @@ export type ApassVerification = {
   status: string;
 };
 
-/** A-Token record returned by the CVA service (minted at issuance). */
+/** A-Token record returned by the CVA service (bound at issuance). */
 export type AtokenRecord = {
   ref: string;
   tokenId: string;
   credentialId: string;
   passportId: string;
-  status: "minted" | "active" | "suspended" | "unissued";
+  /** bound = registered A-Token linked; minted reserved for true custom launch ISSUED. */
+  status: "bound" | "minted" | "active" | "suspended" | "unissued";
   transferable: boolean;
   attestations: number;
   mintedAt: string | null;

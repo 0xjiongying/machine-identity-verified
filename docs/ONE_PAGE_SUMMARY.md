@@ -28,7 +28,7 @@ Machine Trust creates a **Machine Passport** for a physical machine and connects
 
 **Where:** From the issuance stage — asset bound before CCP.
 
-**What it represents:** Cleanverse verified asset layer via registered Monad **aUSDC** (`POST /query_deposit_atoken_list`). Custom `/atoken/launch` is attempted in Sandbox but currently returns `ISSUE_FAILED` on Monad — exposed honestly; pipeline uses the registered A-Token for compliance, never a fabricated mint.
+**What it represents:** Cleanverse verified asset layer via registered Monad **aUSDC** (`POST /query_deposit_atoken_list`). Issuance **binds** that A-Token for CCP (status `bound`). Custom `/atoken/launch` is not claimed as ISSUED — Sandbox history shows `ISSUE_FAILED`; never fabricated.
 
 ## CCP / VALIDATOR COMPLIANCE
 

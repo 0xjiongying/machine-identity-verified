@@ -75,8 +75,8 @@ HTTP 200 / envelope `0000` alone is **never** treated as compliance success.
 | Capability                         | Label              | Notes                                                                 |
 | ---------------------------------- | ------------------ | --------------------------------------------------------------------- |
 | CVI `query_apass`                  | **SANDBOX / REAL** | Live UAT with credentials                                             |
-| CVA registered bind (aUSDC)        | **SANDBOX / REAL** | `0xaC0893…f20D` on Monad                                              |
-| CVA custom `/atoken/launch`        | **UNAVAILABLE**    | Sandbox returns `ISSUE_FAILED` — surfaced, not faked                  |
+| CVA registered bind (aUSDC)        | **SANDBOX / REAL** | Bound at issuance for CCP · `0xaC0893…f20D`                           |
+| CVA custom `/atoken/launch`        | **UNAVAILABLE**    | Not on hot path; UAT history `ISSUE_FAILED` — never faked as ISSUED   |
 | CCP `verify_apass`                 | **SANDBOX / REAL** | Issuer/Fund → code 4; Unknown → code 2                                |
 | Validator pool `/validator/verify` | **UNAVAILABLE**    | Needs owned registered pool                                           |
 | Monad settlement                   | **DEMO**           | Settlement **reference** after CCP pass (no fabricated explorer hash) |

@@ -170,7 +170,8 @@ function cvaRules(a: CvaCredential, kind: PolicyKind, token: AtokenRecord | null
   }
 
   if (kind === "transfer") {
-    const issued = token?.status === "minted" || token?.status === "active";
+    const issued =
+      token?.status === "bound" || token?.status === "minted" || token?.status === "active";
     rules.push({
       code: "CVA-05.issued",
       label: "A-Token exists",

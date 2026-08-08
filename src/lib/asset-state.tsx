@@ -74,8 +74,8 @@ export function AssetStateProvider({ children }: { children: React.ReactNode }) 
             ...prev,
             {
               id: `issue-${detail.txRef.slice(-6)}`,
-              label: "A-Token issued",
-              detail: `CVA A-Token ${detail.tokenId} minted after CCP approval.`,
+              label: "A-Token bound · RWA issued",
+              detail: `CVA A-Token ${detail.tokenId} bound after CVI + CCP approval.`,
               timestamp: new Date().toISOString().slice(0, 16).replace("T", " "),
               hash: detail.txRef,
               kind: "issued",

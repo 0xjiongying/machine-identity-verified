@@ -23,6 +23,7 @@ import { CheckSequence, type SequenceState } from "./CheckSequence";
 import { TraceStrip } from "./TraceStrip";
 import { PipelineStages } from "./PipelineStages";
 import { derivePipelineStage } from "./pipeline";
+import { VerdictBanner } from "./VerdictBanner";
 
 export function Issuance() {
   const {
@@ -88,6 +89,7 @@ export function Issuance() {
     } finally {
       runningRef.current = false;
       setState("done");
+      window.dispatchEvent(new CustomEvent("mt:issuance-done"));
     }
   }, [issuerCredential, asset, setAToken, recordDecision, markVerified, markIssued]);
 
@@ -177,10 +179,12 @@ export function Issuance() {
                       aToken.status === "unissued" ? "text-muted-foreground" : "text-success"
                     }`}
                   >
-                    {aToken.status}
-                    {aToken.mintedAt
-                      ? ` · minted ${aToken.mintedAt.slice(0, 16).replace("T", " ")}`
-                      : ""}
+                    {aToken.status === "bound" ? "BOUND · registered aUSDC" : aToken.status}
+                    {aToken.contractAddress
+                      ? ` · ${aToken.contractAddress.slice(0, 10)}…`
+                      : aToken.mintedAt
+                        ? ` · ${aToken.mintedAt.slice(0, 16).replace("T", " ")}`
+                        : ""}
                   </p>
                 </div>
               </div>
@@ -202,38 +206,21 @@ export function Issuance() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                    className="mt-6"
+                    className="mt-6 space-y-4"
                   >
-                    <div
-                      className={
-                        result.approved
-                          ? "border border-primary/50 bg-primary/10 px-4 py-4"
-                          : "border border-destructive/60 px-4 py-4"
-                      }
-                    >
-                      <p
-                        className={`mt-mono text-[11px] uppercase tracking-[0.18em] ${
-                          result.approved ? "text-primary" : "text-destructive"
-                        }`}
-                      >
-                        {result.approved
-                          ? result.degraded
-                            ? "RWA issued · degraded local CCP"
-                            : "RWA issued · CVI + CVA + CCP"
-                          : "Issuance rejected"}
+                    <VerdictBanner result={result} />
+                    {result.approved ? (
+                      <p className="mt-mono text-[11px] uppercase tracking-[0.18em] text-primary">
+                        RWA ISSUED · CVI + CVA bound + CCP
+                        {result.degraded ? " · DEGRADED" : ""}
                       </p>
-                      <p className="mt-mono mt-2 text-[12px] text-muted-foreground">
-                        {result.approved
-                          ? `${result.settlement?.txRef} · ${result.settlement?.kind === "demo-settlement-ref" ? "Monad settlement ref (demo)" : "Monad"} · mode ${result.mode}${result.degraded ? " · degraded" : ""}`
-                          : `Blocked at ${result.blockedBy} — nothing was minted and nothing reached the chain.`}
+                    ) : null}
+                    {result.notice ? (
+                      <p className="text-[11px] leading-relaxed text-muted-foreground">
+                        {result.notice}
                       </p>
-                      {result.notice ? (
-                        <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-                          {result.notice}
-                        </p>
-                      ) : null}
-                    </div>
-                    <TraceStrip result={result} className="mt-4" />
+                    ) : null}
+                    <TraceStrip result={result} />
                   </motion.div>
                 ) : null}
               </AnimatePresence>

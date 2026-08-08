@@ -149,12 +149,15 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
           : atokenIdFor(input.asset),
         credentialId: input.asset.id,
         passportId: input.asset.subject.passportId,
-        status: input.kind === "issuance" ? "minted" : (input.aToken?.status ?? "active"),
+        status: input.kind === "issuance" ? "bound" : (input.aToken?.status ?? "active"),
         transferable: input.asset.transferable,
         attestations: input.asset.attestations.filter((a) => a.status === "valid").length,
         mintedAt: input.aToken?.mintedAt ?? now.toISOString(),
         contractAddress: atokenAddress,
       };
+      notices.push(
+        `CVA: bound registered A-Token ${bound?.symbol ?? "A-Token"} at ${atokenAddress.slice(0, 12)}… (not a custom /atoken/launch mint).`,
+      );
     }
   } catch (error) {
     return failClosed(input, "CVA", errText(error));
