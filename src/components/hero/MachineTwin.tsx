@@ -11,7 +11,7 @@ import { isBootComplete, onBootComplete } from "@/lib/boot-state";
 const TrustModuleScene = lazy(() => import("@/components/trust/TrustModuleScene"));
 
 /**
- * The hero's living object: the Machine Trust module — a transparent, sealed
+ * The hero's living object: the Machine Asset Core — a modular industrial
  * hardware enclosure around a cryptographic trust chip. It opens, activates and
  * is laser-verified as you scroll, and stays inspectable throughout.
  */

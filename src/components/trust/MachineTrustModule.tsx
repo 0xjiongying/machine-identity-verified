@@ -27,7 +27,7 @@ const CARD_SIDE: Record<string, "left" | "right"> = {
 };
 
 /**
- * Hero band: a futuristic Machine Trust module — transparent enclosure, trust
+ * Hero band: the Machine Asset Core — motor, controller, arm and safety
  * chip, holographic data cards and a purple verification laser that anchors the
  * machine's identity on-chain. Everything is real-time 3D; no footage.
  */
@@ -69,7 +69,7 @@ export function MachineTrustModule() {
     <section
       ref={track}
       id="machine-sequence"
-      aria-label="Interactive Machine Trust module"
+      aria-label="Interactive Machine Asset Core"
       className="relative h-[320svh]"
     >
       <div className="sticky top-0 h-svh w-full overflow-hidden">
