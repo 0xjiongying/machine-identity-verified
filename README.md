@@ -6,13 +6,15 @@ Turn high-value physical machines into verified, traceable, compliance-aware pro
 
 Built for the **Cleanverse Build: Trusted Assets Hackathon — Track 1 RWA**.
 
-| | |
-|---|---|
-| **Live demo** | _Add deployed URL (Lovable / Vercel / Cloudflare)_ |
-| **Demo video** | _Add 2–4 min walkthrough link_ |
-| **One-pager** | [docs/ONE_PAGE_SUMMARY.md](./docs/ONE_PAGE_SUMMARY.md) |
-| **Integration map** | [docs/INTEGRATION_MAP.md](./docs/INTEGRATION_MAP.md) |
-| **Repo** | https://github.com/0xjiongying/machine-identity-verified |
+|                     |                                                                     |
+| ------------------- | ------------------------------------------------------------------- |
+| **Live demo**       | _Add deployed URL (Lovable / Vercel / Cloudflare Workers)_          |
+| **Demo video**      | _Add 2–4 min walkthrough — [DEMO_SCRIPT.md](./docs/DEMO_SCRIPT.md)_ |
+| **One-pager**       | [docs/ONE_PAGE_SUMMARY.md](./docs/ONE_PAGE_SUMMARY.md)              |
+| **Integration map** | [docs/INTEGRATION_MAP.md](./docs/INTEGRATION_MAP.md)                |
+| **Repo**            | https://github.com/0xjiongying/machine-identity-verified            |
+
+> **Action required before submit:** make this GitHub repository **public** (hackathon rule). Visibility is currently private.
 
 ---
 
@@ -34,9 +36,9 @@ Physical Machine
   → Ownership + audit trail
 ```
 
-**Machine Trust** answers: *What is the machine?*  
-**Cleanverse** answers: *Who may participate, and may this transaction proceed?*  
-**Monad** answers: *Where does ownership settle?*
+**Machine Trust** answers: _What is the machine?_  
+**Cleanverse** answers: _Who may participate, and may this transaction proceed?_  
+**Monad** answers: _Where does ownership settle?_
 
 ---
 
@@ -60,34 +62,34 @@ Secrets stay in server env (`CLEANVERSE_SANDBOX_API_*`). Never `VITE_*`. Never i
 
 ## Cleanverse integration (API v5.6)
 
-| Primitive | Endpoint | Controls |
-|---|---|---|
-| **CVI** | `POST /query_apass` | Issuer/buyer must have active A-Pass |
-| **CVA** | `POST /query_deposit_atoken_list` | Bind registered Monad aUSDC for the asset |
-| **CCP** | `POST /verify_apass` | **Only `data.code === 4` is approval** |
+| Primitive | Endpoint                          | Controls                                  |
+| --------- | --------------------------------- | ----------------------------------------- |
+| **CVI**   | `POST /query_apass`               | Issuer/buyer must have active A-Pass      |
+| **CVA**   | `POST /query_deposit_atoken_list` | Bind registered Monad aUSDC for the asset |
+| **CCP**   | `POST /verify_apass`              | **Only `data.code === 4` is approval**    |
 
 HTTP 200 / envelope `0000` alone is **never** treated as compliance success.
 
 ### Honesty matrix
 
-| Capability | Label | Notes |
-|---|---|---|
-| CVI `query_apass` | **SANDBOX / REAL** | Live UAT with credentials |
-| CVA registered bind (aUSDC) | **SANDBOX / REAL** | `0xaC0893…f20D` on Monad |
-| CVA custom `/atoken/launch` | **UNAVAILABLE** | Sandbox returns `ISSUE_FAILED` — surfaced, not faked |
-| CCP `verify_apass` | **SANDBOX / REAL** | Issuer/Fund → code 4; Unknown → code 2 |
-| Validator pool `/validator/verify` | **UNAVAILABLE** | Needs owned registered pool |
-| Monad settlement | **DEMO** | Settlement **reference** after CCP pass (no fabricated explorer hash) |
-| Passport / maintenance / parts | **DEMO** | Clearly labelled demo machine metadata |
+| Capability                         | Label              | Notes                                                                 |
+| ---------------------------------- | ------------------ | --------------------------------------------------------------------- |
+| CVI `query_apass`                  | **SANDBOX / REAL** | Live UAT with credentials                                             |
+| CVA registered bind (aUSDC)        | **SANDBOX / REAL** | `0xaC0893…f20D` on Monad                                              |
+| CVA custom `/atoken/launch`        | **UNAVAILABLE**    | Sandbox returns `ISSUE_FAILED` — surfaced, not faked                  |
+| CCP `verify_apass`                 | **SANDBOX / REAL** | Issuer/Fund → code 4; Unknown → code 2                                |
+| Validator pool `/validator/verify` | **UNAVAILABLE**    | Needs owned registered pool                                           |
+| Monad settlement                   | **DEMO**           | Settlement **reference** after CCP pass (no fabricated explorer hash) |
+| Passport / maintenance / parts     | **DEMO**           | Clearly labelled demo machine metadata                                |
 
 ---
 
 ## Demo (≤ 2 minutes)
 
-1. **Hero / Inspect** — interactive 3D Machine Asset Core (not stock footage).  
-2. **Passport** — ABB IRB 6700 demo identity.  
-3. **Issue Machine Asset** — issuer CVI → CVA bind → CCP → **RWA ISSUED**.  
-4. **Transfer → Unknown Wallet** — CVI/CCP fail → **TRANSFER BLOCKED**.  
+1. **Hero / Inspect** — interactive 3D Machine Asset Core (not stock footage).
+2. **Passport** — ABB IRB 6700 demo identity.
+3. **Issue Machine Asset** — issuer CVI → CVA bind → CCP → **RWA ISSUED**.
+4. **Transfer → Unknown Wallet** — CVI/CCP fail → **TRANSFER BLOCKED**.
 5. **Transfer → Equipment Fund B** — CVI + CVA + CCP pass → ownership + audit update.
 
 Use the in-app **Guided demo · 2 min** control (bottom-right).
@@ -110,14 +112,14 @@ npm run build && npm run preview
 
 ### Environment variables (server only)
 
-| Variable | Purpose |
-|---|---|
-| `CLEANVERSE_API_URL` | Default sandbox cooperate base |
-| `CLEANVERSE_SANDBOX_API_ID` | `api-id` header |
+| Variable                     | Purpose                                     |
+| ---------------------------- | ------------------------------------------- |
+| `CLEANVERSE_API_URL`         | Default sandbox cooperate base              |
+| `CLEANVERSE_SANDBOX_API_ID`  | `api-id` header                             |
 | `CLEANVERSE_SANDBOX_API_KEY` | Local AES key — **never sent, never VITE_** |
-| `CLEANVERSE_CHAIN` | `monad` |
-| `CLEANVERSE_ORIGIN_SYMBOL` | Origin filter for deposit list (`usdc`) |
-| `CLEANVERSE_ATOKEN_SYMBOL` | Preferred A-Token (`ausdc`) |
+| `CLEANVERSE_CHAIN`           | `monad`                                     |
+| `CLEANVERSE_ORIGIN_SYMBOL`   | Origin filter for deposit list (`usdc`)     |
+| `CLEANVERSE_ATOKEN_SYMBOL`   | Preferred A-Token (`ausdc`)                 |
 
 Without credentials the adapter runs labelled **DEMO** local CCP — never disguised as live Cleanverse.
 
@@ -125,9 +127,9 @@ Without credentials the adapter runs labelled **DEMO** local CCP — never disgu
 
 ## Tech
 
-- TanStack Start / React 19 / TypeScript  
-- React Three Fiber + drei (lazy WebGL, mobile-aware)  
-- Motion + Lenis  
+- TanStack Start / React 19 / TypeScript
+- React Three Fiber + drei (lazy WebGL, mobile-aware)
+- Motion + Lenis
 - Cleanverse Cooperate API v5.6 (server functions)
 
 ---

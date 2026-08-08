@@ -75,8 +75,8 @@ export function DemoPath() {
   };
 
   return (
-    <div className="pointer-events-none fixed bottom-5 right-5 z-40 hidden md:block">
-      <div className="pointer-events-auto w-[280px] border border-border bg-background/85 backdrop-blur-md">
+    <div className="pointer-events-none fixed bottom-4 right-4 z-40 sm:bottom-5 sm:right-5">
+      <div className="pointer-events-auto w-[min(300px,calc(100vw-2rem))] border border-border bg-background/85 backdrop-blur-md">
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
@@ -84,7 +84,7 @@ export function DemoPath() {
           className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
         >
           <span className="mt-mono text-[10px] uppercase tracking-[0.2em] text-primary">
-            Guided demo · 2 min
+            Guided demo · Track 1 · 2 min
           </span>
           <span className="mt-mono text-[11px] text-muted-foreground">{open ? "−" : "+"}</span>
         </button>

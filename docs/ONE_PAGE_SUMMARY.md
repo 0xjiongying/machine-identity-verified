@@ -38,10 +38,10 @@ Machine Trust creates a **Machine Passport** for a physical machine and connects
 
 ## DEPLOYED CHAINS
 
-| Layer | Status |
-|---|---|
-| Cleanverse Sandbox (Monad chain param) | **REAL** API calls |
-| Monad settlement | **Demo settlement reference** after CCP approval (no fabricated tx hash; custody write when contract is deployed) |
+| Layer                                  | Status                                                                                                            |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Cleanverse Sandbox (Monad chain param) | **REAL** API calls                                                                                                |
+| Monad settlement                       | **Demo settlement reference** after CCP approval (no fabricated tx hash; custody write when contract is deployed) |
 
 ## CORE FLOW
 
@@ -52,17 +52,19 @@ Machine → Passport → CVI → CVA → Compliance → RWA
 
 ## DEMO (≤ 2 min)
 
-1. Explore Machine Passport (ABB IRB 6700 — demo metadata)  
-2. Issue Machine Asset (issuer CVI → CVA bind → CCP → RWA ISSUED)  
-3. Transfer to Unknown Wallet → **BLOCKED**  
-4. Transfer to Equipment Fund B → **APPROVED** → ownership + audit update  
+1. Explore Machine Passport (ABB IRB 6700 — demo metadata)
+2. Issue Machine Asset (issuer CVI → CVA bind → CCP → RWA ISSUED)
+3. Transfer to Unknown Wallet → **BLOCKED**
+4. Transfer to Equipment Fund B → **APPROVED** → ownership + audit update
 
 ## HONESTY LABELS
 
-| REAL | SANDBOX | DEMO ONLY | ROADMAP |
-|---|---|---|---|
+| REAL                                   | SANDBOX                | DEMO ONLY                                           | ROADMAP                                                     |
+| -------------------------------------- | ---------------------- | --------------------------------------------------- | ----------------------------------------------------------- |
 | CVI/CVA/CCP API calls with credentials | UAT Cooperate API v5.6 | Passport/maintenance metadata; Monad settlement ref | Custom A-Token ISSUED; validator pool CCP; custody contract |
 
-**Live demo:** _add deployed URL_  
-**Demo video:** _add link_  
-**Repo:** https://github.com/0xjiongying/machine-identity-verified  
+**Live demo:** _add deployed URL (Lovable / Vercel / Cloudflare Workers)_  
+**Demo video:** _add 2–4 min link — see docs/DEMO_SCRIPT.md_  
+**Repo:** https://github.com/0xjiongying/machine-identity-verified
+
+> **Submission blocker:** GitHub currently reports the repository as **private**. Hackathon rules require a **public** repo — flip visibility in GitHub Settings before submit.
