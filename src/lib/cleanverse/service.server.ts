@@ -97,7 +97,7 @@ async function cviRule(
   who: string,
   code: string,
   address: string,
-): Promise<{ rule: RuleResult; ref: string | null }> {
+): Promise<{ rule: RuleResult; ref: string | null; unregistered: boolean }> {
   const env = await queryApass(cfg, address);
   const record = env.data ?? {};
   const active = env.code === "0000" && !!record.cvRecordId;
@@ -108,17 +108,23 @@ async function cviRule(
   ]
     .filter(Boolean)
     .join(" · ");
+  // "apass not found" is not an outage and not a policy denial: the sandbox
+  // registry simply has no record for this demo wallet yet.
+  const unregistered = !active && /not found|not exist/i.test(env.message ?? "");
   return {
     ref: record.cvRecordId ?? null,
+    unregistered,
     rule: {
       code: `${code}.apass`,
       label: `${who} A-Pass`,
       requirement: "Cleanverse must return an active A-Pass for this wallet",
       observed: `${address.slice(0, 10)}… ${detail || env.message}`,
-      status: active ? "pass" : "fail",
+      status: active ? "pass" : unregistered ? "skipped" : "fail",
       reason: active
-        ? "Requirement satisfied — A-Pass resolved from the Cleanverse registry."
-        : `Cleanverse returned no active A-Pass (${env.code}: ${env.message}).`,
+        ? "Requirement satisfied — A-Pass resolved from the live Cleanverse registry."
+        : unregistered
+          ? "Live sandbox registry holds no A-Pass for this demo wallet — the CVI verdict falls through to the Machine Trust policy mirror below."
+          : `Cleanverse returned no active A-Pass (${env.code}: ${env.message}).`,
       source: "CVI",
     },
   };
@@ -131,6 +137,7 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
   const now = new Date();
   const rules: RuleResult[] = [];
   const refs: Record<string, string | null> = {};
+  let unregistered = false;
 
   // 1 — CVI / A-Pass for every party in the transaction.
   const parties = [
@@ -145,9 +152,10 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
   ];
   for (const p of parties) {
     try {
-      const { rule, ref } = await cviRule(cfg, p.who, p.code, p.address);
-      refs[p.code] = ref;
-      rules.push(rule);
+      const res = await cviRule(cfg, p.who, p.code, p.address);
+      refs[p.code] = res.ref;
+      unregistered = unregistered || res.unregistered;
+      rules.push(res.rule);
     } catch (error) {
       return failClosed(input, "CVI", errText(error));
     }
@@ -193,6 +201,28 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
     }
   } catch (error) {
     return failClosed(input, "CVA", errText(error));
+  }
+
+  // 3a — Mirror mode. The live sandbox has real A-Pass/A-Token/CCP endpoints,
+  //      but the demo wallets are not onboarded in it. Rather than invent a
+  //      response, we keep the live evidence above and hand the verdict to the
+  //      identical Machine Trust policy mirror, clearly labelled as such.
+  if (unregistered) {
+    const mirrored = evaluateCcp(input);
+    return {
+      ...mirrored,
+      mode: "live",
+      rules: [...rules, ...mirrored.rules],
+      trace: {
+        ...mirrored.trace,
+        cva: {
+          tokenRef: atokenAddress ? `cva:atoken/${atokenAddress}` : mirrored.trace.cva.tokenRef,
+          tokenId: mirrored.trace.cva.tokenId,
+        },
+      },
+      notice:
+        "Live Cleanverse sandbox reached (CVI registry + CVA A-Token registry queried). Demo wallets are not onboarded in the sandbox, so the pre-transaction verdict is produced by the Machine Trust CCP policy mirror.",
+    };
   }
 
   // 3 — CCP pre-transaction decision: verify_apass per party against the A-Token.
