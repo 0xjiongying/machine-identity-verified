@@ -35,7 +35,7 @@ function waitFor(event: string, timeoutMs: number) {
 }
 
 /**
- * Silent-video-friendly guided demo (Track 1 RWA, ~3.5–4 min).
+ * Silent-video-friendly guided demo (Track 1 RWA, 2–4 min).
  * Captions + waits make the story readable without narration.
  */
 export function DemoPath() {
@@ -192,7 +192,7 @@ export function DemoPath() {
           className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
         >
           <span className="mt-mono text-[10px] uppercase tracking-[0.2em] text-primary">
-            Guided demo · Track 1 · 4 min
+            Guided demo · Track 1 · 2–4 min
           </span>
           <span className="mt-mono text-[11px] text-muted-foreground">{open ? "−" : "+"}</span>
         </button>

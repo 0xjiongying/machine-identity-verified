@@ -125,7 +125,7 @@ export function MachineTwin({ phase = 0, explode = 0, bare = false }: TwinProps)
                   exit={{ opacity: 0 }}
                   className="mt-mono text-[9px] tracking-[0.22em] text-muted-foreground uppercase"
                 >
-                  {fine ? "Drag to inspect the machine asset core" : "Tap to inspect the machine asset core"}
+                  {fine ? "Drag to inspect" : "Tap to inspect"}
                 </motion.span>
               )}
             </AnimatePresence>

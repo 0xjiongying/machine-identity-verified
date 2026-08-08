@@ -114,8 +114,17 @@ export const moduleParts: ModulePart[] = [
   },
 ];
 
-/** The RWA story the core physically transforms through. */
-export type StageId = "scan" | "passport" | "cvi" | "cva" | "ccp" | "ready";
+/** Signature motion sequence mapped onto the RWA story. */
+export type StageId =
+  | "compact"
+  | "wake"
+  | "unfold"
+  | "assemble"
+  | "scan"
+  | "inspect"
+  | "verify"
+  | "tokenize"
+  | "ready";
 
 export type Stage = {
   id: StageId;
@@ -130,47 +139,68 @@ export type Stage = {
 
 export const verifySteps: Stage[] = [
   {
-    id: "scan",
-    label: "Scan",
+    id: "compact",
+    label: "Compact / coiled",
     owner: "Machine Trust",
-    detail: "Core wakes, reads every module serial and hashes the physical state.",
+    detail: "Physical machine at rest — coiled asset core before wake.",
     target: "core",
   },
   {
-    id: "passport",
-    label: "Machine Passport",
+    id: "wake",
+    label: "Wake",
     owner: "Machine Trust",
-    detail: "Serials, provenance and maintenance are bound into one passport record.",
+    detail: "Core powers on and addresses every module serial.",
+    target: "core",
+  },
+  {
+    id: "unfold",
+    label: "Unfold",
+    owner: "Machine Trust",
+    detail: "Motor, controller, arm and safety modules deploy for inspection.",
+    target: "core",
+  },
+  {
+    id: "assemble",
+    label: "Assemble",
+    owner: "Machine Trust",
+    detail: "Modules lock into one machine form — ready for passport binding.",
     target: "passport",
   },
   {
-    id: "cvi",
-    label: "CVI · A-Pass verified",
+    id: "scan",
+    label: "Scan",
+    owner: "Machine Trust",
+    detail: "Wireframe scan hashes physical state into the Machine Passport.",
+    target: "passport",
+  },
+  {
+    id: "inspect",
+    label: "Inspect",
+    owner: "Machine Trust",
+    detail: "Hotspots: Motor · Controller · Arm · Safety System.",
+    target: "passport",
+  },
+  {
+    id: "verify",
+    label: "Verify · CVI",
     owner: "Cleanverse",
     detail: "Issuer identity resolved against the Cleanverse A-Pass registry.",
     target: "cvi",
   },
   {
-    id: "cva",
-    label: "CVA · A-Token issued",
+    id: "tokenize",
+    label: "Tokenize · CVA",
     owner: "Cleanverse",
-    detail: "Passport is bound to an A-Token — the compliant asset representation.",
+    detail: "Passport bound to a registered A-Token — the compliant asset layer.",
     target: "cva",
   },
   {
-    id: "ccp",
-    label: "CCP approved",
-    owner: "Cleanverse",
-    detail: "Pre-transaction rules evaluated: jurisdiction, tier, transferability.",
-    target: "ccp",
-  },
-  {
     id: "ready",
-    label: "Machine RWA ready",
+    label: "Ready for transfer",
     owner: "Monad",
     detail:
-      "Demo sequence: settlement reference recorded after CCP. Not a fabricated explorer hash.",
-    target: "core",
+      "CCP cleared. Demo settlement reference after approval — not a fabricated explorer hash.",
+    target: "ccp",
   },
 ];
 
@@ -188,40 +218,40 @@ export const dataCards: Instrument[] = [
   {
     key: "passport",
     label: "Machine Passport",
-    at: 1,
+    at: 3,
     pending: { value: "Not built", state: "Awaiting scan" },
     live: { value: "MT-2048 (demo)", state: "4 modules bound" },
   },
   {
     key: "cvi",
     label: "CVI · A-Pass",
-    at: 2,
+    at: 6,
     pending: { value: "Unresolved", state: "Issuer unknown" },
     live: { value: "A-Pass · demo sequence", state: "Illustrative" },
   },
   {
     key: "cva",
     label: "CVA · A-Token",
-    at: 3,
-    pending: { value: "Not minted", state: "Blocked" },
-    live: { value: "aMT-2048 (demo sequence)", state: "Illustrative" },
+    at: 7,
+    pending: { value: "Not bound", state: "Blocked" },
+    live: { value: "aUSDC bind (demo sequence)", state: "Illustrative" },
   },
   {
     key: "ccp",
     label: "CCP pre-transaction",
-    at: 4,
+    at: 8,
     pending: { value: "Not evaluated", state: "Pending" },
     live: { value: "Demo sequence", state: "Illustrative" },
   },
 ];
 
 export const onChain = {
-  title: "Demo sequence complete",
+  title: "Ready for transfer",
   id: "MT-2048 (demo)",
-  network: "Monad · demo network",
-  contract: "MachinePassport.sol (illustrative)",
-  address: "0x8F…A42C (demo)",
-  records: "47 demo records (illustrative)",
+  network: "Monad · settlement ref (DEMO)",
+  contract: "MachineTrustRegistry.sol · NOT DEPLOYED",
+  address: "Deploy Testnet before claiming Mainnet",
+  records: "Passport events · DEMO metadata",
 } as const;
 
 /** Identity revealed when the controller module is selected. DEMO DATA. */

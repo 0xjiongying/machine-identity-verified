@@ -13,13 +13,17 @@ const rise = (delay: number) => ({
   transition: { duration: 0.9, delay, ease: EASE.expoOut },
 });
 
-/** The five continuous states of the hero transformation. */
+/** Signature motion: physical machine → trusted programmable asset. */
 const STAGES = [
-  { at: 0.0, key: "physical", label: "Physical machine", note: "Serial IRB6700-92831" },
-  { at: 0.2, key: "wireframe", label: "Technical scan", note: "Geometry → wireframe" },
-  { at: 0.4, key: "metadata", label: "Machine metadata", note: "Identity record forming" },
-  { at: 0.6, key: "components", label: "Component identity", note: "Chip · board · enclosure" },
-  { at: 0.8, key: "asset", label: "Ready for RWA", note: "CVI · CVA · CCP" },
+  { at: 0.0, key: "compact", label: "Compact / coiled", note: "Physical machine at rest" },
+  { at: 0.12, key: "wake", label: "Wake", note: "Core powers on" },
+  { at: 0.24, key: "unfold", label: "Unfold", note: "Modules deploy" },
+  { at: 0.36, key: "assemble", label: "Assemble", note: "Asset form locks" },
+  { at: 0.48, key: "scan", label: "Scan", note: "Wireframe · serials" },
+  { at: 0.6, key: "inspect", label: "Inspect", note: "Motor · Controller · Arm · Safety" },
+  { at: 0.72, key: "verify", label: "Verify", note: "CVI · A-Pass" },
+  { at: 0.84, key: "tokenize", label: "Tokenize", note: "CVA · A-Token bind" },
+  { at: 0.92, key: "ready", label: "Ready for transfer", note: "CCP cleared · Monad next" },
 ] as const;
 
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
@@ -83,8 +87,11 @@ export function Hero() {
             <div style={{ opacity: 1 - introOut }}>
               <motion.div {...rise(0.15)} className="mb-6 flex flex-wrap items-center gap-3">
                 <span className="mt-mono inline-flex items-center gap-1.5 border border-border px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  Interactive Machine Asset
+                </span>
+                <span className="mt-mono inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                   <CleanverseMark className="size-3 text-foreground" />
-                  Track 1 RWA · Cleanverse
+                  Cleanverse Track 1
                 </span>
                 <DemoTag />
               </motion.div>
@@ -131,19 +138,12 @@ export function Hero() {
                 {...rise(0.56)}
                 className="mt-6 max-w-[42ch] text-[15px] leading-relaxed text-muted-foreground"
               >
-                Turn physical machines into verified, programmable RWAs — Machine Passport, then
-                Cleanverse CVI + CVA under CCP before value moves; Monad settles after approval.
+                Turn physical machines into verified, programmable assets.
               </motion.p>
 
               <motion.div {...rise(0.68)} className="mt-7 flex flex-wrap items-center gap-3">
-                <MagneticButton
-                  cursor="open"
-                  onClick={() => {
-                    window.history.replaceState({}, "", `${window.location.pathname}?demo=1`);
-                    window.dispatchEvent(new CustomEvent("mt:open-demo"));
-                  }}
-                >
-                  Start guided demo
+                <MagneticButton href="#inspect">
+                  Explore Machine
                   <span
                     aria-hidden="true"
                     className="transition-transform group-hover:translate-x-1"
@@ -151,10 +151,23 @@ export function Hero() {
                     →
                   </span>
                 </MagneticButton>
-                <MagneticButton href="#inspect" variant="outline">
-                  Explore Machine
+                <MagneticButton
+                  cursor="open"
+                  variant="outline"
+                  onClick={() => {
+                    window.history.replaceState({}, "", `${window.location.pathname}?demo=1`);
+                    window.dispatchEvent(new CustomEvent("mt:open-demo"));
+                  }}
+                >
+                  Guided demo
                 </MagneticButton>
               </motion.div>
+              <motion.p
+                {...rise(0.78)}
+                className="mt-mono mt-4 text-[10px] uppercase tracking-[0.22em] text-muted-foreground"
+              >
+                Drag to inspect
+              </motion.p>
             </div>
           </div>
 

@@ -13,7 +13,7 @@ const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
 export type TrustSceneProps = {
   /** 0..1 scroll position of the hero band. */
   progress: number;
-  /** Index into verifySteps (0..5). */
+  /** Index into verifySteps (0..n-1). */
   step: number;
   hovered: ModuleKey | null;
   selected: ModuleKey | null;
@@ -411,7 +411,7 @@ function Spine({ step }: { step: number }) {
     const m = core.current.material as THREE.MeshStandardMaterial;
     m.emissiveIntensity = damp(
       m.emissiveIntensity,
-      0.25 + Math.min(1, step / 5) * 1.4 + Math.sin(s.clock.elapsedTime * 2) * 0.08,
+      0.25 + Math.min(1, step / 8) * 1.4 + Math.sin(s.clock.elapsedTime * 2) * 0.08,
       4,
       dt,
     );
@@ -636,14 +636,23 @@ function Rig({
     node.position.y = damp(node.position.y, -0.5 + Math.sin(s.clock.elapsedTime * 0.6) * 0.02, 3, dt);
   });
 
-  const stageTarget = ["core", "passport", "cvi", "cva", "ccp", "core"][
-    Math.min(5, Math.max(0, step))
-  ];
+  // compact→wake→unfold→assemble→scan→inspect→verify→tokenize→ready
+  const stageTarget = [
+    "core",
+    "core",
+    "core",
+    "passport",
+    "passport",
+    "passport",
+    "cvi",
+    "cva",
+    "ccp",
+  ][Math.min(8, Math.max(0, step))];
   const laserTarget = selected
     ? PART_POS[selected]
     : (CARD_POS[stageTarget ?? "core"] ?? CARD_POS["core"]!);
 
-  const cycle = clamp01(step / 5);
+  const cycle = clamp01(step / 8);
 
   return (
     <group ref={root} scale={scale ?? 0.56} position={[offsetX ?? 0, 0, 0]}>
@@ -673,7 +682,7 @@ function Rig({
         </mesh>
       ))}
       <Markings />
-      <Cage on={wireframe ? 1 : clamp01(step / 5)} />
+      <Cage on={wireframe ? 1 : clamp01(step / 8)} />
       <Spine step={step} />
 
       {(Object.keys(SEAT) as ModuleKey[]).map((k, i) => (

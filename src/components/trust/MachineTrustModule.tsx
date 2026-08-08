@@ -16,8 +16,8 @@ import { play } from "@/lib/sound";
 
 const TrustModuleScene = lazy(() => import("./TrustModuleScene"));
 
-/** Scroll thresholds for each verification step. */
-const STEP_AT = [0, 0.16, 0.34, 0.5, 0.66, 0.82];
+/** Scroll thresholds for the signature COMPACT → READY sequence. */
+const STEP_AT = [0, 0.1, 0.2, 0.32, 0.44, 0.55, 0.66, 0.78, 0.9];
 
 const CARD_SIDE: Record<string, "left" | "right"> = {
   passport: "left",
@@ -91,7 +91,7 @@ export function MachineTrustModule() {
               <TrustModuleScene
                 hideCards
                 progress={reduced ? 0.85 : p}
-                step={reduced ? 5 : step}
+                step={reduced ? verifySteps.length - 1 : step}
                 tier={tier}
                 coarse={!fine}
                 reducedMotion={reduced}

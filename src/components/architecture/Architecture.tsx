@@ -172,10 +172,9 @@ export function Architecture() {
           <Eyebrow index="11">Architecture</Eyebrow>
           <Heading>One path. Two outcomes.</Heading>
           <Lede>
-            Machine Trust asks what the machine is. Cleanverse Trust Framework interlocking CVI,
-            CVA and Programmed Governance (CCP) asks who may act — and whether value may move —
-            before issuance, transfer or settlement. Monad executes only after approval; ownership
-            and the audit trail follow.
+            Passport → CVI → CVA → CCP → BLOCK | APPROVE → Monad → Ownership → Audit. Machine Trust
+            asks what the machine is. Cleanverse interlocking CVI, CVA and Programmed Governance
+            asks who may act — before value moves. Monad executes only after approval.
           </Lede>
         </Reveal>
 
