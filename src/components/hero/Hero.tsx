@@ -78,7 +78,7 @@ export function Hero() {
 
         <Shell className="relative flex h-full flex-col justify-center">
           {/* headline choreography: one line replaces the other in the same slot */}
-          <div className="relative max-w-[min(560px,90vw)]">
+          <div className="relative w-full" style={{ maxWidth: "min(560px, 90vw)" }}>
             <motion.div
               {...rise(0.15)}
               className="mb-8 flex flex-wrap items-center gap-3"
