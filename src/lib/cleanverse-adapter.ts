@@ -24,9 +24,9 @@ export { atokenIdFor, unissuedToken };
 
 export async function requestEvaluation(input: PolicyInput): Promise<Evaluation> {
   try {
-    // Never let a stalled transport freeze the demo: fall back after 2.5s.
+    // Never let a stalled transport freeze the demo: fall back after 9s.
     const timeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("cleanverse: transport timeout")), 2500),
+      setTimeout(() => reject(new Error("cleanverse: transport timeout")), 9000),
     );
     const evaluation = (await Promise.race([
       evaluateCompliance({ data: input }),
