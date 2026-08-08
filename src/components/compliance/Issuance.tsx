@@ -1,23 +1,26 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Section, Shell, Eyebrow, Heading, Lede, Reveal, DemoTag } from "@/components/primitives";
 import { demoMachine } from "@/data/demoMachine";
 import {
   previewEvaluation,
   requestEvaluation,
+  type Evaluation,
   type RuleResult,
 } from "@/lib/cleanverse-adapter";
 import { useCleanverse } from "@/lib/cleanverse-state";
 import { useAssetState } from "@/lib/asset-state";
 import { CheckSequence, type SequenceState } from "./CheckSequence";
+import { TraceStrip } from "./TraceStrip";
 
 export function Issuance() {
-  const { issuer: issuerCredential, asset, mode, recordDecision } = useCleanverse();
+  const { issuer: issuerCredential, asset, aToken, mode, recordDecision, setAToken } =
+    useCleanverse();
   const { markIssued } = useAssetState();
   const [state, setState] = useState<SequenceState>("idle");
   const [checks, setChecks] = useState<RuleResult[]>([]);
   const [revealed, setRevealed] = useState(0);
-  const [txRef, setTxRef] = useState<string | null>(null);
+  const [result, setResult] = useState<Evaluation | null>(null);
 
   const preview = previewEvaluation({
     kind: "issuance",
@@ -30,7 +33,7 @@ export function Issuance() {
     if (state === "running") return;
     setState("running");
     setRevealed(0);
-    setTxRef(null);
+    setResult(null);
     const result = await requestEvaluation({
       kind: "issuance",
       sender: issuerCredential,
@@ -46,11 +49,26 @@ export function Issuance() {
         break;
       }
     }
-    setTxRef(result.settlement?.txRef ?? null);
+    setResult(result);
+    if (result.aToken) setAToken(result.aToken);
     recordDecision(result);
-    if (result.approved) markIssued();
+    if (result.approved) {
+      markIssued({
+        tokenId: result.aToken?.tokenId ?? "—",
+        txRef: result.settlement?.txRef ?? "0x",
+      });
+    }
     setState("done");
   }
+
+  // The guided demo runner can trigger issuance without touching internals.
+  useEffect(() => {
+    function onDemo() {
+      void run();
+    }
+    window.addEventListener("mt:issuance", onDemo);
+    return () => window.removeEventListener("mt:issuance", onDemo);
+  });
 
   return (
     <Section id="issuance" label="RWA issuance" className="scroll-mt-16">
@@ -90,7 +108,8 @@ export function Issuance() {
               <div className="flex items-center justify-between gap-4">
                 <p className="mt-mono text-[11px] uppercase tracking-[0.16em]">Issuance sequence</p>
                 <span className="mt-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                  {state === "idle" ? "Ready" : state === "running" ? "Verifying" : "Issued"}
+                  {state === "idle" ? "Ready" : state === "running" ? "Verifying" : "Complete"} ·{" "}
+                  {mode}
                 </span>
               </div>
 
@@ -111,6 +130,23 @@ export function Issuance() {
                 </div>
               </div>
 
+              <div className="mt-px grid grid-cols-1 gap-px bg-border">
+                <div className="bg-background px-4 py-4">
+                  <p className="mt-label">A-Token · CVA</p>
+                  <p className="mt-mono mt-1.5 break-all text-[12px]">
+                    {aToken.tokenId}
+                  </p>
+                  <p
+                    className={`mt-mono mt-1 text-[11px] uppercase tracking-[0.18em] ${
+                      aToken.status === "unissued" ? "text-muted-foreground" : "text-success"
+                    }`}
+                  >
+                    {aToken.status}
+                    {aToken.mintedAt ? ` · minted ${aToken.mintedAt.slice(0, 16).replace("T", " ")}` : ""}
+                  </p>
+                </div>
+              </div>
+
               <div className="mt-7">
                 <CheckSequence
                   checks={checks.length ? checks : preview}
@@ -120,20 +156,35 @@ export function Issuance() {
               </div>
 
               <AnimatePresence>
-                {state === "done" && txRef ? (
+                {state === "done" && result ? (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                    className="mt-6 border border-primary/50 bg-primary/10 px-4 py-4"
+                    className="mt-6"
                   >
-                    <p className="mt-mono text-[11px] uppercase tracking-[0.18em] text-primary">
-                      Machine asset issued
-                    </p>
-                    <p className="mt-mono mt-2 text-[12px] text-muted-foreground">
-                      {txRef} · simulated settlement · policy MT-POLICY-ISSUANCE-v1 · mode {mode}
-                    </p>
+                    <div
+                      className={
+                        result.approved
+                          ? "border border-primary/50 bg-primary/10 px-4 py-4"
+                          : "border border-destructive/60 px-4 py-4"
+                      }
+                    >
+                      <p
+                        className={`mt-mono text-[11px] uppercase tracking-[0.18em] ${
+                          result.approved ? "text-primary" : "text-destructive"
+                        }`}
+                      >
+                        {result.approved ? "A-Token issued" : "Issuance rejected"}
+                      </p>
+                      <p className="mt-mono mt-2 text-[12px] text-muted-foreground">
+                        {result.approved
+                          ? `${result.settlement?.txRef} · Monad settlement`
+                          : `Blocked at ${result.blockedBy} — nothing was minted and nothing reached the chain.`}
+                      </p>
+                    </div>
+                    <TraceStrip result={result} className="mt-4" />
                   </motion.div>
                 ) : null}
               </AnimatePresence>

@@ -53,7 +53,7 @@ export function AuditTrail() {
                       time: e.timestamp,
                       entity: "Machine Trust",
                       action: e.label,
-                      verification: "CVI + POLICY",
+                      verification: "CVI · CVA · CCP",
                       tx: e.hash,
                     })),
                 ].map((e, i) => (

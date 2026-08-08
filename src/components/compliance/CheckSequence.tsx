@@ -7,7 +7,7 @@ export type SequenceState = "idle" | "running" | "done";
 const SOURCE_TONE: Record<RuleResult["source"], string> = {
   CVI: "text-primary",
   CVA: "text-primary",
-  POLICY: "text-foreground",
+  CCP: "text-foreground",
   MONAD: "text-muted-foreground",
 };
 

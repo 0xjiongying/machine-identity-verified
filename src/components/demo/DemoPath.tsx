@@ -36,7 +36,13 @@ export function DemoPath() {
       target: "credentials",
       say: "Cleanverse verifies party and asset.",
     },
-    { n: "04", label: "Issue asset", target: "issuance", say: "Issuance runs the policy first." },
+    {
+      n: "04",
+      label: "Mint A-Token",
+      target: "issuance",
+      say: "Issuer A-Pass → A-Token mint → CCP → Monad.",
+      action: () => window.dispatchEvent(new CustomEvent("mt:issuance")),
+    },
     {
       n: "05",
       label: "Transfer blocked",

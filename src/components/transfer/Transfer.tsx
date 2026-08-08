@@ -19,6 +19,7 @@ import {
 } from "@/lib/cleanverse-adapter";
 import { useCleanverse } from "@/lib/cleanverse-state";
 import { CheckSequence, type SequenceState } from "@/components/compliance/CheckSequence";
+import { TraceStrip } from "@/components/compliance/TraceStrip";
 import { MagneticButton } from "@/components/motion/MagneticButton";
 import { HashReveal } from "@/components/motion/HashReveal";
 import { EASE } from "@/lib/motion";
@@ -28,7 +29,14 @@ import { play } from "@/lib/sound";
 
 export function Transfer() {
   const { owner, settleTransfer } = useAssetState();
-  const { issuer: senderCredential, counterparties, asset, mode, recordDecision } = useCleanverse();
+  const {
+    issuer: senderCredential,
+    counterparties,
+    asset,
+    aToken,
+    mode,
+    recordDecision,
+  } = useCleanverse();
   const [selected, setSelected] = useState<string | null>(null);
   const [state, setState] = useState<SequenceState>("idle");
   const [checks, setChecks] = useState<RuleResult[]>([]);
@@ -42,6 +50,7 @@ export function Transfer() {
         sender: senderCredential,
         recipient,
         asset,
+        aToken,
       }).rules
     : [];
 
@@ -62,6 +71,7 @@ export function Transfer() {
       sender: senderCredential,
       recipient,
       asset,
+      aToken,
     });
     setChecks(evaluation.rules);
     for (let i = 1; i <= evaluation.rules.length; i++) {
@@ -140,6 +150,15 @@ export function Transfer() {
                   {asset.status} · {asset.attestations.filter((a) => a.status === "valid").length}/
                   {asset.attestations.length} attestations valid
                 </p>
+                <p
+                  className={cn(
+                    "mt-mono mt-2 flex items-center gap-2 break-all text-[11px] uppercase tracking-[0.16em]",
+                    aToken.status === "unissued" ? "text-destructive" : "text-success",
+                  )}
+                >
+                  <StatusDot tone={aToken.status === "unissued" ? "fail" : "ok"} /> A-Token ·{" "}
+                  {aToken.status === "unissued" ? "not minted — run issuance first" : aToken.tokenId}
+                </p>
               </div>
               <div className="px-5 py-4">
                 <p className="mt-label">Select recipient</p>
@@ -208,7 +227,7 @@ export function Transfer() {
                   )}
                 </MagneticButton>
                 <p className="mt-mono mt-3 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                  Policy MT-POLICY-TRANSFER-v1 · evaluated server-side · mode {mode}
+                  CVI → CVA → CCP → Monad · evaluated server-side · mode {mode}
                 </p>
                 <DemoTag className="mt-3" />
               </div>
@@ -284,8 +303,9 @@ export function Transfer() {
                               value={result.settlement?.txRef ?? ""}
                               className="text-primary"
                             />{" "}
-                            · simulated settlement reference · {result.decisionId}
+                            · Monad settlement · {result.decisionId}
                           </p>
+                          <TraceStrip result={result} className="mt-5 bg-background" />
                         </motion.div>
                       ) : (
                         <motion.div
@@ -309,6 +329,7 @@ export function Transfer() {
                             Nothing was submitted to Monad. Ownership is unchanged and the decision
                             is recorded as {result.decisionId}.
                           </p>
+                          <TraceStrip result={result} className="mt-5" />
                         </motion.div>
                       )
                     ) : null}
