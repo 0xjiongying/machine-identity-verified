@@ -8,6 +8,12 @@ export type RegionKey = "controller" | "motor" | "arm" | "safety";
 type Props = {
   /** 0 → physical machine, 1 → fully dematerialised digital asset. */
   phase: number;
+  /** 0 → assembled, 1 → components separated for inspection. */
+  explode?: number;
+  /** 0..1 vertical position of the inspection beam, or null for the idle sweep. */
+  beam?: number | null;
+  /** Reduce cost on weaker devices. */
+  tier?: "high" | "reduced";
   hovered: RegionKey | null;
   selected: RegionKey | null;
   onHover: (k: RegionKey | null) => void;
@@ -19,7 +25,7 @@ const ACCENT = "#836ef9";
 function Metal({ dim, emissive = 0 }: { dim: boolean; emissive?: number }) {
   return (
     <meshStandardMaterial
-      color={dim ? "#191a1e" : "#33363d"}
+      color={dim ? "#22242a" : "#464a54"}
       metalness={0.85}
       roughness={0.3}
       emissive={new THREE.Color(ACCENT)}
@@ -35,6 +41,8 @@ function Region({
   hovered,
   selected,
   phase,
+  explode = 0,
+  offset = [0, 0, 0],
   onHover,
   onSelect,
 }: {
@@ -43,6 +51,8 @@ function Region({
   hovered: RegionKey | null;
   selected: RegionKey | null;
   phase: number;
+  explode?: number;
+  offset?: [number, number, number];
   onHover: (k: RegionKey | null) => void;
   onSelect: (k: RegionKey | null) => void;
 }) {
@@ -56,6 +66,10 @@ function Region({
     const target = active ? 1.035 : 1;
     const s = damp(g.scale.x, target, 8, dt);
     g.scale.setScalar(s);
+    // Components separate along their own axis — assembly, never explosion.
+    g.position.x = damp(g.position.x, offset[0] * explode, 3.2, dt);
+    g.position.y = damp(g.position.y, offset[1] * explode, 3.2, dt);
+    g.position.z = damp(g.position.z, offset[2] * explode, 3.2, dt);
     g.traverse((o) => {
       const mesh = o as THREE.Mesh;
       const mat = mesh.material as THREE.MeshStandardMaterial | undefined;
@@ -90,7 +104,16 @@ function Region({
   );
 }
 
-function Machine({ phase, hovered, selected, onHover, onSelect }: Props) {
+function Machine({
+  phase,
+  hovered,
+  selected,
+  explode = 0,
+  beam = null,
+  tier = "high",
+  onHover,
+  onSelect,
+}: Props) {
   const root = useRef<THREE.Group>(null);
   const pointer = useRef({ x: 0, y: 0 });
   const { camera } = useThree();
@@ -106,10 +129,10 @@ function Machine({ phase, hovered, selected, onHover, onSelect }: Props) {
     const targetX = -pointer.current.y * 0.22;
     g.rotation.y = damp(g.rotation.y, targetY, 2.6, dt);
     g.rotation.x = damp(g.rotation.x, targetX, 2.6, dt);
-    g.position.y = damp(g.position.y, -1.25 + Math.sin(state.clock.elapsedTime * 0.6) * 0.02, 4, dt);
+    g.position.y = damp(g.position.y, -1.35 + Math.sin(state.clock.elapsedTime * 0.6) * 0.02, 4, dt);
 
     // Scroll pushes the camera back; selecting a part pulls it in.
-    const dist = selected ? 5.2 : 7.4 + phase * 1.6;
+    const dist = selected ? 5.2 : 7.6 - phase * 1.1 + Math.sin(phase * Math.PI) * 0.9;
     camera.position.z = damp(camera.position.z, dist, 2.4, dt);
     camera.position.y = damp(camera.position.y, 0.6 - pointer.current.y * 0.45, 2.4, dt);
     camera.lookAt(0, 0.15, 0);
@@ -118,13 +141,15 @@ function Machine({ phase, hovered, selected, onHover, onSelect }: Props) {
   const wire = useMemo(() => new THREE.Color(ACCENT), []);
 
   return (
-    <group ref={root} position={[-0.55, -1.25, 0]} scale={0.55}>
+    <group ref={root} position={[0, -1.25, 0]} scale={0.6}>
       {/* base + column: controller */}
       <Region
         id="controller"
         hovered={hovered}
         selected={selected}
         phase={phase}
+        explode={explode}
+        offset={[0, -0.55, 0]}
         onHover={onHover}
         onSelect={onSelect}
       >
@@ -144,6 +169,8 @@ function Machine({ phase, hovered, selected, onHover, onSelect }: Props) {
         hovered={hovered}
         selected={selected}
         phase={phase}
+        explode={explode}
+        offset={[-0.5, 0.15, 0.35]}
         onHover={onHover}
         onSelect={onSelect}
       >
@@ -159,6 +186,8 @@ function Machine({ phase, hovered, selected, onHover, onSelect }: Props) {
         hovered={hovered}
         selected={selected}
         phase={phase}
+        explode={explode}
+        offset={[0.75, 0.75, -0.3]}
         onHover={onHover}
         onSelect={onSelect}
       >
@@ -182,6 +211,8 @@ function Machine({ phase, hovered, selected, onHover, onSelect }: Props) {
         hovered={hovered}
         selected={selected}
         phase={phase}
+        explode={explode}
+        offset={[0, -0.15, 0]}
         onHover={onHover}
         onSelect={onSelect}
       >
@@ -223,22 +254,25 @@ function Machine({ phase, hovered, selected, onHover, onSelect }: Props) {
         </mesh>
       </group>
 
-      <ScanPlane phase={phase} />
-      <DataPoints phase={phase} />
+      <ScanPlane phase={phase} beam={beam} />
+      <DataPoints phase={phase} tier={tier} />
     </group>
   );
 }
 
 /** Horizontal inspection beam sweeping the machine. */
-function ScanPlane({ phase }: { phase: number }) {
+function ScanPlane({ phase, beam }: { phase: number; beam: number | null }) {
   const ref = useRef<THREE.Mesh>(null);
-  useFrame((state) => {
+  useFrame((state, dt) => {
     const m = ref.current;
     if (!m) return;
-    const t = (state.clock.elapsedTime * 0.35) % 1;
-    m.position.y = t * 3.2;
+    // Scroll drives the beam during the scan window; otherwise it idles.
+    const t = beam === null ? (state.clock.elapsedTime * 0.35) % 1 : beam;
+    m.position.y = damp(m.position.y, t * 3.4, beam === null ? 40 : 9, dt);
     const mat = m.material as THREE.MeshBasicMaterial;
-    mat.opacity = (0.35 + phase * 0.35) * Math.sin(t * Math.PI);
+    const strength = beam === null ? 0.3 + phase * 0.3 : 0.85;
+    mat.opacity = damp(mat.opacity, strength * Math.sin(Math.min(1, Math.max(0, t)) * Math.PI), 8, dt);
+    m.scale.setScalar(damp(m.scale.x, 1 + (beam === null ? 0 : 0.35), 6, dt));
   });
   return (
     <mesh ref={ref} rotation={[-Math.PI / 2, 0, 0]}>
@@ -249,9 +283,9 @@ function ScanPlane({ phase }: { phase: number }) {
 }
 
 /** Metadata point cloud that converges as the machine becomes an asset. */
-function DataPoints({ phase }: { phase: number }) {
+function DataPoints({ phase, tier }: { phase: number; tier: "high" | "reduced" }) {
   const ref = useRef<THREE.Points>(null);
-  const count = 420;
+  const count = tier === "high" ? 520 : 180;
   const positions = useMemo(() => {
     const arr = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
@@ -262,7 +296,7 @@ function DataPoints({ phase }: { phase: number }) {
       arr[i * 3 + 2] = Math.sin(a) * r;
     }
     return arr;
-  }, []);
+  }, [count]);
 
   useFrame((state, dt) => {
     const p = ref.current;
@@ -285,7 +319,7 @@ function DataPoints({ phase }: { phase: number }) {
 }
 
 export default function MachineScene(props: Props) {
-  const [dpr, setDpr] = useState(1.5);
+  const [dpr, setDpr] = useState(props.tier === "reduced" ? 1 : 1.5);
   return (
     <Canvas
       dpr={dpr}
@@ -298,9 +332,10 @@ export default function MachineScene(props: Props) {
         if (typeof window !== "undefined" && window.innerWidth < 900) setDpr(1);
       }}
     >
-      <ambientLight intensity={0.35} />
-      <directionalLight position={[4, 7, 5]} intensity={2.1} color="#e6eaf2" />
-      <directionalLight position={[-5, 2, -4]} intensity={0.45} color={ACCENT} />
+      <ambientLight intensity={0.6} />
+      <directionalLight position={[4, 7, 5]} intensity={3.4} color="#e6eaf2" />
+      <directionalLight position={[2, 1.5, 6]} intensity={1.1} color="#cfd6e6" />
+      <directionalLight position={[-5, 2, -4]} intensity={1.2} color={ACCENT} />
       <Suspense fallback={null}>
         <Machine {...props} />
       </Suspense>
