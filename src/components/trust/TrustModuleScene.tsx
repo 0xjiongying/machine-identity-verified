@@ -765,15 +765,20 @@ function Rig({
 /* ---------------------------------------------------------------- canvas */
 
 export default function TrustModuleScene(props: TrustSceneProps) {
-  const { controlsRef, autoRotate, zoomEnabled, tier } = props;
+  const { controlsRef, autoRotate, zoomEnabled, tier, coarse, reducedMotion, paused } = props;
   const low = tier === "reduced";
+  // Touch devices get pinch-to-zoom by default; reduced motion renders on demand.
+  const zoom = zoomEnabled ?? Boolean(coarse);
+  const frameloop = paused ? "never" : reducedMotion ? "demand" : "always";
   return (
     <Canvas
       className="!absolute inset-0"
-      dpr={low ? [1, 1.3] : [1, 1.9]}
+      style={{ touchAction: "none" }}
+      frameloop={frameloop}
+      dpr={low ? [1, 1.25] : [1, 1.9]}
       shadows={!low}
       camera={{ position: [4.0, 2.6, 5.6], fov: 32 }}
-      gl={{ antialias: !low, alpha: true }}
+      gl={{ antialias: !low, alpha: true, powerPreference: "high-performance" }}
     >
       <color attach="background" args={["#07080b"]} />
       <ambientLight intensity={0.5} />
@@ -796,10 +801,14 @@ export default function TrustModuleScene(props: TrustSceneProps) {
         ref={controlsRef as never}
         makeDefault
         enablePan={false}
-        enableZoom={zoomEnabled ?? false}
+        enableZoom={zoom}
+        enableDamping
+        dampingFactor={coarse ? 0.12 : 0.08}
+        rotateSpeed={coarse ? 0.55 : 0.9}
+        zoomSpeed={coarse ? 0.5 : 0.8}
         minDistance={3.4}
         maxDistance={9}
-        autoRotate={autoRotate ?? false}
+        autoRotate={reducedMotion ? false : (autoRotate ?? false)}
         autoRotateSpeed={0.5}
         minPolarAngle={Math.PI / 5}
         maxPolarAngle={Math.PI / 2.05}
