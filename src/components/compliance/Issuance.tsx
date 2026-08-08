@@ -34,29 +34,34 @@ export function Issuance() {
     setState("running");
     setRevealed(0);
     setResult(null);
-    const result = await requestEvaluation({
-      kind: "issuance",
-      sender: issuerCredential,
-      recipient: null,
-      asset,
-    });
-    setChecks(result.rules);
-    for (let i = 1; i <= result.rules.length; i++) {
-      await new Promise((r) => setTimeout(r, 300));
-      setRevealed(i);
-      if (result.rules[i - 1]?.status === "fail") {
-        setRevealed(result.rules.length);
-        break;
-      }
-    }
-    setResult(result);
-    if (result.aToken) setAToken(result.aToken);
-    recordDecision(result);
-    if (result.approved) {
-      markIssued({
-        tokenId: result.aToken?.tokenId ?? "—",
-        txRef: result.settlement?.txRef ?? "0x",
+    try {
+      const result = await requestEvaluation({
+        kind: "issuance",
+        sender: issuerCredential,
+        recipient: null,
+        asset,
       });
+      const rules = result.rules ?? [];
+      setChecks(rules);
+      for (let i = 1; i <= rules.length; i++) {
+        await new Promise((r) => setTimeout(r, 300));
+        setRevealed(i);
+        if (rules[i - 1]?.status === "fail") {
+          setRevealed(rules.length);
+          break;
+        }
+      }
+      setResult(result);
+      if (result.aToken) setAToken(result.aToken);
+      recordDecision(result);
+      if (result.approved) {
+        markIssued({
+          tokenId: result.aToken?.tokenId ?? "—",
+          txRef: result.settlement?.txRef ?? "0x",
+        });
+      }
+    } catch (error) {
+      console.error("[MachineTrust] issuance failed", error);
     }
     setState("done");
   }
