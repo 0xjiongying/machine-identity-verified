@@ -51,7 +51,7 @@ function Steel({ tone = "#6b7080", rough = 0.28 }: { tone?: string; rough?: numb
       roughness={rough}
       transparent
       emissive={new THREE.Color(ACCENT)}
-      emissiveIntensity={0.02}
+      emissiveIntensity={0.015}
     />
   );
 }
@@ -86,7 +86,7 @@ function Region({
       if (!mat || !("emissiveIntensity" in mat)) return;
       mat.emissiveIntensity = damp(
         mat.emissiveIntensity ?? 0,
-        active ? 0.36 : 0.02 + live * 0.16,
+        active ? 0.36 : 0.02 + live * 0.1,
         7,
         dt,
       );
@@ -122,11 +122,11 @@ function ScanRing({ live }: { live: number }) {
     const t = (state.clock.elapsedTime * 0.32) % 1;
     node.position.y = t * 3.8;
     const mat = node.material as THREE.MeshBasicMaterial;
-    mat.opacity = damp(mat.opacity, live * 0.55 * Math.sin(t * Math.PI), 8, dt);
+    mat.opacity = damp(mat.opacity, live * 0.4 * Math.sin(t * Math.PI), 8, dt);
   });
   return (
     <mesh ref={m} rotation={[-Math.PI / 2, 0, 0]}>
-      <ringGeometry args={[1.1, 1.9, 96]} />
+      <ringGeometry args={[1.62, 1.86, 128]} />
       <meshBasicMaterial color={ACCENT} transparent opacity={0} side={THREE.DoubleSide} />
     </mesh>
   );
@@ -335,9 +335,9 @@ export default function SequenceScene(props: SequenceProps) {
         castShadow={!reduced}
         shadow-mapSize={[1024, 1024]}
       />
-      <directionalLight position={[-6, 3, -4]} intensity={1.6} color={ACCENT} />
+      <directionalLight position={[-6, 3, -4]} intensity={0.45} color={ACCENT} />
       <directionalLight position={[0, 2, 8]} intensity={2.4} color="#cfd6e6" />
-      <hemisphereLight args={["#9fb0cc", "#12141a", 1.1]} />
+      <hemisphereLight args={["#c8d2e4", "#14161c", 1.5]} />
       <Suspense fallback={null}>
         <Machine {...props} />
         {reduced ? null : (
