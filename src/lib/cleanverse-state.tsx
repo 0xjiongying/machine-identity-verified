@@ -8,17 +8,25 @@ import {
   type CvaCredential,
   type CviCredential,
 } from "@/data/cleanverse-registry";
-import { fetchCleanverseMode, type Evaluation } from "./cleanverse-adapter";
+import {
+  fetchCleanverseMode,
+  unissuedToken,
+  type AtokenRecord,
+  type Evaluation,
+} from "./cleanverse-adapter";
 
 type CleanverseState = {
   mode: "demo" | "live";
   issuer: CviCredential;
   counterparties: CviCredential[];
   asset: CvaCredential;
+  /** CVA A-Token — "unissued" until issuance runs and Cleanverse mints it. */
+  aToken: AtokenRecord;
   decisions: Evaluation[];
   setCounterpartyStatus: (id: string, status: CredentialStatus) => void;
   setAttestationStatus: (code: string, status: "valid" | "expired") => void;
   setAssetStatus: (status: "active" | "suspended") => void;
+  setAToken: (token: AtokenRecord) => void;
   recordDecision: (evaluation: Evaluation) => void;
 };
 
@@ -33,6 +41,7 @@ export function CleanverseProvider({ children }: { children: React.ReactNode }) 
   const [mode, setMode] = useState<"demo" | "live">("demo");
   const [parties, setParties] = useState<CviCredential[]>(seedCounterparties);
   const [asset, setAsset] = useState<CvaCredential>(cvaMachine);
+  const [aToken, setAToken] = useState<AtokenRecord>(() => unissuedToken(cvaMachine));
   const [decisions, setDecisions] = useState<Evaluation[]>([]);
 
   useEffect(() => {
@@ -70,16 +79,19 @@ export function CleanverseProvider({ children }: { children: React.ReactNode }) 
       issuer: cviIssuer,
       counterparties: parties,
       asset,
+      aToken,
       decisions,
       setCounterpartyStatus,
       setAttestationStatus,
       setAssetStatus,
+      setAToken,
       recordDecision,
     }),
     [
       mode,
       parties,
       asset,
+      aToken,
       decisions,
       setCounterpartyStatus,
       setAttestationStatus,

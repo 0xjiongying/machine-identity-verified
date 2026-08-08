@@ -19,7 +19,7 @@ type AssetState = {
   extraEvents: LedgerEvent[];
   settleTransfer: (to: { name: string; wallet: string }, hash: string) => void;
   markVerified: () => void;
-  markIssued: () => void;
+  markIssued: (detail?: { tokenId: string; txRef: string }) => void;
 };
 
 const Ctx = createContext<AssetState | null>(null);
@@ -64,6 +64,26 @@ export function AssetStateProvider({ children }: { children: React.ReactNode }) 
     [owner],
   );
 
+  const markIssued = useCallback((detail?: { tokenId: string; txRef: string }) => {
+    setIssued(true);
+    if (!detail) return;
+    setExtraEvents((prev) =>
+      prev.some((e) => e.hash === detail.txRef)
+        ? prev
+        : [
+            ...prev,
+            {
+              id: `issue-${detail.txRef.slice(-6)}`,
+              label: "A-Token issued",
+              detail: `CVA A-Token ${detail.tokenId} minted after CCP approval.`,
+              timestamp: new Date().toISOString().slice(0, 16).replace("T", " "),
+              hash: detail.txRef,
+              kind: "issued",
+            },
+          ],
+    );
+  }, []);
+
   const value = useMemo<AssetState>(
     () => ({
       owner,
@@ -74,9 +94,9 @@ export function AssetStateProvider({ children }: { children: React.ReactNode }) 
       extraEvents,
       settleTransfer,
       markVerified: () => setVerified(true),
-      markIssued: () => setIssued(true),
+      markIssued,
     }),
-    [owner, ownerWallet, previousOwner, verified, issued, extraEvents, settleTransfer],
+    [owner, ownerWallet, previousOwner, verified, issued, extraEvents, settleTransfer, markIssued],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
