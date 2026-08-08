@@ -1,18 +1,19 @@
 import { Suspense, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { ContactShadows, Edges, Environment, OrbitControls } from "@react-three/drei";
+import { ContactShadows, Edges, Environment, Html, OrbitControls } from "@react-three/drei";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
 import { damp } from "@/lib/motion";
-import { dataCards, type ModuleKey } from "@/data/trustModule";
+import { dataCards, moduleParts, type ModuleKey } from "@/data/trustModule";
 
 const ACCENT = "#836ef9";
 const ACCENT_C = new THREE.Color(ACCENT);
+const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
 
 export type TrustSceneProps = {
   /** 0..1 scroll position of the hero band. */
   progress: number;
-  /** Index into verifySteps. */
+  /** Index into verifySteps (0..5). */
   step: number;
   hovered: ModuleKey | null;
   selected: ModuleKey | null;
@@ -20,43 +21,61 @@ export type TrustSceneProps = {
   onHover: (k: ModuleKey | null) => void;
   onSelect: (k: ModuleKey | null) => void;
   onCardFocus?: (k: string | null) => void;
-  /** 0..1 exploded-view separation of the sub-assemblies. */
+  /** 0..1 exploded-view separation of the modules. */
   explode?: number;
-  /** Technical wireframe overlay. */
   wireframe?: boolean;
   /** Hide the floating holographic cards (inspection mode). */
   hideCards?: boolean;
+  /** Hide in-scene hotspot markers. */
+  hideHotspots?: boolean;
   autoRotate?: boolean;
   zoomEnabled?: boolean;
   controlsRef?: React.MutableRefObject<OrbitControlsImpl | null>;
-  /** Stage framing: overall size and horizontal offset of the module. */
   scale?: number;
   offsetX?: number;
 };
 
-const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
+/* ------------------------------------------------------------------ layout */
 
-/** Where the laser points for each verification step. */
-const CARD_POS: Record<string, [number, number, number]> = {
-  id: [-2.75, 1.25, 0.55],
-  provenance: [2.75, 0.95, -0.25],
-  maintenance: [-2.55, -1.05, -0.35],
-  parts: [2.6, -1.2, 0.65],
+/** Seat position of each module on the chassis. */
+const SEAT: Record<ModuleKey, [number, number, number]> = {
+  controller: [-1.05, 0.34, 0.62],
+  motor: [-1.0, 0.36, -0.6],
+  arm: [1.15, 0.42, 0.0],
+  safety: [0.05, 0.34, 0.78],
 };
 
-/** Laser lock points for each selectable sub-assembly. */
+/** Direction each module travels in the exploded view. */
+const EXPLODE_OFFSET: Record<ModuleKey, [number, number, number]> = {
+  controller: [-1.15, 0.55, 0.85],
+  motor: [-1.0, -0.15, -1.05],
+  arm: [1.1, 1.05, 0.1],
+  safety: [0.15, 0.35, 1.15],
+};
+
+/** Laser lock points (module seats, slightly raised). */
 const PART_POS: Record<ModuleKey, [number, number, number]> = {
-  chip: [0, 0.24, 0],
-  board: [0.9, 0.1, 0.55],
-  enclosure: [0, 1.02, 0],
-  mechanics: [-1.5, -0.05, 1.0],
+  controller: [-1.05, 0.62, 0.62],
+  motor: [-1.05, 0.6, -0.62],
+  arm: [1.15, 0.95, 0.0],
+  safety: [0.05, 0.6, 0.78],
 };
 
-function Metal({ tone = "#4b5262", rough = 0.3 }: { tone?: string; rough?: number }) {
+const CARD_POS: Record<string, [number, number, number]> = {
+  passport: [-2.85, 1.2, 0.5],
+  cvi: [2.85, 1.0, -0.2],
+  cva: [-2.6, -0.95, -0.35],
+  ccp: [2.6, -1.15, 0.6],
+  core: [0, 0.5, 0],
+};
+
+/* ------------------------------------------------------------- materials */
+
+function Steel({ tone = "#464c59", rough = 0.34 }: { tone?: string; rough?: number }) {
   return (
     <meshStandardMaterial
       color={tone}
-      metalness={0.92}
+      metalness={0.94}
       roughness={rough}
       transparent
       emissive={ACCENT_C}
@@ -65,20 +84,15 @@ function Metal({ tone = "#4b5262", rough = 0.3 }: { tone?: string; rough?: numbe
   );
 }
 
-/** Selectable sub-assembly of the module. */
-const EXPLODE_OFFSET: Record<ModuleKey, [number, number, number]> = {
-  chip: [0, 1.5, 0],
-  board: [0, 0.35, 0],
-  enclosure: [0, 0.9, 0],
-  mechanics: [0, -0.6, 0],
-};
+/* ------------------------------------------------------------------ parts */
 
-function Part({
+function Module({
   id,
   hovered,
   selected,
   explode = 0,
   wireframe = false,
+  assembly,
   onHover,
   onSelect,
   children,
@@ -88,6 +102,8 @@ function Part({
   selected: ModuleKey | null;
   explode?: number;
   wireframe?: boolean;
+  /** 0 → coiled at the spine, 1 → seated on the chassis. */
+  assembly: React.MutableRefObject<number>;
   onHover: (k: ModuleKey | null) => void;
   onSelect: (k: ModuleKey | null) => void;
   children: React.ReactNode;
@@ -95,21 +111,36 @@ function Part({
   const g = useRef<THREE.Group>(null);
   const active = hovered === id || selected === id;
   const muted = selected !== null && selected !== id;
+  const seat = SEAT[id];
+  const off = EXPLODE_OFFSET[id];
 
-  useFrame((_, dt) => {
+  useFrame((s, dt) => {
     const node = g.current;
     if (!node) return;
-    const off = EXPLODE_OFFSET[id];
-    node.position.y = damp(node.position.y, off[1] * explode, 4, dt);
-    node.position.x = damp(node.position.x, off[0] * explode, 4, dt);
+    const a = assembly.current;
+    // coil → unfold: modules rise out of the spine into their seats.
+    const lift = active ? 0.06 : 0;
+    node.position.x = damp(node.position.x, seat[0] * a + off[0] * explode, 5, dt);
+    node.position.y = damp(
+      node.position.y,
+      (seat[1] - 0.28) * a - 0.1 * (1 - a) + off[1] * explode + lift,
+      5,
+      dt,
+    );
+    node.position.z = damp(node.position.z, seat[2] * a + off[2] * explode, 5, dt);
+    node.rotation.y = damp(node.rotation.y, (1 - a) * 0.9, 4, dt);
+    const sc = 0.55 + 0.45 * a;
+    node.scale.setScalar(damp(node.scale.x, sc, 5, dt));
+    // gentle machine idle
+    node.position.y += Math.sin(s.clock.elapsedTime * 1.4 + seat[0]) * 0.004 * a;
+
     node.traverse((o) => {
-      const mesh = o as THREE.Mesh;
-      const mat = mesh.material as THREE.MeshStandardMaterial | undefined;
+      const mat = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
       if (!mat) return;
-      if ("wireframe" in mat) mat.wireframe = wireframe && id !== "enclosure";
+      if ("wireframe" in mat) mat.wireframe = wireframe;
       if (!("emissiveIntensity" in mat)) return;
-      mat.emissiveIntensity = damp(mat.emissiveIntensity ?? 0, active ? 0.5 : 0.03, 8, dt);
-      if ("opacity" in mat) mat.opacity = damp(mat.opacity ?? 1, muted ? 0.4 : 1, 8, dt);
+      mat.emissiveIntensity = damp(mat.emissiveIntensity ?? 0, active ? 0.55 : 0.04, 8, dt);
+      if ("opacity" in mat) mat.opacity = damp(mat.opacity ?? 1, muted ? 0.38 : 1, 8, dt);
     });
   });
 
@@ -131,500 +162,628 @@ function Part({
   );
 }
 
-/** Glowing pulse travelling along a circuit trace. */
-function TracePulse({ path, speed, delay }: { path: [number, number][]; speed: number; delay: number }) {
-  const m = useRef<THREE.Mesh>(null);
-  useFrame((s) => {
-    const node = m.current;
-    if (!node) return;
-    const t = ((s.clock.elapsedTime * speed + delay) % 1) * (path.length - 1);
-    const i = Math.floor(t);
-    const f = t - i;
-    const a = path[i]!;
-    const b = path[Math.min(path.length - 1, i + 1)]!;
-    node.position.set(a[0] + (b[0] - a[0]) * f, 0.045, a[1] + (b[1] - a[1]) * f);
+/** Precision-milled controller card: vents, connector pins, status strip. */
+function ControllerModule({ lit }: { lit: number }) {
+  return (
+    <group>
+      <mesh castShadow receiveShadow>
+        <boxGeometry args={[0.92, 0.42, 0.66]} />
+        <Steel tone="#3d434f" rough={0.38} />
+        <Edges color={ACCENT} />
+      </mesh>
+      {/* recessed panel */}
+      <mesh position={[0, 0.22, 0]}>
+        <boxGeometry args={[0.7, 0.02, 0.44]} />
+        <meshStandardMaterial color="#0e1117" metalness={0.6} roughness={0.5} />
+      </mesh>
+      {/* cooling fins */}
+      {Array.from({ length: 6 }).map((_, i) => (
+        <mesh key={i} position={[-0.4 + i * 0.16, 0.05, 0.34]}>
+          <boxGeometry args={[0.05, 0.26, 0.02]} />
+          <meshStandardMaterial color="#2a2f38" metalness={0.9} roughness={0.3} />
+        </mesh>
+      ))}
+      {/* connector pins */}
+      {Array.from({ length: 8 }).map((_, i) => (
+        <mesh key={`p${i}`} position={[-0.34 + i * 0.1, -0.16, -0.35]}>
+          <boxGeometry args={[0.035, 0.06, 0.06]} />
+          <meshStandardMaterial
+            color="#c9a227"
+            metalness={1}
+            roughness={0.25}
+            emissive={ACCENT_C}
+            emissiveIntensity={0.12}
+          />
+        </mesh>
+      ))}
+      {/* signing status strip */}
+      <mesh position={[0, 0.235, 0.16]}>
+        <planeGeometry args={[0.5, 0.03]} />
+        <meshBasicMaterial color={ACCENT} transparent opacity={0.35 + lit * 0.6} />
+      </mesh>
+    </group>
+  );
+}
+
+/** Servo drive: stator body, rotating shaft, machined flange. */
+function MotorModule({ spin }: { spin: number }) {
+  const shaft = useRef<THREE.Group>(null);
+  useFrame((_, dt) => {
+    if (shaft.current) shaft.current.rotation.z += dt * (0.6 + spin * 5);
   });
   return (
-    <mesh ref={m}>
-      <sphereGeometry args={[0.035, 10, 10]} />
-      <meshBasicMaterial color={ACCENT} transparent opacity={0.95} />
+    <group rotation={[0, 0, Math.PI / 2]}>
+      <mesh castShadow receiveShadow>
+        <cylinderGeometry args={[0.28, 0.28, 0.78, 28]} />
+        <Steel tone="#4e5462" rough={0.28} />
+        <Edges color={ACCENT} />
+      </mesh>
+      {/* stator ribs */}
+      {Array.from({ length: 10 }).map((_, i) => (
+        <mesh key={i} rotation={[0, (i / 10) * Math.PI * 2, 0]} position={[0, 0, 0]}>
+          <boxGeometry args={[0.5, 0.7, 0.015]} />
+          <meshStandardMaterial color="#333944" metalness={0.9} roughness={0.35} />
+        </mesh>
+      ))}
+      <mesh position={[0, 0.42, 0]}>
+        <cylinderGeometry args={[0.33, 0.33, 0.07, 28]} />
+        <meshStandardMaterial color="#2b303a" metalness={0.95} roughness={0.25} />
+      </mesh>
+      <group ref={shaft} position={[0, 0.55, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <mesh>
+          <cylinderGeometry args={[0.07, 0.07, 0.3, 16]} />
+          <meshStandardMaterial color="#8b93a3" metalness={1} roughness={0.18} />
+        </mesh>
+        <mesh position={[0, 0.16, 0]}>
+          <boxGeometry args={[0.24, 0.02, 0.05]} />
+          <meshBasicMaterial color={ACCENT} transparent opacity={0.7} />
+        </mesh>
+      </group>
+    </group>
+  );
+}
+
+/** Articulated arm linkage that unfolds and works through a slow cycle. */
+function ArmModule({ cycle }: { cycle: number }) {
+  const j1 = useRef<THREE.Group>(null);
+  const j2 = useRef<THREE.Group>(null);
+  useFrame((s, dt) => {
+    const t = s.clock.elapsedTime;
+    const a = 0.55 + Math.sin(t * 0.6) * 0.35 * cycle;
+    const b = -0.9 - Math.sin(t * 0.6 + 0.9) * 0.5 * cycle;
+    if (j1.current) j1.current.rotation.z = damp(j1.current.rotation.z, a, 3, dt);
+    if (j2.current) j2.current.rotation.z = damp(j2.current.rotation.z, b, 3, dt);
+  });
+  return (
+    <group>
+      {/* turret base */}
+      <mesh castShadow receiveShadow>
+        <cylinderGeometry args={[0.3, 0.36, 0.26, 24]} />
+        <Steel tone="#454b58" />
+        <Edges color={ACCENT} />
+      </mesh>
+      <group ref={j1} position={[0, 0.14, 0]}>
+        <mesh position={[0, 0.3, 0]} castShadow>
+          <boxGeometry args={[0.16, 0.62, 0.2]} />
+          <Steel tone="#525968" rough={0.3} />
+          <Edges color={ACCENT} />
+        </mesh>
+        {/* joint hub */}
+        <mesh position={[0, 0.62, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.1, 0.1, 0.24, 18]} />
+          <meshStandardMaterial
+            color="#20242c"
+            metalness={0.9}
+            roughness={0.3}
+            emissive={ACCENT_C}
+            emissiveIntensity={0.2}
+          />
+        </mesh>
+        <group ref={j2} position={[0, 0.62, 0]}>
+          <mesh position={[0, 0.26, 0]} castShadow>
+            <boxGeometry args={[0.12, 0.52, 0.16]} />
+            <Steel tone="#5b6272" rough={0.28} />
+            <Edges color={ACCENT} />
+          </mesh>
+          <mesh position={[0, 0.55, 0]}>
+            <boxGeometry args={[0.16, 0.1, 0.14]} />
+            <meshStandardMaterial
+              color="#1a1e25"
+              metalness={0.8}
+              roughness={0.4}
+              emissive={ACCENT_C}
+              emissiveIntensity={0.35}
+            />
+          </mesh>
+        </group>
+      </group>
+    </group>
+  );
+}
+
+/** Safety guard: interlock ring, grille, beacon. */
+function SafetyModule({ alert }: { alert: number }) {
+  const ring = useRef<THREE.Mesh>(null);
+  useFrame((s) => {
+    if (!ring.current) return;
+    const m = ring.current.material as THREE.MeshBasicMaterial;
+    m.opacity = 0.3 + (Math.sin(s.clock.elapsedTime * 2.4) * 0.5 + 0.5) * (0.25 + alert * 0.5);
+  });
+  return (
+    <group>
+      <mesh castShadow receiveShadow>
+        <boxGeometry args={[0.6, 0.34, 0.46]} />
+        <Steel tone="#3f4550" rough={0.42} />
+        <Edges color={ACCENT} />
+      </mesh>
+      {/* grille */}
+      {Array.from({ length: 5 }).map((_, i) => (
+        <mesh key={i} position={[0, -0.1 + i * 0.05, 0.235]}>
+          <boxGeometry args={[0.42, 0.015, 0.01]} />
+          <meshStandardMaterial color="#22262e" metalness={0.85} roughness={0.4} />
+        </mesh>
+      ))}
+      {/* interlock ring */}
+      <mesh ref={ring} position={[0, 0.22, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.16, 0.2, 32]} />
+        <meshBasicMaterial color={ACCENT} transparent opacity={0.4} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh position={[0, 0.22, 0]}>
+        <sphereGeometry args={[0.07, 20, 20]} />
+        <meshStandardMaterial
+          color="#12151b"
+          metalness={0.4}
+          roughness={0.2}
+          emissive={ACCENT_C}
+          emissiveIntensity={0.5}
+        />
+      </mesh>
+    </group>
+  );
+}
+
+/** Etched serial markings on the chassis deck. */
+function Markings() {
+  return (
+    <group position={[0, 0.075, 1.02]}>
+      {Array.from({ length: 14 }).map((_, i) => (
+        <mesh key={i} position={[-0.9 + i * 0.14, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[0.05, i % 3 === 0 ? 0.1 : 0.05]} />
+          <meshBasicMaterial color="#6c7284" transparent opacity={0.5} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+/** Data line carrying a pulse from a module into the signing spine. */
+function DataLine({
+  from,
+  live,
+  delay,
+}: {
+  from: [number, number, number];
+  live: number;
+  delay: number;
+}) {
+  const dot = useRef<THREE.Mesh>(null);
+  const geo = useMemo(() => {
+    const pts = [
+      new THREE.Vector3(from[0], from[1] - 0.2, from[2]),
+      new THREE.Vector3(from[0] * 0.4, 0.1, from[2] * 0.4),
+      new THREE.Vector3(0, 0.42, 0),
+    ];
+    const curve = new THREE.CatmullRomCurve3(pts);
+    return { curve, geometry: new THREE.BufferGeometry().setFromPoints(curve.getPoints(40)) };
+  }, [from]);
+
+  useFrame((s) => {
+    if (!dot.current) return;
+    const t = (s.clock.elapsedTime * 0.45 + delay) % 1;
+    const p = geo.curve.getPoint(t);
+    dot.current.position.copy(p);
+    dot.current.visible = live > 0.05;
+    dot.current.scale.setScalar(0.6 + live * 0.8);
+  });
+
+  return (
+    <group>
+      <primitive object={new THREE.Line(geo.geometry, new THREE.LineBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.12 + live * 0.35 }))} />
+      <mesh ref={dot}>
+        <sphereGeometry args={[0.03, 10, 10]} />
+        <meshBasicMaterial color={ACCENT} transparent opacity={0.35 + live * 0.65} />
+      </mesh>
+    </group>
+  );
+}
+
+/** The central signing spine — where the passport hash is formed. */
+function Spine({ step }: { step: number }) {
+  const core = useRef<THREE.Mesh>(null);
+  useFrame((s, dt) => {
+    if (!core.current) return;
+    const m = core.current.material as THREE.MeshStandardMaterial;
+    m.emissiveIntensity = damp(
+      m.emissiveIntensity,
+      0.25 + Math.min(1, step / 5) * 1.4 + Math.sin(s.clock.elapsedTime * 2) * 0.08,
+      4,
+      dt,
+    );
+    core.current.rotation.y += dt * 0.35;
+  });
+  return (
+    <group position={[0, 0.42, 0]}>
+      <mesh ref={core} castShadow>
+        <octahedronGeometry args={[0.3, 0]} />
+        <meshStandardMaterial
+          color="#131722"
+          metalness={0.7}
+          roughness={0.22}
+          emissive={ACCENT_C}
+          emissiveIntensity={0.4}
+        />
+        <Edges color={ACCENT} />
+      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.42, 0.46, 48]} />
+        <meshBasicMaterial color={ACCENT} transparent opacity={0.35} side={THREE.DoubleSide} />
+      </mesh>
+    </group>
+  );
+}
+
+/** Structural wireframe cage that reads as engineering drawing. */
+function Cage({ on }: { on: number }) {
+  return (
+    <mesh position={[0, 0.42, 0]}>
+      <boxGeometry args={[3.3, 1.05, 2.12]} />
+      <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+      <Edges color={ACCENT} scale={1}>
+        <lineBasicMaterial color={ACCENT} transparent opacity={0.06 + on * 0.16} />
+      </Edges>
     </mesh>
   );
 }
 
-/** Static etched circuit traces on the verification board. */
-function Traces() {
-  const lines = useMemo<[number, number][][]>(
-    () => [
-      [
-        [-1.3, -0.7],
-        [-0.45, -0.7],
-        [-0.45, -0.2],
-        [0, -0.2],
-      ],
-      [
-        [1.3, 0.6],
-        [0.5, 0.6],
-        [0.5, 0.15],
-        [0, 0.15],
-      ],
-      [
-        [-1.25, 0.75],
-        [-0.7, 0.75],
-        [-0.7, 0.35],
-        [-0.2, 0.35],
-      ],
-      [
-        [1.2, -0.75],
-        [0.35, -0.75],
-        [0.35, -0.4],
-        [0.1, -0.4],
-      ],
-    ],
-    [],
-  );
-
-  return (
-    <group>
-      {lines.map((path, li) => (
-        <group key={li}>
-          {path.slice(0, -1).map(([x1, z1], i) => {
-            const [x2, z2] = path[i + 1]!;
-            const len = Math.hypot(x2 - x1, z2 - z1);
-            const horiz = Math.abs(x2 - x1) > Math.abs(z2 - z1);
-            return (
-              <mesh
-                key={i}
-                position={[(x1 + x2) / 2, 0.032, (z1 + z2) / 2]}
-                rotation={[-Math.PI / 2, 0, horiz ? 0 : Math.PI / 2]}
-              >
-                <planeGeometry args={[len, 0.018]} />
-                <meshBasicMaterial color={ACCENT} transparent opacity={0.34} />
-              </mesh>
-            );
-          })}
-          <TracePulse path={path} speed={0.22 + li * 0.05} delay={li * 0.27} />
-        </group>
-      ))}
-    </group>
-  );
-}
-
-/** The central cryptographic identity chip. */
-function TrustChip({ active, selected, step }: { active: boolean; selected?: boolean; step: number }) {
-  const halo = useRef<THREE.Mesh>(null);
-  const core = useRef<THREE.MeshStandardMaterial>(null);
-  const ring = useRef<THREE.Mesh>(null);
-  const pins = useMemo(() => [-0.3, -0.18, -0.06, 0.06, 0.18, 0.3], []);
-
-  useFrame((s, dt) => {
-    const hot = selected ? 1.9 : active || step >= 1 ? 1 : 0.35;
-    if (core.current)
-      core.current.emissiveIntensity = damp(
-        core.current.emissiveIntensity,
-        hot * (0.9 + Math.sin(s.clock.elapsedTime * 2.4) * 0.25),
-        6,
-        dt,
-      );
-    if (halo.current) {
-      const mat = halo.current.material as THREE.MeshBasicMaterial;
-      mat.opacity = damp(mat.opacity, selected ? 0.85 : active ? 0.5 : 0.16, 6, dt);
-      halo.current.rotation.z += dt * (selected ? 1.5 : 0.5);
-      const sc = damp(halo.current.scale.x, selected ? 1.22 : 1, 6, dt);
-      halo.current.scale.setScalar(sc);
-    }
-    if (ring.current) {
-      const mat = ring.current.material as THREE.MeshBasicMaterial;
-      mat.opacity = damp(mat.opacity, selected ? 0.55 : 0, 5, dt);
-      const t = s.clock.elapsedTime;
-      ring.current.scale.setScalar(1 + ((t * 0.6) % 1) * 1.6);
-      ring.current.rotation.z -= dt * 0.3;
-    }
-  });
-
-  return (
-    <group position={[0, 0.09, 0]}>
-      {/* selection scan ring */}
-      <mesh ref={ring} position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.7, 0.74, 64]} />
-        <meshBasicMaterial color={ACCENT} transparent opacity={0} side={THREE.DoubleSide} depthWrite={false} />
-      </mesh>
-      {/* chip package */}
-      <mesh castShadow>
-        <boxGeometry args={[0.82, 0.13, 0.82]} />
-        <meshStandardMaterial color="#15171d" metalness={0.6} roughness={0.35} />
-      </mesh>
-      {/* etched identity face */}
-      <mesh position={[0, 0.071, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[0.56, 0.56]} />
-        <meshStandardMaterial
-          ref={core}
-          color="#0d0e12"
-          emissive={ACCENT_C}
-          emissiveIntensity={0.4}
-          metalness={0.2}
-          roughness={0.4}
-        />
-      </mesh>
-      <mesh position={[0, 0.075, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.17, 0.2, 6]} />
-        <meshBasicMaterial color={ACCENT} transparent opacity={0.9} />
-      </mesh>
-      {/* rotating holographic halo */}
-      <mesh ref={halo} position={[0, 0.09, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.62, 0.68, 64, 1, 0, Math.PI * 1.4]} />
-        <meshBasicMaterial color={ACCENT} transparent opacity={0.2} side={THREE.DoubleSide} />
-      </mesh>
-      {/* gold pins */}
-      {pins.map((p) => (
-        <group key={p}>
-          {[-0.45, 0.45].map((s) => (
-            <mesh key={s} position={[p, -0.03, s]}>
-              <boxGeometry args={[0.05, 0.03, 0.12]} />
-              <meshStandardMaterial color="#c8a45c" metalness={1} roughness={0.28} />
-            </mesh>
-          ))}
-          {[-0.45, 0.45].map((s) => (
-            <mesh key={`x${s}`} position={[s, -0.03, p]}>
-              <boxGeometry args={[0.12, 0.03, 0.05]} />
-              <meshStandardMaterial color="#c8a45c" metalness={1} roughness={0.28} />
-            </mesh>
-          ))}
-        </group>
-      ))}
-    </group>
-  );
-}
-
-/** Thin purple verification laser that locks onto a target point. */
+/** Verification laser, locked to the active module or stage target. */
 function Laser({
-  step,
-  progress,
-  lock,
+  target,
+  strength,
 }: {
-  step: number;
-  progress: number;
-  lock?: ModuleKey | null;
-}) {
-  const beam = useRef<THREE.Mesh>(null);
-  const dot = useRef<THREE.Mesh>(null);
-  const target = useRef(new THREE.Vector3(0, 0.2, 0));
-  const origin = useMemo(() => new THREE.Vector3(0, 3.1, 0), []);
-
-  useFrame((s, dt) => {
-    const t = s.clock.elapsedTime;
-    const stepTarget = new THREE.Vector3();
-    const key = lock ? "part" : (["module", "id", "provenance", "parts", "maintenance", "module"][step] ?? "module");
-    if (key === "part") {
-      const p = PART_POS[lock!];
-      stepTarget.set(p[0], p[1], p[2]);
-    } else if (key === "module") {
-      // idle: slow sweep across the module surface
-      const sweep = step >= 5 ? 0 : Math.sin(t * 0.55) * 1.1;
-      stepTarget.set(sweep, 0.16, Math.cos(t * 0.34) * 0.6);
-    } else {
-      const p = CARD_POS[key]!;
-      stepTarget.set(p[0] * 0.92, p[1], p[2]);
-    }
-    target.current.lerp(stepTarget, 1 - Math.exp(-(lock ? 11 : step === 0 ? 4 : 9) * dt));
-
-    const dir = new THREE.Vector3().subVectors(target.current, origin);
-    const len = dir.length();
-    if (beam.current) {
-      beam.current.position.copy(origin).addScaledVector(dir, 0.5);
-      beam.current.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
-      beam.current.scale.set(1, len, 1);
-      const mat = beam.current.material as THREE.MeshBasicMaterial;
-      const on = lock ? 1 : step >= 1 && step <= 4 ? 0.85 : 0.3 + Math.sin(t * 1.6) * 0.08;
-      mat.opacity = damp(mat.opacity, clamp01(on) * (lock ? 1 : 0.4 + progress * 0.6), 7, dt);
-    }
-    if (dot.current) {
-      dot.current.position.copy(target.current);
-      dot.current.scale.setScalar((lock ? 1.5 : 1) * (1 + Math.sin(t * 9) * 0.18));
-    }
-  });
-
-  return (
-    <group>
-      <mesh ref={beam}>
-        <cylinderGeometry args={[0.006, 0.006, 1, 8, 1, true]} />
-        <meshBasicMaterial
-          color={ACCENT}
-          transparent
-          opacity={0}
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-        />
-      </mesh>
-      <mesh ref={dot}>
-        <sphereGeometry args={[0.045, 12, 12]} />
-        <meshBasicMaterial color={ACCENT} transparent opacity={0.9} />
-      </mesh>
-      <pointLight position={[0, 3, 0]} intensity={4} distance={7} color={ACCENT} />
-    </group>
-  );
-}
-
-/** Holographic data card floating around the module. */
-function HoloCard({
-  position,
-  active,
-  index,
-}: {
-  position: [number, number, number];
-  active: boolean;
-  index: number;
+  target: [number, number, number];
+  strength: number;
 }) {
   const g = useRef<THREE.Group>(null);
-  const edge = useRef<THREE.MeshBasicMaterial>(null);
+  const dot = useRef<THREE.Mesh>(null);
+  const origin = useMemo(() => new THREE.Vector3(0, 3.1, 1.4), []);
+  const vec = useMemo(() => new THREE.Vector3(), []);
+
   useFrame((s, dt) => {
     const node = g.current;
     if (!node) return;
-    const t = s.clock.elapsedTime;
-    node.position.y = position[1] + Math.sin(t * 0.7 + index) * 0.09;
-    node.position.z = damp(node.position.z, position[2] + (active ? 0.35 : 0), 5, dt);
-    node.rotation.y = damp(node.rotation.y, position[0] > 0 ? -0.38 : 0.38, 4, dt);
-    node.rotation.x = Math.sin(t * 0.5 + index) * 0.04;
-    node.scale.setScalar(damp(node.scale.x, active ? 1.08 : 1, 7, dt));
-    if (edge.current) edge.current.opacity = damp(edge.current.opacity, active ? 0.95 : 0.32, 7, dt);
+    vec.set(target[0], target[1], target[2]);
+    const wob = Math.sin(s.clock.elapsedTime * 1.5) * 0.03;
+    const mid = origin.clone().lerp(vec, 0.5);
+    node.position.copy(mid);
+    const dir = vec.clone().sub(origin);
+    node.scale.y = damp(node.scale.y, dir.length(), 6, dt);
+    node.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
+    const mat = (node.children[0] as THREE.Mesh).material as THREE.MeshBasicMaterial;
+    mat.opacity = damp(mat.opacity, 0.1 + strength * 0.5 + wob, 5, dt);
+    if (dot.current) {
+      dot.current.position.copy(vec);
+      const dm = dot.current.material as THREE.MeshBasicMaterial;
+      dm.opacity = damp(dm.opacity, 0.25 + strength * 0.7, 5, dt);
+      dot.current.scale.setScalar(damp(dot.current.scale.x, 0.7 + strength * 0.9, 5, dt));
+    }
+  });
+
+  return (
+    <group>
+      <group ref={g}>
+        <mesh>
+          <cylinderGeometry args={[0.006, 0.006, 1, 8]} />
+          <meshBasicMaterial color={ACCENT} transparent opacity={0.2} depthWrite={false} />
+        </mesh>
+      </group>
+      <mesh ref={dot} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.06, 0.1, 24]} />
+        <meshBasicMaterial color={ACCENT} transparent opacity={0.4} side={THREE.DoubleSide} />
+      </mesh>
+    </group>
+  );
+}
+
+/** Floating holographic record card. */
+function HoloCard({
+  position,
+  label,
+  value,
+  live,
+}: {
+  position: [number, number, number];
+  label: string;
+  value: string;
+  live: boolean;
+}) {
+  const g = useRef<THREE.Group>(null);
+  useFrame((s, dt) => {
+    if (!g.current) return;
+    g.current.position.y = damp(
+      g.current.position.y,
+      position[1] + Math.sin(s.clock.elapsedTime * 0.8 + position[0]) * 0.06,
+      3,
+      dt,
+    );
   });
   return (
     <group ref={g} position={position}>
       <mesh>
-        <planeGeometry args={[1.15, 0.66]} />
-        <meshBasicMaterial
-          color={ACCENT}
-          transparent
-          opacity={active ? 0.1 : 0.05}
-          side={THREE.DoubleSide}
-          depthWrite={false}
-        />
+        <planeGeometry args={[1.5, 0.62]} />
+        <meshBasicMaterial color="#0b0d12" transparent opacity={live ? 0.72 : 0.35} />
+        <Edges color={ACCENT} />
       </mesh>
-      <mesh>
-        <planeGeometry args={[1.15, 0.66]} />
-        <meshBasicMaterial ref={edge} color={ACCENT} transparent opacity={0.3} wireframe />
-      </mesh>
+      <Html center distanceFactor={7} transform={false} zIndexRange={[10, 0]}>
+        <div
+          className={`mt-mono w-[150px] text-center text-[8px] tracking-[0.16em] uppercase ${
+            live ? "text-primary" : "text-muted-foreground"
+          }`}
+        >
+          <div>{label}</div>
+          <div className="mt-1 text-foreground/80">{value}</div>
+        </div>
+      </Html>
     </group>
   );
 }
 
-function Motes({ count }: { count: number }) {
-  const ref = useRef<THREE.Points>(null);
-  const positions = useMemo(() => {
-    const arr = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      arr[i * 3] = (Math.random() - 0.5) * 8;
-      arr[i * 3 + 1] = (Math.random() - 0.4) * 4.5;
-      arr[i * 3 + 2] = (Math.random() - 0.5) * 6;
-    }
-    return arr;
-  }, [count]);
-  useFrame((_, dt) => {
-    if (ref.current) ref.current.rotation.y += dt * 0.02;
-  });
+/** In-scene hotspot marker for a module. */
+function Hotspot({
+  id,
+  active,
+  onHover,
+  onSelect,
+  selected,
+}: {
+  id: ModuleKey;
+  active: boolean;
+  selected: ModuleKey | null;
+  onHover: (k: ModuleKey | null) => void;
+  onSelect: (k: ModuleKey | null) => void;
+}) {
+  const part = moduleParts.find((p) => p.key === id)!;
+  const pos = PART_POS[id];
   return (
-    <points ref={ref}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-      </bufferGeometry>
-      <pointsMaterial size={0.018} color={ACCENT} transparent opacity={0.4} sizeAttenuation />
-    </points>
+    <Html position={[pos[0], pos[1] + 0.22, pos[2]]} center zIndexRange={[20, 0]}>
+      <button
+        type="button"
+        onPointerEnter={() => onHover(id)}
+        onPointerLeave={() => onHover(null)}
+        onClick={() => onSelect(selected === id ? null : id)}
+        className={`mt-mono flex items-center gap-1.5 border px-2 py-1 text-[8px] tracking-[0.18em] whitespace-nowrap uppercase backdrop-blur-sm transition-colors ${
+          active
+            ? "border-primary bg-primary/15 text-primary"
+            : "border-border/70 bg-background/70 text-muted-foreground hover:border-primary/60 hover:text-foreground"
+        }`}
+      >
+        <span
+          className={`h-1 w-1 ${active ? "bg-primary" : "bg-muted-foreground"}`}
+          aria-hidden="true"
+        />
+        {part.name}
+      </button>
+    </Html>
   );
 }
 
-function Module(props: TrustSceneProps) {
-  const { hovered, selected, onHover, onSelect, tier } = props;
-  const shared = { hovered, selected, onHover, onSelect, explode: props.explode ?? 0, wireframe: props.wireframe ?? false };
-  const root = useRef<THREE.Group>(null);
-  const lid = useRef<THREE.Group>(null);
-  const shellA = useRef<THREE.Group>(null);
-  const shellB = useRef<THREE.Group>(null);
-  const pointer = useThree((s) => s.pointer);
+/* ------------------------------------------------------------------ rig */
 
-  const open = props.step >= 1 ? 1 : clamp01(props.progress * 2.4);
+function Rig({
+  progress,
+  step,
+  hovered,
+  selected,
+  explode = 0,
+  wireframe = false,
+  hideCards,
+  hideHotspots,
+  onHover,
+  onSelect,
+  scale,
+  offsetX,
+  tier,
+}: TrustSceneProps) {
+  const root = useRef<THREE.Group>(null);
+  const assembly = useRef(0);
+  const { pointer } = useThree();
+  const p = clamp01(progress);
+  const low = tier === "reduced";
 
   useFrame((s, dt) => {
-    const t = s.clock.elapsedTime;
-    if (root.current) {
-      root.current.position.y = damp(root.current.position.y, Math.sin(t * 0.6) * 0.06, 3, dt);
-      // cursor-reactive parallax on top of orbit control rotation
-      root.current.rotation.x = damp(root.current.rotation.x, -pointer.y * 0.09, 3, dt);
-    }
-    if (lid.current) lid.current.position.y = damp(lid.current.position.y, open * 0.75, 3.2, dt);
-    if (shellA.current) shellA.current.position.x = damp(shellA.current.position.x, open * 0.45, 3, dt);
-    if (shellB.current) shellB.current.position.x = damp(shellB.current.position.x, -open * 0.45, 3, dt);
+    // coil → unfold: driven by scroll, with a small automatic wake-up.
+    const target = clamp01(Math.max(p * 2.2, Math.min(1, s.clock.elapsedTime / 2.2)));
+    assembly.current = damp(assembly.current, target, 2.4, dt);
+
+    const node = root.current;
+    if (!node) return;
+    node.rotation.y = damp(
+      node.rotation.y,
+      -0.5 + p * 1.0 + pointer.x * 0.35,
+      3,
+      dt,
+    );
+    node.rotation.x = damp(node.rotation.x, 0.08 - pointer.y * 0.14, 3, dt);
+    node.position.y = damp(node.position.y, -0.5 + Math.sin(s.clock.elapsedTime * 0.6) * 0.02, 3, dt);
   });
 
-  const glassProps =
-    tier === "reduced"
-      ? { color: "#6d7ba0", transparent: true, opacity: 0.07, metalness: 0.1, roughness: 0.1 }
-      : {
-          color: "#7e8db6",
-          transparent: true,
-          opacity: 0.08,
-          metalness: 0.05,
-          roughness: 0.06,
-          transmission: 0.85,
-          thickness: 0.5,
-          ior: 1.35,
-        };
+  const stageTarget = ["core", "passport", "cvi", "cva", "ccp", "core"][
+    Math.min(5, Math.max(0, step))
+  ];
+  const laserTarget = selected
+    ? PART_POS[selected]
+    : (CARD_POS[stageTarget ?? "core"] ?? CARD_POS["core"]!);
+
+  const cycle = clamp01(step / 5);
 
   return (
-    <group ref={root} scale={props.scale ?? 0.62} position={[props.offsetX ?? 0, 0, 0]}>
-      {/* verification board + chip */}
-      <Part id="board" {...shared}>
-        <mesh position={[0, 0, 0]} receiveShadow castShadow>
-          <boxGeometry args={[3.1, 0.06, 2.1]} />
-          <meshStandardMaterial color="#101319" metalness={0.5} roughness={0.5} />
-          <Edges color={ACCENT} />
+    <group ref={root} scale={scale ?? 0.56} position={[offsetX ?? 0, 0, 0]}>
+      {/* chassis deck */}
+      <mesh position={[0, 0, 0]} receiveShadow castShadow>
+        <boxGeometry args={[3.2, 0.14, 2.05]} />
+        <meshStandardMaterial color="#12151b" metalness={0.7} roughness={0.44} />
+        <Edges color={ACCENT} />
+      </mesh>
+      {/* recessed rails */}
+      {[-0.62, 0.62].map((z) => (
+        <mesh key={z} position={[0, 0.08, z]}>
+          <boxGeometry args={[2.7, 0.02, 0.16]} />
+          <meshStandardMaterial color="#080a0e" metalness={0.5} roughness={0.6} />
         </mesh>
-        <Traces />
-        {/* small mechanical components */}
-        {[
-          [-1.15, 0.62],
-          [-1.15, -0.62],
-          [1.15, 0.62],
-        ].map(([x, z]) => (
-          <mesh key={`${x}${z}`} position={[x!, 0.12, z!]} castShadow>
-            <cylinderGeometry args={[0.11, 0.11, 0.22, 20]} />
-            <meshStandardMaterial color="#3a4050" metalness={0.85} roughness={0.3} />
-          </mesh>
-        ))}
-        <mesh position={[1.15, 0.08, -0.62]} castShadow>
-          <boxGeometry args={[0.42, 0.14, 0.28]} />
-          <meshStandardMaterial color="#242a36" metalness={0.7} roughness={0.35} />
+      ))}
+      {/* machined feet */}
+      {[
+        [-1.42, -0.86],
+        [1.42, -0.86],
+        [-1.42, 0.86],
+        [1.42, 0.86],
+      ].map(([x, z]) => (
+        <mesh key={`${x}${z}`} position={[x!, -0.13, z!]}>
+          <cylinderGeometry args={[0.1, 0.12, 0.14, 16]} />
+          <meshStandardMaterial color="#2a2f38" metalness={0.9} roughness={0.35} />
         </mesh>
-      </Part>
+      ))}
+      <Markings />
+      <Cage on={wireframe ? 1 : clamp01(step / 5)} />
+      <Spine step={step} />
 
-      <Part id="chip" {...shared}>
-        <TrustChip
-          active={hovered === "chip" || selected === "chip" || props.step === 1}
-          selected={selected === "chip"}
-          step={props.step}
-        />
-      </Part>
+      {(Object.keys(SEAT) as ModuleKey[]).map((k, i) => (
+        <DataLine key={`dl-${k}`} from={SEAT[k]} live={cycle} delay={i * 0.25} />
+      ))}
 
-      {/* metallic frame + mounts */}
-      <Part id="mechanics" {...shared}>
-        {[
-          [-1.62, 1.12],
-          [1.62, 1.12],
-          [-1.62, -1.12],
-          [1.62, -1.12],
-        ].map(([x, z]) => (
-          <mesh key={`p${x}${z}`} position={[x!, 0.42, z!]} castShadow>
-            <boxGeometry args={[0.1, 1.0, 0.1]} />
-            <Metal tone="#5c6474" />
-          </mesh>
-        ))}
-        <mesh position={[0, -0.09, 0]} castShadow receiveShadow>
-          <boxGeometry args={[3.5, 0.14, 2.5]} />
-          <Metal tone="#3d4351" rough={0.4} />
-          <Edges color="#2b3040" />
-        </mesh>
-        <mesh position={[0, 0.94, 0]}>
-          <boxGeometry args={[3.5, 0.08, 2.5]} />
-          <Metal tone="#3d4351" rough={0.4} />
-        </mesh>
-      </Part>
+      <Module
+        id="controller"
+        hovered={hovered}
+        selected={selected}
+        explode={explode}
+        wireframe={wireframe}
+        assembly={assembly}
+        onHover={onHover}
+        onSelect={onSelect}
+      >
+        <ControllerModule lit={cycle} />
+      </Module>
 
-      {/* transparent protective enclosure — splits open on activation */}
-      <Part id="enclosure" {...shared}>
-        <group ref={lid}>
-          <mesh position={[0, 1.0, 0]}>
-            <boxGeometry args={[3.4, 0.04, 2.4]} />
-            <meshPhysicalMaterial {...glassProps} />
-            <Edges color={ACCENT} />
-          </mesh>
-        </group>
-        <group ref={shellA}>
-          <mesh position={[1.7, 0.45, 0]}>
-            <boxGeometry args={[0.04, 1.1, 2.4]} />
-            <meshPhysicalMaterial {...glassProps} />
-            <Edges color={ACCENT} />
-          </mesh>
-        </group>
-        <group ref={shellB}>
-          <mesh position={[-1.7, 0.45, 0]}>
-            <boxGeometry args={[0.04, 1.1, 2.4]} />
-            <meshPhysicalMaterial {...glassProps} />
-            <Edges color={ACCENT} />
-          </mesh>
-        </group>
-        <mesh position={[0, 0.45, 1.2]}>
-          <boxGeometry args={[3.4, 1.1, 0.04]} />
-          <meshPhysicalMaterial {...glassProps} />
-          <Edges color="#3b4256" />
-        </mesh>
-        <mesh position={[0, 0.45, -1.2]}>
-          <boxGeometry args={[3.4, 1.1, 0.04]} />
-          <meshPhysicalMaterial {...glassProps} />
-          <Edges color="#3b4256" />
-        </mesh>
-      </Part>
+      <Module
+        id="motor"
+        hovered={hovered}
+        selected={selected}
+        explode={explode}
+        wireframe={wireframe}
+        assembly={assembly}
+        onHover={onHover}
+        onSelect={onSelect}
+      >
+        <MotorModule spin={cycle} />
+      </Module>
 
-      {props.hideCards
-        ? null
-        : dataCards.map((c, i) => (
-        <HoloCard
-          key={c.key}
-          index={i}
-          position={CARD_POS[c.key] ?? [0, 0, 0]}
-            active={
-              ["module", "id", "provenance", "parts", "maintenance", "module"][props.step] === c.key
-            }
-          />
-        ))}
+      <Module
+        id="arm"
+        hovered={hovered}
+        selected={selected}
+        explode={explode}
+        wireframe={wireframe}
+        assembly={assembly}
+        onHover={onHover}
+        onSelect={onSelect}
+      >
+        <ArmModule cycle={cycle} />
+      </Module>
 
-      <Laser step={props.step} progress={props.progress} lock={selected} />
-      <Motes count={tier === "reduced" ? 60 : 220} />
+      <Module
+        id="safety"
+        hovered={hovered}
+        selected={selected}
+        explode={explode}
+        wireframe={wireframe}
+        assembly={assembly}
+        onHover={onHover}
+        onSelect={onSelect}
+      >
+        <SafetyModule alert={cycle} />
+      </Module>
+
+      {!hideHotspots && !low
+        ? (Object.keys(SEAT) as ModuleKey[]).map((k) => (
+            <Hotspot
+              key={`hs-${k}`}
+              id={k}
+              selected={selected}
+              active={hovered === k || selected === k}
+              onHover={onHover}
+              onSelect={onSelect}
+            />
+          ))
+        : null}
+
+      {!hideCards
+        ? dataCards.map((c) => (
+            <HoloCard
+              key={c.key}
+              position={CARD_POS[c.key] ?? [0, 1, 0]}
+              label={c.label}
+              value={step >= c.at ? c.live.value : c.pending.value}
+              live={step >= c.at}
+            />
+          ))
+        : null}
+
+      <Laser target={laserTarget} strength={selected ? 1 : 0.35 + cycle * 0.5} />
     </group>
   );
 }
 
+/* ---------------------------------------------------------------- canvas */
+
 export default function TrustModuleScene(props: TrustSceneProps) {
-  const reduced = props.tier === "reduced";
+  const { controlsRef, autoRotate, zoomEnabled, tier } = props;
+  const low = tier === "reduced";
   return (
     <Canvas
-      shadows={!reduced}
-      dpr={reduced ? 1 : [1, 1.6]}
-      camera={{ position: [5.2, 2.9, 7.2], fov: 30 }}
-      gl={{ antialias: true, powerPreference: "high-performance" }}
-      onPointerMissed={() => props.onSelect(null)}
-      onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
+      className="!absolute inset-0"
+      dpr={low ? [1, 1.3] : [1, 1.9]}
+      shadows={!low}
+      camera={{ position: [4.0, 2.6, 5.6], fov: 32 }}
+      gl={{ antialias: !low, alpha: true }}
     >
+      <color attach="background" args={["#07080b"]} />
       <ambientLight intensity={0.5} />
-      <Environment preset="city" environmentIntensity={0.55} />
-      <directionalLight
-        position={[5, 8, 4]}
-        intensity={2.6}
-        color="#c9d4ea"
-        castShadow={!reduced}
-        shadow-mapSize={[1024, 1024]}
-      />
-      <directionalLight position={[-6, 2, -4]} intensity={0.9} color={ACCENT} />
-      <hemisphereLight args={["#8fa0c4", "#0a0b0e", 0.5]} />
+      <directionalLight position={[5, 7, 4]} intensity={2.6} castShadow={!low} />
+      <directionalLight position={[-6, 3, -4]} intensity={1.2} color="#cfd6e4" />
+      <pointLight position={[0, 1.6, 0]} intensity={1.1} color={ACCENT} distance={5} />
       <Suspense fallback={null}>
-        <Module {...props} />
-        {reduced ? null : (
-          <ContactShadows position={[0, -1.6, 0]} opacity={0.45} scale={14} blur={2.8} far={6} />
-        )}
+        <Rig {...props} />
+        {!low ? <Environment preset="warehouse" environmentIntensity={0.55} /> : null}
+        <ContactShadows
+          position={[0, -0.9, 0]}
+          opacity={0.5}
+          scale={11}
+          blur={2.6}
+          far={4}
+          resolution={low ? 256 : 512}
+        />
       </Suspense>
       <OrbitControls
-        ref={props.controlsRef as never}
+        ref={controlsRef as never}
         makeDefault
-        autoRotate={props.autoRotate ?? false}
-        autoRotateSpeed={0.6}
         enablePan={false}
-        enableZoom={props.zoomEnabled ?? true}
-        minDistance={4.5}
-        maxDistance={11}
-        minPolarAngle={0.5}
-        maxPolarAngle={Math.PI / 2.02}
-        enableDamping
-        dampingFactor={0.06}
-        rotateSpeed={0.6}
-        target={[0, 0.25, 0]}
+        enableZoom={zoomEnabled ?? false}
+        minDistance={3.4}
+        maxDistance={9}
+        autoRotate={autoRotate ?? false}
+        autoRotateSpeed={0.5}
+        minPolarAngle={Math.PI / 5}
+        maxPolarAngle={Math.PI / 2.05}
+        touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_ROTATE }}
       />
     </Canvas>
   );

@@ -50,7 +50,7 @@ export function Inspection() {
           <Eyebrow index="03">Machine inspection</Eyebrow>
           <Heading>Rotate it. Take it apart. Read its record.</Heading>
           <p className="mt-5 max-w-[52ch] text-[15px] text-muted-foreground">
-            Drag to orbit the Machine Trust module, separate the assembly and open any component.
+            Drag to orbit the Machine Asset Core, separate the assembly and open any component.
             Every part maps to an entry in the Machine Passport.
           </p>
           <DemoTag className="mt-6" />

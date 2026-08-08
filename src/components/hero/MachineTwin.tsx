@@ -11,7 +11,7 @@ import { isBootComplete, onBootComplete } from "@/lib/boot-state";
 const TrustModuleScene = lazy(() => import("@/components/trust/TrustModuleScene"));
 
 /**
- * The hero's living object: the Machine Trust module — a transparent, sealed
+ * The hero's living object: the Machine Asset Core — a modular industrial
  * hardware enclosure around a cryptographic trust chip. It opens, activates and
  * is laser-verified as you scroll, and stays inspectable throughout.
  */
@@ -79,8 +79,8 @@ export function MachineTwin({ phase = 0, explode = 0, bare = false }: TwinProps)
               progress={phase}
               step={step}
               hideCards
-              scale={0.46}
-              offsetX={0.85}
+              scale={0.54}
+              offsetX={0.15}
               explode={explode}
               tier={tier}
               hovered={hovered}
@@ -123,7 +123,7 @@ export function MachineTwin({ phase = 0, explode = 0, bare = false }: TwinProps)
                   exit={{ opacity: 0 }}
                   className="mt-mono text-[9px] tracking-[0.22em] text-muted-foreground uppercase"
                 >
-                  {fine ? "Drag to inspect the trust module" : "Tap to inspect the trust module"}
+                  {fine ? "Drag to inspect the machine asset core" : "Tap to inspect the machine asset core"}
                 </motion.span>
               )}
             </AnimatePresence>
