@@ -15,7 +15,7 @@ import { ValueModules } from "@/components/sections/ValueModules";
 import { Roadmap } from "@/components/sections/Roadmap";
 import { FooterCTA } from "@/components/footer/FooterCTA";
 
-const title = "MachineTrust — Trust the machine. Program the asset.";
+const title = "Machine Trust — Trust the machine. Program the asset.";
 const description =
   "Machine passports, verified participants and compliance-aware transfers that turn industrial machines into programmable on-chain assets.";
 
@@ -38,7 +38,7 @@ function Home() {
       <ProgressRail />
       <main id="main">
         <h1 className="sr-only">
-          MachineTrust — compliance infrastructure for programmable machine assets
+          Machine Trust — compliance infrastructure for programmable machine assets
         </h1>
         <Hero />
         <TrustGap />

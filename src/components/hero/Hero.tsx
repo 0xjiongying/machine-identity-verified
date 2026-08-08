@@ -55,7 +55,7 @@ export function Hero() {
       ref={track}
       id="hero"
       className="relative h-[420svh]"
-      aria-label="MachineTrust introduction"
+      aria-label="Machine Trust introduction"
     >
       <div className="sticky top-0 h-svh w-full overflow-hidden">
         <div
@@ -121,7 +121,7 @@ export function Hero() {
                 {...rise(0.56)}
                 className="mt-6 max-w-[42ch] text-[15px] leading-relaxed text-muted-foreground"
               >
-                MachineTrust connects physical machine identity, provenance and ownership with
+                Machine Trust connects physical machine identity, provenance and ownership with
                 compliance-aware on-chain transactions.
               </motion.p>
 

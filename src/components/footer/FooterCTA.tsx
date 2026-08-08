@@ -11,7 +11,7 @@ export function FooterCTA() {
             Give every machine a trusted identity.
           </h2>
           <p className="mt-7 max-w-[54ch] text-[15px] leading-relaxed text-muted-foreground">
-            MachineTrust connects physical asset provenance with compliance-aware programmable
+            Machine Trust connects physical asset provenance with compliance-aware programmable
             ownership.
           </p>
           <div className="mt-10 flex flex-wrap gap-3">
@@ -36,7 +36,7 @@ export function FooterCTA() {
         <div className="flex items-center gap-2.5">
           <LogoMark className="size-4 text-muted-foreground" />
           <span className="mt-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-            MachineTrust
+            Machine Trust
           </span>
         </div>
         <p className="mt-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">

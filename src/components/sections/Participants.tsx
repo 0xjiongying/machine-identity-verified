@@ -87,7 +87,7 @@ export function Participants() {
         <Reveal delay={0.3}>
           <div className="mt-10 grid gap-px border border-border bg-border sm:grid-cols-3">
             {[
-              ["MachineTrust", "What is the asset?"],
+              ["Machine Trust", "What is the asset?"],
               ["Cleanverse", "Who can transact?"],
               ["Trusted transaction", "Both conditions satisfied"],
             ].map(([k, v], i) => (

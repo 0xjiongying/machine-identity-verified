@@ -1,6 +1,6 @@
 export function LogoMark({ className = "size-6" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className={className} role="img" aria-label="MachineTrust logo">
+    <svg viewBox="0 0 24 24" className={className} role="img" aria-label="Machine Trust logo">
       <rect
         x="1.5"
         y="1.5"

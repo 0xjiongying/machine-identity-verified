@@ -12,7 +12,7 @@ const layers = [
   },
   {
     key: "mt",
-    label: "MachineTrust",
+    label: "Machine Trust",
     value: "Machine Passport",
     note: "Persistent identity: provenance, ownership, service and parts.",
   },
