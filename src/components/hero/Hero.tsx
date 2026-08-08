@@ -1,6 +1,7 @@
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
 import { useRef, useState } from "react";
 import { Shell, DemoTag } from "@/components/primitives";
+import { CleanverseMark } from "@/components/brand/CleanverseLogo";
 import { MagneticButton } from "@/components/motion/MagneticButton";
 import { EASE } from "@/lib/motion";
 import { useReducedMotion } from "@/hooks/useMotionPrefs";
@@ -81,7 +82,8 @@ export function Hero() {
           <div className="relative w-full" style={{ maxWidth: "min(560px, 90vw)" }}>
             <div style={{ opacity: 1 - introOut }}>
               <motion.div {...rise(0.15)} className="mb-6 flex flex-wrap items-center gap-3">
-                <span className="mt-mono border border-border px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                <span className="mt-mono inline-flex items-center gap-1.5 border border-border px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  <CleanverseMark className="size-3 text-foreground" />
                   Track 1 RWA · Cleanverse
                 </span>
                 <DemoTag />

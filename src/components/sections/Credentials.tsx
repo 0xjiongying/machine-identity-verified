@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 
 import { Section, Shell, Eyebrow, Heading, Lede, Reveal, StatusDot } from "@/components/primitives";
+import { CleanverseWordmark } from "@/components/brand/CleanverseLogo";
 import { useCleanverse } from "@/lib/cleanverse-state";
 import type { CviCredential } from "@/data/cleanverse-registry";
 import { cn } from "@/lib/utils";
@@ -126,6 +127,12 @@ export function Credentials() {
     <Section id="credentials" label="Cleanverse credentials" className="scroll-mt-16">
       <Shell>
         <Reveal>
+          <div className="mb-5 flex items-center gap-3 text-foreground">
+            <CleanverseWordmark className="h-5 w-auto max-w-[160px]" />
+            <span className="mt-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              Trust Framework
+            </span>
+          </div>
           <Eyebrow index="07">Cleanverse credentials</Eyebrow>
           <Heading>CVI verifies the party. CVA verifies the asset.</Heading>
           <Lede>

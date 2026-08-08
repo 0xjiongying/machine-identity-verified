@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { Section, Shell, Eyebrow, Heading, Lede, Reveal } from "@/components/primitives";
+import { CleanverseMark } from "@/components/brand/CleanverseLogo";
 import { cn } from "@/lib/utils";
 
 type NodeKey =
@@ -108,7 +109,7 @@ function FlowDiagram({ active, onFocus }: { active: NodeKey; onFocus: (k: NodeKe
       <Node
         id="ccp"
         label="CCP · Programmed Governance"
-        sub="verify_apass · data.code 4 only"
+        sub="Cleanverse · verify_apass · code 4 only"
         active={active === "ccp"}
         onFocus={onFocus}
         tone="accent"
@@ -180,6 +181,12 @@ export function Architecture() {
 
         <Reveal delay={0.1}>
           <div className="mt-12">
+            <p className="mb-3 flex items-center justify-center gap-2 text-muted-foreground">
+              <CleanverseMark className="size-3.5" />
+              <span className="mt-mono text-[10px] uppercase tracking-[0.18em]">
+                Trust Framework · CVI + CVA + CCP
+              </span>
+            </p>
             <FlowDiagram active={active} onFocus={setActive} />
           </div>
         </Reveal>

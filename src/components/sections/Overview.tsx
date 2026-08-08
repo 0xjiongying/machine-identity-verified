@@ -1,20 +1,25 @@
 import { Section, Shell, Eyebrow, Reveal, DemoTag } from "@/components/primitives";
+import { CleanverseMark } from "@/components/brand/CleanverseLogo";
+import { LogoMark } from "@/components/navigation/Logo";
 
 const LAYERS = [
   {
     k: "Machine Trust",
     q: "What is this asset?",
     v: "Machine passport, parts, service history and provenance for one physical machine.",
+    brand: "mt" as const,
   },
   {
     k: "Cleanverse",
     q: "Who may transact — before value moves?",
     v: "Trust Framework interlocking CVI (verified identity), CVA (verified asset), and Programmed Governance via CCP — eligibility checked before issuance, transfer, or settlement.",
+    brand: "cv" as const,
   },
   {
     k: "Monad",
     q: "What executes?",
     v: "Settlement only after CCP approval. In Sandbox UAT this is a labelled settlement reference until a custody contract is deployed.",
+    brand: "none" as const,
   },
 ];
 
@@ -49,11 +54,19 @@ export function Overview() {
             <ul className="grid gap-px border border-border bg-border">
               {LAYERS.map((l, i) => (
                 <li key={l.k} className="bg-background px-5 py-6 sm:px-7">
-                  <div className="flex items-baseline justify-between gap-4">
-                    <p className="mt-mono text-[11px] uppercase tracking-[0.2em] text-primary">
-                      {l.k}
-                    </p>
-                    <span className="mt-mono text-[10px] text-muted-foreground">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      {l.brand === "mt" ? (
+                        <LogoMark className="size-4 text-foreground" />
+                      ) : null}
+                      {l.brand === "cv" ? (
+                        <CleanverseMark className="size-4 text-foreground" />
+                      ) : null}
+                      <p className="mt-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                        {l.k}
+                      </p>
+                    </div>
+                    <span className="mt-mono shrink-0 text-[10px] text-muted-foreground">
                       LAYER {String(i + 1).padStart(2, "0")}
                     </span>
                   </div>

@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Shell, Reveal } from "@/components/primitives";
 import { LogoMark } from "@/components/navigation/Logo";
+import { CleanverseWordmark } from "@/components/brand/CleanverseLogo";
 
 export function FooterCTA() {
   return (
@@ -43,8 +44,18 @@ export function FooterCTA() {
             Machine Trust
           </span>
         </div>
+        <a
+          href="https://cleanverse.com"
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-2.5 text-muted-foreground transition-colors hover:text-foreground"
+          aria-label="Cleanverse — Trust Framework partner"
+        >
+          <span className="mt-mono text-[10px] uppercase tracking-[0.16em]">Built on</span>
+          <CleanverseWordmark className="h-3.5 w-auto max-w-[120px]" />
+        </a>
         <p className="mt-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-          Cleanverse Build · Track 1 RWA · API v5.6
+          Track 1 RWA · API v5.6
         </p>
         <Link
           to="/explorer"

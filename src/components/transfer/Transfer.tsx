@@ -18,6 +18,7 @@ import {
   type Evaluation,
   type RuleResult,
 } from "@/lib/cleanverse-adapter";
+import { CleanverseMark } from "@/components/brand/CleanverseLogo";
 import { useCleanverse } from "@/lib/cleanverse-state";
 import { CheckSequence, type SequenceState } from "@/components/compliance/CheckSequence";
 import { TraceStrip } from "@/components/compliance/TraceStrip";
@@ -136,6 +137,12 @@ export function Transfer() {
         <Reveal>
           <Eyebrow index="09">Restricted transfer</Eyebrow>
           <Heading>Trust is enforced at the point of transfer.</Heading>
+          <p className="mt-3 flex items-center gap-2 text-muted-foreground">
+            <CleanverseMark className="size-3.5 text-foreground" />
+            <span className="mt-mono text-[10px] uppercase tracking-[0.18em]">
+              CCP Programmed Governance
+            </span>
+          </p>
           <Lede>
             The transfer is graded server-side: buyer CVI → CVA eligibility → CCP{" "}
             <code>verify_apass</code> (<code>data.code === 4</code> only). Compliance decides

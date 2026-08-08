@@ -17,6 +17,7 @@ import {
   type Evaluation,
   type RuleResult,
 } from "@/lib/cleanverse-adapter";
+import { CleanverseMark } from "@/components/brand/CleanverseLogo";
 import { useCleanverse } from "@/lib/cleanverse-state";
 import { useAssetState } from "@/lib/asset-state";
 import { CheckSequence, type SequenceState } from "./CheckSequence";
@@ -109,6 +110,12 @@ export function Issuance() {
           <Reveal>
             <Eyebrow index="08">RWA issuance</Eyebrow>
             <Heading>Issue the machine as a compliant asset.</Heading>
+            <p className="mt-3 flex items-center gap-2 text-muted-foreground">
+              <CleanverseMark className="size-3.5 text-foreground" />
+              <span className="mt-mono text-[10px] uppercase tracking-[0.18em]">
+                Cleanverse gates before value moves
+              </span>
+            </p>
             <Lede>
               Issuance starts with the Cleanverse Trust Framework: issuer CVI / A-Pass, CVA /
               A-Token bind, then CCP Programmed Governance before value moves. RWA ISSUED only

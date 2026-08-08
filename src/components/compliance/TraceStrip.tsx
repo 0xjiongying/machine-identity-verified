@@ -1,4 +1,5 @@
 import type { Evaluation } from "@/lib/cleanverse-adapter";
+import { CleanverseMark } from "@/components/brand/CleanverseLogo";
 import { cn } from "@/lib/utils";
 
 /**
@@ -47,7 +48,10 @@ export function TraceStrip({ result, className }: { result: Evaluation; classNam
 
   return (
     <div className={cn("border border-border", className)}>
-      <p className="mt-label border-b border-border px-4 py-2.5">Cleanverse trace</p>
+      <p className="mt-label flex items-center gap-2 border-b border-border px-4 py-2.5">
+        <CleanverseMark className="size-3.5 text-foreground" />
+        Cleanverse trace
+      </p>
       <ul className="divide-y divide-border">
         {rows.map((r, i) => (
           <li key={`${r.tag}-${i}`} className="flex items-start gap-3 px-4 py-3">
