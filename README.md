@@ -13,7 +13,7 @@ Built for the **Cleanverse Build: Trusted Assets Hackathon — Track 1 RWA**.
 | **Demo video**      | _Add 2–4 min walkthrough — [DEMO_SCRIPT.md](./docs/DEMO_SCRIPT.md)_ |
 | **One-pager**       | [docs/ONE_PAGE_SUMMARY.md](./docs/ONE_PAGE_SUMMARY.md)              |
 | **Integration map** | [docs/INTEGRATION_MAP.md](./docs/INTEGRATION_MAP.md)                |
-| **Contract**        | [contracts/MachineTrustRegistry.sol](./contracts/MachineTrustRegistry.sol) · **NOT DEPLOYED** |
+| **Contract**        | [contracts/MachineTrustRegistry.sol](./contracts/MachineTrustRegistry.sol) · deploy artifact: [`contracts/deployments/`](./contracts/deployments/) |
 | **Repo**            | https://github.com/0xjiongying/machine-identity-verified            |
 
 > **Submission blockers (owner):** (1) make this GitHub repository **public**, (2) set Cleanverse Sandbox secrets on Render when UAT `verify_apass` returns `data.code` 4 again, (3) upload demo video.
@@ -107,8 +107,8 @@ If the live Sandbox is unreachable, the adapter **fails closed** (no approval, n
 | CVA custom `/atoken/launch` | **UNAVAILABLE** | Not on hot path; UAT `ISSUE_FAILED` — never faked as ISSUED |
 | CCP `verify_apass` | **SANDBOX / REAL** | Unknown → `data.code` 2 (BLOCK). Issuer/Fund currently may return envelope `0002` / atoken validation failure on UAT — app **fails closed** (never fabricates code 4). When UAT recovers, code 4 is the only APPROVE path. |
 | Validator pool `/validator/verify` | **UNAVAILABLE** | Needs owned registered pool |
-| Monad settlement | **DEMO** | Settlement **reference** after CCP (no fabricated explorer hash) |
-| `MachineTrustRegistry` | **ROADMAP** | Contract source included · **not deployed** |
+| Monad settlement | **DEMO** until registry write confirms | On-chain only after live CCP APPROVE + configured registry; explorer: [testnet.monadvision.com](https://testnet.monadvision.com) |
+| `MachineTrustRegistry` | **TESTNET READY (source + tests)** | Foundry tests pass · deploy via `npm run registry:deploy` · proof via `npm run registry:proof` (CCP-gated) |
 | Passport / maintenance / parts | **DEMO** | Labelled demo machine metadata |
 
 ---
@@ -173,7 +173,19 @@ Production target is a **single Render Web Service** (TanStack Start monolith �
 | **Blueprint** | [`render.yaml`](./render.yaml) |
 | **Guide** | [`docs/RENDER_DEPLOYMENT.md`](./docs/RENDER_DEPLOYMENT.md) |
 
-Contract deploy is **manual** (`npm run registry:deploy`) — never part of the Render build. Set `MACHINETRUST_REGISTRY_ADDRESS` after deploy.
+Contract deploy is **manual** (`npm run registry:deploy`) — never part of the Render build.
+
+Official Monad Testnet (docs.monad.xyz): chain id `10143`, RPC `https://testnet-rpc.monad.xyz`, explorer `https://testnet.monadvision.com`, faucet `https://faucet.monad.xyz`.
+
+```bash
+forge test
+export MONAD_TESTNET_RPC_URL=https://testnet-rpc.monad.xyz
+export MONAD_TESTNET_PRIVATE_KEY=...          # server only — never commit / never VITE_
+export MACHINETRUST_OPERATOR_ADDRESS=0x...
+npm run registry:deploy
+export MACHINETRUST_REGISTRY_ADDRESS=0x...   # also set on Render
+npm run registry:proof                       # CVI→CVA→CCP→register/transfer; refuses unless data.code 4
+```
 
 Also see [contracts/README.md](./contracts/README.md). Never claim Mainnet without a verifiable tx.
 

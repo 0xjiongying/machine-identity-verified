@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { readConfig as readCleanverseConfig } from "@/lib/cleanverse/api.server";
 import { resolveMode } from "@/lib/cleanverse/service.server";
 import { readMonadConfig } from "@/lib/monad/config.server";
+import { MONAD_TESTNET_EXPLORER } from "@/lib/monad/explorer";
 
 /**
  * Production health check for Render (and local ops).
@@ -45,8 +46,11 @@ export const Route = createFileRoute("/health")({
                 : ("rpc_only" as const)
               : ("unconfigured" as const),
             network: monad.networkLabel,
+            chainId: monad.chainId,
             registry: monad.registryAddress ? "set" : "unset",
+            registryAddress: monad.registryAddress,
             writeEnabled: monad.canWrite,
+            explorer: monad.rpcUrl ? MONAD_TESTNET_EXPLORER : null,
           },
         };
 

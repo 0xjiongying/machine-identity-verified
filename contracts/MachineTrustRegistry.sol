@@ -9,8 +9,8 @@ pragma solidity ^0.8.24;
  * Callers (Machine Trust backend / authorized operator) MUST only write
  * after a Cleanverse CCP approval (verify_apass data.code === 4).
  *
- * Deployment status: NOT DEPLOYED in this hackathon build.
- * Ship to Monad Testnet first; only claim Mainnet when the tx is explorer-verifiable.
+ * Deployment status: see contracts/deployments/monad-testnet.json (filled only after
+ * a real Monad Testnet deploy). Never claim Mainnet without an explorer-verifiable tx.
  */
 contract MachineTrustRegistry {
     struct Machine {

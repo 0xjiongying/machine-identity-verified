@@ -18,7 +18,9 @@
     "cleanverse:audit": "node scripts/cleanverse-sandbox-audit.mjs",
     "typecheck": "tsc --noEmit",
     "registry:compile": "node scripts/compile-registry.mjs",
+    "registry:test": "forge test",
     "registry:deploy": "node scripts/deploy-registry.mjs",
+    "registry:proof": "node scripts/ccp-gated-registry-proof.mjs",
     "test": "npm run typecheck && npm run registry:compile && node scripts/security-smoke.mjs",
     "test:integration": "npm run cleanverse:audit"
   },

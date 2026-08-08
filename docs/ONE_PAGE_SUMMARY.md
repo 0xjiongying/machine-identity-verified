@@ -43,8 +43,9 @@ Aligned with the Cleanverse Trust Framework: interlocking **CVI** (verified iden
 | Layer | Status |
 | --- | --- |
 | Cleanverse Sandbox (Monad chain param) | **REAL** API calls |
-| Monad settlement | **Demo settlement reference** after CCP approval (no fabricated tx hash) |
-| `MachineTrustRegistry` | **NOT DEPLOYED** — source in `contracts/` for Testnet/Mainnet when ready |
+| Monad Testnet | Official RPC `https://testnet-rpc.monad.xyz` · chain id **10143** · explorer [testnet.monadvision.com](https://testnet.monadvision.com) |
+| Monad settlement | **On-chain only after CCP `data.code` 4** + configured registry; otherwise labelled DEMO ref |
+| `MachineTrustRegistry` | Foundry-tested · deploy/proof scripts ready · artifact in `contracts/deployments/` after real deploy |
 
 ## CORE FLOW
 

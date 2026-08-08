@@ -22,6 +22,8 @@ import { CleanverseMark } from "@/components/brand/CleanverseLogo";
 import { useCleanverse } from "@/lib/cleanverse-state";
 import { CheckSequence, type SequenceState } from "@/components/compliance/CheckSequence";
 import { TraceStrip } from "@/components/compliance/TraceStrip";
+import { SettlementProof } from "@/components/compliance/SettlementProof";
+import { isLikelyTxHash, monadTestnetTxUrl } from "@/lib/monad/explorer";
 import { PipelineStages } from "@/components/compliance/PipelineStages";
 import { derivePipelineStage } from "@/components/compliance/pipeline";
 import { VerdictBanner } from "@/components/compliance/VerdictBanner";
@@ -333,7 +335,24 @@ export function Transfer() {
                                 : "Monad settlement ref (DEMO)"}{" "}
                               · {result.decisionId}
                             </p>
+                            {result.settlement?.kind === "on-chain" &&
+                            isLikelyTxHash(result.settlement.txRef) ? (
+                              <p className="mt-3">
+                                <a
+                                  className="mt-mono text-[11px] text-primary underline-offset-2 hover:underline"
+                                  href={
+                                    result.settlement.explorerUrl ??
+                                    monadTestnetTxUrl(result.settlement.txRef)
+                                  }
+                                  target="_blank"
+                                  rel="noreferrer"
+                                >
+                                  View on MonadVision Testnet
+                                </a>
+                              </p>
+                            ) : null}
                           </div>
+                          <SettlementProof result={result} />
                           <TraceStrip result={result} className="bg-background" />
                         </motion.div>
                       ) : (
@@ -349,6 +368,7 @@ export function Transfer() {
                           <p className="text-[13px] leading-relaxed text-muted-foreground">
                             {result.rules.find((r) => r.code === result.blockedBy)?.reason}
                           </p>
+                          <SettlementProof result={result} />
                           <TraceStrip result={result} />
                         </motion.div>
                       )

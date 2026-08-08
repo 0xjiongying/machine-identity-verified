@@ -51,6 +51,9 @@ if (!operator) {
 }
 
 console.log("Deploying MachineTrustRegistry (explicit, not part of Render build)...");
+console.log("Network RPC:", rpc);
+console.log("Operator:", operator);
+// Do not print the private key.
 const result = spawnSync(
   "forge",
   [
@@ -62,6 +65,9 @@ const result = spawnSync(
     key,
     "--constructor-args",
     operator,
+    "--broadcast",
+    "--chain-id",
+    process.env.MONAD_CHAIN_ID || "10143",
   ],
   { encoding: "utf8", stdio: "inherit" },
 );

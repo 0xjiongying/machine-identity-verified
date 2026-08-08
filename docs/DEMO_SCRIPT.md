@@ -19,8 +19,8 @@ Captions in the Guided demo are designed so the story works **without narration*
 | 1:50–2:15 | CCP compliance       | Verdict banner `verify_apass · CCP · APPROVED`                       | Hold on VerdictBanner          |
 | 2:15–2:35 | Unverified → BLOCKED | `BUYER A · UNVERIFIED → TRANSFER BLOCKED`                            | Unknown Wallet                 |
 | 2:35–3:05 | Verified → APPROVED  | `BUYER B · VERIFIED → CCP APPROVED`                                  | Equipment Fund B               |
-| 3:05–3:30 | Monad transaction    | `MONAD SETTLEMENT → after CCP only`                                  | Settlement / ownership panel   |
-| 3:30–3:50 | Ownership + Audit    | `OWNERSHIP UPDATED · AUDIT TRAIL`                                    | Ownership → Audit              |
+| 3:05–3:30 | Monad transaction    | `MONAD TESTNET · MachineTrustRegistry · tx Confirmed` (or DEMO ref)  | SettlementProof panel          |
+| 3:30–3:50 | Ownership + Audit    | `OWNERSHIP UPDATED · AUDIT · Machine Registered → Ownership Updated` | Ownership → Audit              |
 | 3:50–4:00 | Architecture         | `Cleanverse essential · Passport \| CVI · CVA · CCP \| Monad`        | Architecture + scale           |
 
 **Say on camera:** Cleanverse is essential — CVI, CVA and CCP decide before Monad runs.
@@ -29,8 +29,11 @@ Captions in the Guided demo are designed so the story works **without narration*
 
 - Custom A-Token `/atoken/launch` succeeded (Sandbox: bind registered aUSDC only)
 - HTTP 200 alone means compliance approved
-- Settlement refs are mainnet explorer hashes
+- Settlement refs are Monad Mainnet explorer hashes
 - Local credential toggles change live Sandbox decisions
+- A Monad register/transfer ran when CCP was ComplianceFailed / non–code-4
+
+When on-chain: open the real tx on `https://testnet.monadvision.com/tx/<hash>` only.
 
 ## Upload
 

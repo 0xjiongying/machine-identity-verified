@@ -11,6 +11,7 @@
 import { createHash } from "node:crypto";
 
 import { readMonadConfig, readMonadOperatorKey } from "./config.server";
+import { monadTestnetTxUrl } from "./explorer";
 
 const REGISTRY_ABI = [
   "function registerMachine(bytes32 machineId, bytes32 passportHash, bytes32 cleanverseAssetRef, address owner_)",
@@ -24,6 +25,9 @@ export type RegistryWriteResult =
       txHash: string;
       kind: "on-chain";
       chain: "Monad";
+      explorerUrl: string;
+      registryAddress: string;
+      ownerAddress: string;
     }
   | {
       ok: false;
@@ -117,11 +121,37 @@ export async function maybeWriteRegistry(input: {
       hash = await wallet.writeContract(request);
     }
 
-    await publicClient.waitForTransactionReceipt({ hash, timeout: 60_000 });
-    return { ok: true, txHash: hash, kind: "on-chain", chain: "Monad" };
+    const receipt = await publicClient.waitForTransactionReceipt({ hash, timeout: 120_000 });
+    if (receipt.status !== "success") {
+      return {
+        ok: false,
+        kind: "error",
+        reason: `Monad transaction reverted (status ${receipt.status}).`,
+      };
+    }
+
+    const ownerAddress = (await publicClient.readContract({
+      address: registry,
+      abi,
+      functionName: "ownerOf",
+      args: [machineId],
+    })) as string;
+
+    return {
+      ok: true,
+      txHash: hash,
+      kind: "on-chain",
+      chain: "Monad",
+      explorerUrl: monadTestnetTxUrl(hash),
+      registryAddress: registry,
+      ownerAddress: getAddress(ownerAddress),
+    };
   } catch (error) {
     const message = error instanceof Error ? error.message : "registry write failed";
-    const sanitized = message.replace(/0x[a-fA-F0-9]{64}/g, "0x[redacted]");
+    // Redact private-key shaped hex; keep public tx hashes out of error logs too.
+    const sanitized = message
+      .replace(/0x[a-fA-F0-9]{64}/g, "0x[redacted]")
+      .replace(/private[-_ ]?key[^\s]*/gi, "private-key[redacted]");
     console.error("[MachineTrust] registry write failed:", sanitized);
     return { ok: false, kind: "error", reason: sanitized };
   }

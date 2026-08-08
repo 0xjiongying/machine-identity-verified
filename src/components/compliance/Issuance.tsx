@@ -22,6 +22,7 @@ import { useCleanverse } from "@/lib/cleanverse-state";
 import { useAssetState } from "@/lib/asset-state";
 import { CheckSequence, type SequenceState } from "./CheckSequence";
 import { TraceStrip } from "./TraceStrip";
+import { SettlementProof } from "./SettlementProof";
 import { PipelineStages } from "./PipelineStages";
 import { derivePipelineStage } from "./pipeline";
 import { VerdictBanner } from "./VerdictBanner";
@@ -235,6 +236,7 @@ export function Issuance() {
                         {result.notice}
                       </p>
                     ) : null}
+                    <SettlementProof result={result} />
                     <TraceStrip result={result} />
                   </motion.div>
                 ) : null}

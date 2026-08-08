@@ -76,6 +76,12 @@ export type Evaluation = {
     txRef: string;
     /** Real chain write vs Machine Trust demo settlement reference. */
     kind?: "demo-settlement-ref" | "on-chain";
+    /** Official Monad Testnet explorer URL when on-chain. */
+    explorerUrl?: string;
+    /** Deployed MachineTrustRegistry address when on-chain. */
+    registryAddress?: string;
+    /** Confirmed on-chain owner after register/transfer (when known). */
+    ownerAddress?: string;
   } | null;
   aToken: AtokenRecord | null;
   trace: CleanverseTrace;

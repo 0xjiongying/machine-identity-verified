@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 /**
- * Best-effort MachineTrustRegistry compile check.
- * Prefers Foundry `forge`; falls back to reporting solc/forge missing without failing CI hard
- * unless --strict is passed.
+ * MachineTrustRegistry compile + test.
+ * Prefers Foundry `forge`; falls back to presence check without failing soft CI.
  */
 
 import { existsSync, readFileSync } from "node:fs";
@@ -25,14 +24,13 @@ if (!src.includes("contract MachineTrustRegistry")) {
 
 const forge = spawnSync("forge", ["--version"], { encoding: "utf8" });
 if (forge.status === 0) {
-  const build = spawnSync("forge", ["build", "--contracts", "contracts/MachineTrustRegistry.sol"], {
-    encoding: "utf8",
-    stdio: "inherit",
-  });
-  process.exit(build.status ?? 1);
+  const build = spawnSync("forge", ["build"], { encoding: "utf8", stdio: "inherit" });
+  if (build.status !== 0) process.exit(build.status ?? 1);
+  const test = spawnSync("forge", ["test"], { encoding: "utf8", stdio: "inherit" });
+  process.exit(test.status ?? 1);
 }
 
 console.log("WARN: Foundry `forge` not installed — syntax presence check only.");
-console.log("PASS: MachineTrustRegistry.sol present (install Foundry to compile).");
+console.log("PASS: MachineTrustRegistry.sol present (install Foundry to compile + test).");
 if (strict) process.exit(1);
 process.exit(0);

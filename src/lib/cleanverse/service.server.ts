@@ -241,32 +241,54 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
   if (!approved) token = input.aToken ?? unissuedToken(input.asset);
 
   let settlement: Evaluation["settlement"] = null;
+  // CRITICAL: Monad writes only after live CVI + CVA + CCP all pass (approved).
+  // ComplianceFailed / non-code-4 → approved=false → no chain submission.
   if (approved) {
-    const write = await maybeWriteRegistry({
-      kind: input.kind,
-      machineKey: input.asset.subject.passportId,
-      passportId: input.asset.subject.passportId,
-      cleanverseAssetRef: atokenAddress ?? token?.tokenId ?? input.asset.id,
-      ownerAddress: input.sender.holder.wallet,
-      recipientAddress: input.recipient?.holder.wallet ?? null,
-      decisionRef,
-    });
-
-    if (write.ok) {
-      settlement = { chain: "Monad", txRef: write.txHash, kind: "on-chain" };
-      notices.push(`Monad registry write confirmed: ${write.txHash}`);
+    const cviOk = rules.filter((r) => r.source === "CVI").every((r) => r.status !== "fail");
+    const cvaOk = rules.filter((r) => r.source === "CVA").every((r) => r.status !== "fail");
+    const ccpOk = rules.filter((r) => r.source === "CCP").every((r) => r.status === "pass");
+    if (!(cviOk && cvaOk && ccpOk)) {
+      notices.push(
+        "Monad write blocked — Cleanverse CVI/CVA/CCP gate incomplete even though aggregate approved flag was true.",
+      );
     } else {
-      settlement = {
-        chain: "Monad",
-        txRef: `monad:settlement/0x${hash(seed + "monad")}`,
-        kind: "demo-settlement-ref",
-      };
-      if (write.kind === "error") {
-        notices.push(`Monad registry write failed — keeping DEMO settlement ref. ${write.reason}`);
-      } else {
+      const write = await maybeWriteRegistry({
+        kind: input.kind,
+        machineKey: input.asset.subject.passportId,
+        passportId: input.asset.subject.passportId,
+        cleanverseAssetRef: atokenAddress ?? token?.tokenId ?? input.asset.id,
+        ownerAddress: input.sender.holder.wallet,
+        recipientAddress: input.recipient?.holder.wallet ?? null,
+        decisionRef,
+      });
+
+      if (write.ok) {
+        settlement = {
+          chain: "Monad",
+          txRef: write.txHash,
+          kind: "on-chain",
+          explorerUrl: write.explorerUrl,
+          registryAddress: write.registryAddress,
+          ownerAddress: write.ownerAddress,
+        };
         notices.push(
-          "Monad registry not fully configured — DEMO settlement reference recorded (not an explorer hash).",
+          `Monad Testnet registry write confirmed: ${write.txHash} · owner ${write.ownerAddress}`,
         );
+      } else {
+        settlement = {
+          chain: "Monad",
+          txRef: `monad:settlement/0x${hash(seed + "monad")}`,
+          kind: "demo-settlement-ref",
+        };
+        if (write.kind === "error") {
+          notices.push(
+            `Monad registry write failed — keeping DEMO settlement ref. ${write.reason}`,
+          );
+        } else {
+          notices.push(
+            "Monad registry not fully configured — DEMO settlement reference recorded (not an explorer hash).",
+          );
+        }
       }
     }
   }
