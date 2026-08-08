@@ -1,4 +1,6 @@
-/** DEMO DATA — simulated Cleanverse participants. */
+/** DEMO DATA — participants bound to sandbox-registered Cleanverse A-Pass wallets. */
+
+import { SANDBOX_WALLETS } from "./cleanverse-registry";
 
 export type Participant = {
   key: string;
@@ -14,10 +16,10 @@ export const issuer: Participant = {
   key: "abc",
   name: "ABC Manufacturing",
   role: "ISSUER",
-  wallet: "0x4a1c…9f02",
+  wallet: SANDBOX_WALLETS.issuer,
   cvi: true,
   jurisdiction: "DE",
-  note: "Verified industrial operator",
+  note: "Verified industrial operator (sandbox A-Pass)",
 };
 
 export const recipients: Participant[] = [
@@ -25,7 +27,7 @@ export const recipients: Participant[] = [
     key: "unknown",
     name: "Unknown Wallet",
     role: "RECIPIENT A",
-    wallet: "0xd7f2…31c8",
+    wallet: SANDBOX_WALLETS.unknown,
     cvi: false,
     jurisdiction: "—",
     note: "No Cleanverse identity credential presented",
@@ -34,9 +36,9 @@ export const recipients: Participant[] = [
     key: "fundb",
     name: "Equipment Fund B",
     role: "RECIPIENT B",
-    wallet: "0x8b73…c410",
+    wallet: SANDBOX_WALLETS.fund,
     cvi: true,
     jurisdiction: "LU",
-    note: "Verified institutional asset holder",
+    note: "Verified institutional asset holder (sandbox A-Pass)",
   },
 ];

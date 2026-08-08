@@ -51,6 +51,8 @@ export type AtokenRecord = {
   transferable: boolean;
   attestations: number;
   mintedAt: string | null;
+  /** On-chain A-Token contract address from Cleanverse (when live). */
+  contractAddress?: string | null;
 };
 
 /** Full trace of the three Cleanverse primitives behind one decision. */

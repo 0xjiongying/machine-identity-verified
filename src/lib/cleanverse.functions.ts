@@ -31,6 +31,11 @@ export const evaluateCompliance = createServerFn({ method: "POST" })
     }),
   );
 
-export const getCleanverseMode = createServerFn({ method: "GET" }).handler(async () => ({
-  mode: resolveMode(),
-}));
+export const getCleanverseMode = createServerFn({ method: "GET" }).handler(async () => {
+  const mode = resolveMode();
+  return {
+    mode,
+    /** Docs version the adapter is written against. */
+    apiVersion: "v5.6" as const,
+  };
+});

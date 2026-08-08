@@ -51,6 +51,19 @@ const PROOF = {
   verificationMethod: "did:cleanverse:registry#keys-1",
 };
 
+/**
+ * Sandbox-registered Monad wallets (Cleanverse A-Pass via POST /generate_apass).
+ * These are public addresses used as demo holders — not private keys.
+ * Issuer cvRecordId 1913 · Buyer cvRecordId 1914 (UAT).
+ */
+export const SANDBOX_WALLETS = {
+  issuer: "0x5d6b84e2cab95b72ed74fb4768324763f4950d9e",
+  fund: "0xc8ba032092cc2499637f4e331e841ab24d1c9964",
+  unknown: "0xda45b2481b679b6a2eacb413fdcf761ab1637d2e",
+  /** Cleanverse Monad aUSDC A-Token (from POST /query_deposit_atoken_list). */
+  ausdcAtoken: "0xaC0893567D43C3E7e6e35a72803df05416C1f20D",
+} as const;
+
 export const cviIssuer: CviCredential = {
   schema: "cleanverse:cvi:v1",
   id: "cvi:cred/8f21-4ab0-issuer",
@@ -58,7 +71,7 @@ export const cviIssuer: CviCredential = {
   holder: {
     name: "ABC Manufacturing",
     role: "Issuer / operator",
-    wallet: "0x4a1c…9f02",
+    wallet: SANDBOX_WALLETS.issuer,
     did: "did:cleanverse:holder:abc-mfg",
   },
   status: "active",
@@ -77,7 +90,7 @@ export const cviUnknown: CviCredential = {
   holder: {
     name: "Unknown Wallet",
     role: "Counterparty A",
-    wallet: "0xd7f2…31c8",
+    wallet: SANDBOX_WALLETS.unknown,
     did: "—",
   },
   status: "absent",
@@ -96,7 +109,7 @@ export const cviFund: CviCredential = {
   holder: {
     name: "Equipment Fund B",
     role: "Institutional buyer",
-    wallet: "0x8b73…c410",
+    wallet: SANDBOX_WALLETS.fund,
     did: "did:cleanverse:holder:equipment-fund-b",
   },
   status: "active",

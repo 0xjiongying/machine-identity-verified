@@ -73,9 +73,12 @@ export function unissuedToken(asset: CvaCredential): AtokenRecord {
 
 /* ------------------------------- CVI / A-Pass ------------------------------ */
 
-function cviRules(c: CviCredential | null, who: "sender" | "recipient", kind: PolicyKind): RuleResult[] {
-  const tag =
-    who === "sender" ? (kind === "issuance" ? "Issuer" : "Holder") : "Recipient";
+function cviRules(
+  c: CviCredential | null,
+  who: "sender" | "recipient",
+  kind: PolicyKind,
+): RuleResult[] {
+  const tag = who === "sender" ? (kind === "issuance" ? "Issuer" : "Holder") : "Recipient";
   const prefix = who === "sender" ? "CVI-01" : "CVI-10";
 
   if (!c || c.status === "absent") {
@@ -228,9 +231,7 @@ function ccpRules(recipient: CviCredential, asset: CvaCredential): RuleResult[] 
       requirement: `Accreditation ∈ [${r.allowedAccreditation.join(", ")}]`,
       observed: recipient.accreditation,
       status: accreditationOk ? "pass" : "fail",
-      reason: accreditationOk
-        ? OK
-        : "Recipient is not an eligible holder class for this A-Token.",
+      reason: accreditationOk ? OK : "Recipient is not an eligible holder class for this A-Token.",
       source: "CCP",
     },
   ];

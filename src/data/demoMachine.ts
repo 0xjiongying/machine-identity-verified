@@ -23,14 +23,14 @@ export const ownershipHistory = [
     year: "2025",
     entity: "ABC Manufacturing",
     action: "Initial registration",
-    ref: "mt:reg/0x4a1c…9f02",
+    ref: "mt:reg/0x5d6b…0d9e",
     verified: true,
   },
   {
     year: "2026",
     entity: "Equipment Fund B",
     action: "Compliant transfer",
-    ref: "monad:tx/0x8b73…c410",
+    ref: "monad:tx/0xc8ba…9964",
     verified: true,
   },
   {
@@ -104,7 +104,7 @@ export const auditTrail = [
     entity: "ABC Manufacturing",
     action: "Machine registered",
     verification: "Passport issued",
-    tx: "mt:reg/0x4a1c…9f02",
+    tx: "mt:reg/0x5d6b…0d9e",
   },
   {
     time: "2026-06-02 13:40 UTC",
@@ -125,7 +125,7 @@ export const auditTrail = [
     entity: "ABC Manufacturing → Equipment Fund B",
     action: "Compliant transfer",
     verification: "Policy pass",
-    tx: "monad:tx/0x8b73…c410",
+    tx: "monad:tx/0xc8ba…9964",
   },
   {
     time: "Current",

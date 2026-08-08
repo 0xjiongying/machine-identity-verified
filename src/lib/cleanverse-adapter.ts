@@ -4,6 +4,8 @@
  * The UI imports nothing else: no endpoints, no keys, no policy logic. Every
  * decision travels CVI (A-Pass) → CVA (A-Token) → CCP → Monad through the
  * server function below, and comes back as one Evaluation with a full trace.
+ *
+ * Secrets and HTTP live only in `./cleanverse/api.server.ts` (Cleanverse API v5.6).
  */
 
 import { evaluateCompliance, getCleanverseMode } from "./cleanverse.functions";
