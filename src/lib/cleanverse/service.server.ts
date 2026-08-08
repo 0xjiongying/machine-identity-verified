@@ -70,13 +70,16 @@ function errText(error: unknown) {
       : "unknown error";
 }
 
-function listingsOf(data: AtokenListing[] | { list?: AtokenListing[] } | null): AtokenListing[] {
-  if (!data) return [];
-  return Array.isArray(data) ? data : (data.list ?? []);
+function listingsOf(data: { tokens?: AtokenListing[] } | null): AtokenListing[] {
+  return data?.tokens ?? [];
+}
+
+function symbolOf(listing: AtokenListing | undefined) {
+  return listing?.atoken?.symbol ?? listing?.origin_token?.symbol ?? null;
 }
 
 function addressOf(listing: AtokenListing | undefined) {
-  return listing?.atoken_address ?? listing?.atoken ?? listing?.accesscore_address ?? null;
+  return listing?.atoken?.address ?? listing?.accesscore_address ?? null;
 }
 
 /** CCP verdict from verify_apass: 0000 allowed, 2 no A-Pass, 3 not transferable. */
@@ -158,7 +161,7 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
     const env = await queryDepositAtokenList(cfg, cfg.atokenSymbol);
     const listings = listingsOf(env.data);
     const listing = cfg.atokenSymbol
-      ? listings.find((l) => l.symbol === cfg.atokenSymbol)
+      ? listings.find((l) => symbolOf(l)?.toLowerCase() === cfg.atokenSymbol?.toLowerCase())
       : listings[0];
     atokenAddress = addressOf(listing);
     rules.push({
@@ -166,7 +169,7 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
       label: "A-Token registration",
       requirement: "The asset must resolve to an A-Token registered with Cleanverse",
       observed: atokenAddress
-        ? `${listing?.symbol ?? "A-Token"} · ${atokenAddress.slice(0, 12)}…`
+        ? `${symbolOf(listing) ?? "A-Token"} · ${atokenAddress.slice(0, 12)}…`
         : `no A-Token returned (${env.code}: ${env.message})`,
       status: atokenAddress ? "pass" : "fail",
       reason: atokenAddress
@@ -177,7 +180,9 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
     if (atokenAddress) {
       token = {
         ref: `cva:atoken/${atokenAddress}`,
-        tokenId: listing?.symbol ? `${listing.symbol}:${atokenIdFor(input.asset)}` : atokenIdFor(input.asset),
+        tokenId: symbolOf(listing)
+          ? `${symbolOf(listing)}:${atokenIdFor(input.asset)}`
+          : atokenIdFor(input.asset),
         credentialId: input.asset.id,
         passportId: input.asset.subject.passportId,
         status: input.kind === "issuance" ? "minted" : (input.aToken?.status ?? "active"),
