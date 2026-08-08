@@ -79,8 +79,8 @@ export function MachineTwin({ phase = 0, explode = 0, bare = false }: TwinProps)
               progress={phase}
               step={step}
               hideCards
-              scale={0.62}
-              offsetX={0.5}
+              scale={0.54}
+              offsetX={0.15}
               explode={explode}
               tier={tier}
               hovered={hovered}
