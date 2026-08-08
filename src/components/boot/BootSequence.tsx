@@ -46,7 +46,7 @@ export function BootSequence() {
       const t = Math.min(1, (performance.now() - start) / total);
       const eased = 1 - Math.pow(1 - t, 3);
       setProgress(eased);
-      setStage(Math.min(STAGES.length - 1, Math.floor(eased * STAGES.length)));
+      setStage(Math.min(STAGES.length - 1, Math.floor(t * STAGES.length)));
       if (t >= 1) {
         window.clearInterval(id);
         finish();
