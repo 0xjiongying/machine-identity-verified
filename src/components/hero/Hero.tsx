@@ -26,10 +26,10 @@ const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
 const ramp = (p: number, a: number, b: number) => clamp01((p - a) / (b - a));
 
 const LABELS = [
-  { key: "controller", name: "Controller", id: "IRC5-3HAC-0421", pos: "left-[8%] top-[62%]" },
-  { key: "motor", name: "Axis motor", id: "AXS-M2-77140", pos: "left-[14%] top-[34%]" },
-  { key: "arm", name: "Arm assembly", id: "IRB6700-ARM-8802", pos: "right-[10%] top-[24%]" },
-  { key: "safety", name: "Safety envelope", id: "SAF-ENV-1180", pos: "right-[12%] bottom-[22%]" },
+  { key: "controller", name: "Controller", id: "IRC5-3HAC-0421", pos: "left-[46%] bottom-[14%]" },
+  { key: "motor", name: "Axis motor", id: "AXS-M2-77140", pos: "left-[38%] top-[22%]" },
+  { key: "arm", name: "Arm assembly", id: "IRB6700-ARM-8802", pos: "left-[60%] top-[10%]" },
+  { key: "safety", name: "Safety envelope", id: "SAF-ENV-1180", pos: "left-[52%] bottom-[32%]" },
 ];
 
 export function Hero() {
@@ -79,16 +79,14 @@ export function Hero() {
         <Shell className="relative flex h-full flex-col justify-center">
           {/* headline choreography: one line replaces the other in the same slot */}
           <div className="relative w-full" style={{ maxWidth: "min(560px, 90vw)" }}>
-            <motion.div
-              {...rise(0.15)}
-              className="mb-8 flex flex-wrap items-center gap-3"
-              style={{ opacity: 1 - introOut }}
-            >
-              <span className="mt-mono border border-border px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                RWA · Machine infrastructure
-              </span>
-              <DemoTag />
-            </motion.div>
+            <div style={{ opacity: 1 - introOut }}>
+              <motion.div {...rise(0.15)} className="mb-8 flex flex-wrap items-center gap-3">
+                <span className="mt-mono border border-border px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  RWA · Machine infrastructure
+                </span>
+                <DemoTag />
+              </motion.div>
+            </div>
 
             <div className="relative grid max-w-[9ch] text-[length:var(--text-hero)] font-medium leading-[0.95] tracking-[-0.04em] [&>*]:col-start-1 [&>*]:row-start-1">
               <motion.span
@@ -118,36 +116,37 @@ export function Hero() {
               </span>
             </div>
 
-            <motion.p
-              {...rise(0.56)}
-              className="mt-6 max-w-[42ch] text-[15px] leading-relaxed text-muted-foreground"
-              style={{ opacity: 1 - introOut }}
-            >
-              MachineTrust connects physical machine identity, provenance and ownership with
-              compliance-aware on-chain transactions.
-            </motion.p>
+            <div style={{ opacity: 1 - introOut, pointerEvents: introOut > 0.6 ? "none" : "auto" }}>
+              <motion.p
+                {...rise(0.56)}
+                className="mt-6 max-w-[42ch] text-[15px] leading-relaxed text-muted-foreground"
+              >
+                MachineTrust connects physical machine identity, provenance and ownership with
+                compliance-aware on-chain transactions.
+              </motion.p>
 
-            <motion.div
-              {...rise(0.68)}
-              className="mt-7 flex flex-wrap items-center gap-3"
-              style={{ opacity: 1 - introOut, pointerEvents: introOut > 0.6 ? "none" : "auto" }}
-            >
-              <MagneticButton href="#passport" cursor="open">
-                Explore Machine
-                <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">
-                  →
-                </span>
-              </MagneticButton>
-              <MagneticButton href="#architecture" variant="outline">
-                View Architecture
-              </MagneticButton>
-            </motion.div>
+              <motion.div {...rise(0.68)} className="mt-7 flex flex-wrap items-center gap-3">
+                <MagneticButton href="#passport" cursor="open">
+                  Explore Machine
+                  <span
+                    aria-hidden="true"
+                    className="transition-transform group-hover:translate-x-1"
+                  >
+                    →
+                  </span>
+                </MagneticButton>
+                <MagneticButton href="#architecture" variant="outline">
+                  View Architecture
+                </MagneticButton>
+              </motion.div>
+            </div>
           </div>
 
           {/* technical annotations resolve as the scan passes each component */}
           <div className="pointer-events-none absolute inset-0 hidden lg:block" aria-hidden="true">
             {LABELS.map((l, i) => {
-              const a = ramp(phase, 0.56 + i * 0.04, 0.66 + i * 0.04) * (1 - ramp(phase, 0.84, 0.92));
+              const a =
+                ramp(phase, 0.56 + i * 0.04, 0.66 + i * 0.04) * (1 - ramp(phase, 0.84, 0.92));
               return (
                 <div
                   key={l.key}
