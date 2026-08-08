@@ -36,17 +36,19 @@ export function BootSequence() {
     if (!active) return;
     const total = 2100;
     const start = performance.now();
-    let raf = 0;
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / total);
+    // Timer-driven so the sequence still completes if rAF is throttled while
+    // the WebGL scene and fonts are warming up.
+    const id = window.setInterval(() => {
+      const t = Math.min(1, (performance.now() - start) / total);
       const eased = 1 - Math.pow(1 - t, 3);
       setProgress(eased);
       setStage(Math.min(STAGES.length - 1, Math.floor(eased * STAGES.length)));
-      if (t < 1) raf = requestAnimationFrame(tick);
-      else finish();
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+      if (t >= 1) {
+        window.clearInterval(id);
+        finish();
+      }
+    }, 32);
+    return () => window.clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
 
