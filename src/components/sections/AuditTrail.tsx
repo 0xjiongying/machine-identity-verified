@@ -5,7 +5,7 @@ import { auditTrail } from "@/data/demoMachine";
 import { useAssetState } from "@/lib/asset-state";
 
 export function AuditTrail() {
-  const { extraEvents } = useAssetState();
+  const { extraEvents, owner } = useAssetState();
   const list = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: list,
@@ -14,6 +14,20 @@ export function AuditTrail() {
   // The provenance line draws itself as the history scrolls past.
   const draw = useSpring(scrollYProgress, { stiffness: 90, damping: 24, mass: 0.4 });
 
+  const rows = [
+    ...auditTrail,
+    ...extraEvents.map((e) => ({
+      time: e.timestamp,
+      entity: e.kind === "transferred" ? owner : "Machine Trust",
+      action: e.label,
+      verification:
+        e.kind === "issued" || e.kind === "transferred" || e.kind === "verified"
+          ? "CVI · CVA · CCP"
+          : "Machine Trust",
+      tx: e.hash,
+    })),
+  ];
+
   return (
     <Section id="audit" label="Asset history" className="scroll-mt-16">
       <Shell>
@@ -21,8 +35,8 @@ export function AuditTrail() {
           <Eyebrow index="10">Asset history</Eyebrow>
           <Heading>Every state change leaves a trace.</Heading>
           <Lede>
-            Registration, service, issuance and transfer accumulate into one auditable record — the
-            proof that makes a machine financeable rather than merely photographed.
+            Registration and service start as Machine Trust passport events. Issuance and transfer
+            appear only after Cleanverse CVI → CVA → CCP gates approve — never pre-settled.
           </Lede>
         </Reveal>
 
@@ -45,20 +59,9 @@ export function AuditTrail() {
                 </tr>
               </thead>
               <tbody>
-                {[
-                  ...auditTrail,
-                  ...extraEvents
-                    .filter((e) => !auditTrail.some((a) => a.tx.endsWith(e.hash.slice(-4))))
-                    .map((e) => ({
-                      time: e.timestamp,
-                      entity: "Machine Trust",
-                      action: e.label,
-                      verification: "CVI · CVA · CCP",
-                      tx: e.hash,
-                    })),
-                ].map((e, i) => (
+                {rows.map((e, i) => (
                   <motion.tr
-                    key={e.time}
+                    key={`${e.time}-${e.tx}-${i}`}
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: "-8% 0px" }}
@@ -87,8 +90,8 @@ export function AuditTrail() {
           </div>
         </div>
         <p className="mt-6 text-[12px] text-muted-foreground">
-          Simulated references. Production deployments resolve these to real settlement
-          transactions.
+          Passport rows are demo metadata. Cleanverse-gated issuance and transfer rows appear only
+          after a real evaluation succeeds. Monad settlement refs are labelled when demo-only.
         </p>
       </Shell>
     </Section>

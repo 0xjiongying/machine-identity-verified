@@ -11,13 +11,12 @@ type Step = {
   action?: () => void;
 };
 
-function fire(detail: { action: string; counterparty?: string }) {
-  window.dispatchEvent(new CustomEvent("mt:transfer", { detail }));
+function fire(detail: { action: string; wallet?: string }) {
+  window.dispatchEvent(new CustomEvent("mt:lending", { detail }));
 }
 
 /**
- * The two-minute demo path. One button per beat so a live walkthrough is
- * deterministic: problem → passport → credentials → blocked → approved → trail.
+ * 90–120s Track 2 demo: identity gate → blocked path → verified path → loan lifecycle.
  */
 export function DemoPath() {
   const [open, setOpen] = useState(false);
@@ -28,42 +27,59 @@ export function DemoPath() {
   }, []);
 
   const steps: Step[] = [
-    { n: "01", label: "The problem", target: "machines", say: "Machine records are fragmented." },
-    { n: "02", label: "Machine passport", target: "passport", say: "One verifiable asset record." },
+    {
+      n: "01",
+      label: "The pitch",
+      target: "hero",
+      say: "Verified identity unlocks compliant machine finance.",
+    },
+    {
+      n: "02",
+      label: "Machine passport",
+      target: "passport",
+      say: "Passport is context — not automatic collateral.",
+    },
     {
       n: "03",
-      label: "CVI + CVA",
-      target: "credentials",
-      say: "Cleanverse verifies party and asset.",
+      label: "Path A · blocked",
+      target: "finance",
+      say: "Unknown wallet → CVI fail → access denied.",
+      action: () => {
+        fire({ action: "connect", wallet: "unknown" });
+        window.setTimeout(() => fire({ action: "check" }), 800);
+      },
     },
     {
       n: "04",
-      label: "Mint A-Token",
-      target: "issuance",
-      say: "Issuer A-Pass → A-Token mint → CCP → Monad.",
-      action: () => window.dispatchEvent(new CustomEvent("mt:issuance")),
+      label: "Path B · verified",
+      target: "finance",
+      say: "ABC Manufacturing → CVI + CCP → pool unlocked.",
+      action: () => {
+        fire({ action: "connect", wallet: "borrower" });
+        window.setTimeout(() => fire({ action: "check" }), 800);
+      },
     },
     {
       n: "05",
-      label: "Transfer blocked",
-      target: "transfer",
-      say: "Unverified buyer → blocked before Monad.",
-      action: () => {
-        fire({ action: "select", counterparty: "Unknown" });
-        window.setTimeout(() => fire({ action: "run" }), 900);
-      },
+      label: "Request loan",
+      target: "finance",
+      say: "Eligible borrower requests USDC financing.",
+      action: () => fire({ action: "request" }),
     },
     {
       n: "06",
-      label: "Transfer approved",
-      target: "transfer",
-      say: "Verified buyer → approved → settled on Monad.",
-      action: () => {
-        fire({ action: "select", counterparty: "Equipment Fund B" });
-        window.setTimeout(() => fire({ action: "run" }), 900);
-      },
+      label: "Borrow on Monad",
+      target: "finance",
+      say: "Approve → protocol execution → loan ACTIVE.",
+      action: () => fire({ action: "borrow" }),
     },
-    { n: "07", label: "Audit trail", target: "audit", say: "Ownership and history update." },
+    {
+      n: "07",
+      label: "Repay · closed",
+      target: "finance",
+      say: "Repayment settles · loan CLOSED.",
+      action: () => fire({ action: "repay" }),
+    },
   ];
 
   const run = (i: number) => {
@@ -71,12 +87,12 @@ export function DemoPath() {
     if (!s) return;
     setStep(i);
     go(s.target);
-    if (s.action) window.setTimeout(s.action, 1000);
+    if (s.action) window.setTimeout(s.action, 900);
   };
 
   return (
     <div className="pointer-events-none fixed bottom-5 right-5 z-40 hidden md:block">
-      <div className="pointer-events-auto w-[280px] border border-border bg-background/85 backdrop-blur-md">
+      <div className="pointer-events-auto w-[300px] border border-border bg-background/85 backdrop-blur-md">
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
@@ -84,7 +100,7 @@ export function DemoPath() {
           className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
         >
           <span className="mt-mono text-[10px] uppercase tracking-[0.2em] text-primary">
-            Guided demo · 2 min
+            Guided demo · 2 min · Track 2
           </span>
           <span className="mt-mono text-[11px] text-muted-foreground">{open ? "−" : "+"}</span>
         </button>
@@ -98,52 +114,27 @@ export function DemoPath() {
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               className="overflow-hidden border-t border-border"
             >
-              <ol className="px-2 py-2">
+              <ol className="max-h-[50vh] space-y-1 overflow-y-auto p-2">
                 {steps.map((s, i) => (
                   <li key={s.n}>
                     <button
                       type="button"
                       onClick={() => run(i)}
-                      data-cursor="select"
                       className={cn(
-                        "flex w-full items-start gap-3 px-2 py-2 text-left transition-colors",
-                        step === i ? "bg-primary/10" : "hover:bg-surface",
+                        "flex w-full flex-col gap-1 border px-3 py-2.5 text-left transition-colors",
+                        step === i
+                          ? "border-primary/50 bg-primary/10"
+                          : "border-transparent hover:border-border",
                       )}
                     >
-                      <span
-                        className={cn(
-                          "mt-mono mt-0.5 text-[10px]",
-                          step === i ? "text-primary" : "text-muted-foreground",
-                        )}
-                      >
-                        {s.n}
+                      <span className="mt-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                        {s.n} · {s.label}
                       </span>
-                      <span className="min-w-0">
-                        <span className="block text-[12px]">{s.label}</span>
-                        <span className="block text-[11px] leading-snug text-muted-foreground">
-                          {s.say}
-                        </span>
-                      </span>
+                      <span className="text-[12px] leading-snug text-foreground">{s.say}</span>
                     </button>
                   </li>
                 ))}
               </ol>
-              <div className="flex items-center justify-between gap-2 border-t border-border px-3 py-2.5">
-                <button
-                  type="button"
-                  onClick={() => run(0)}
-                  className="mt-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground"
-                >
-                  Restart
-                </button>
-                <button
-                  type="button"
-                  onClick={() => run(Math.min(step + 1, steps.length - 1))}
-                  className="mt-mono border border-foreground bg-foreground px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-background transition-colors hover:border-primary hover:bg-primary"
-                >
-                  Next beat
-                </button>
-              </div>
             </motion.div>
           ) : null}
         </AnimatePresence>

@@ -5,6 +5,8 @@ import { MagneticButton } from "@/components/motion/MagneticButton";
 import { EASE } from "@/lib/motion";
 import { useReducedMotion } from "@/hooks/useMotionPrefs";
 import { MachineTwin } from "./MachineTwin";
+import { useLending } from "@/lib/lending-state";
+import { cn } from "@/lib/utils";
 
 const rise = (delay: number) => ({
   initial: { opacity: 0, y: 26 },
@@ -12,17 +14,15 @@ const rise = (delay: number) => ({
   transition: { duration: 0.9, delay, ease: EASE.expoOut },
 });
 
-/** The five continuous states of the hero transformation. */
 const STAGES = [
   { at: 0.0, key: "physical", label: "Physical machine", note: "Serial IRB6700-92831" },
   { at: 0.2, key: "wireframe", label: "Technical scan", note: "Geometry → wireframe" },
-  { at: 0.4, key: "metadata", label: "Machine metadata", note: "Identity record forming" },
-  { at: 0.6, key: "components", label: "Component identity", note: "Chip · board · enclosure" },
-  { at: 0.8, key: "asset", label: "Verified asset", note: "MACHINE 042" },
+  { at: 0.4, key: "identity", label: "Owner identity", note: "CVI / A-Pass gate" },
+  { at: 0.6, key: "eligible", label: "Eligible borrower", note: "Compliance approved" },
+  { at: 0.8, key: "finance", label: "Financing available", note: "Machine Finance Pool" },
 ] as const;
 
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
-/** Continuous 0→1 ramp across a scroll window — no state ever cuts. */
 const ramp = (p: number, a: number, b: number) => clamp01((p - a) / (b - a));
 
 const LABELS = [
@@ -36,6 +36,7 @@ export function Hero() {
   const track = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
   const [p, setP] = useState(0);
+  const { financingVisual, eligibility } = useLending();
 
   const { scrollYProgress } = useScroll({ target: track, offset: ["start start", "end end"] });
   useMotionValueEvent(scrollYProgress, "change", (v) => setP(v));
@@ -48,14 +49,16 @@ export function Hero() {
   const introOut = ramp(phase, 0.12, 0.3);
   const secondIn = ramp(phase, 0.24, 0.42);
   const secondOut = ramp(phase, 0.66, 0.82);
-  const verified = ramp(phase, 0.78, 0.94);
+  const finale = ramp(phase, 0.78, 0.94);
+
+  const locked = financingVisual === "restricted";
 
   return (
     <section
       ref={track}
       id="hero"
       className="relative h-[420svh]"
-      aria-label="Machine Trust introduction"
+      aria-label="Machine Trust Compliant DeFi introduction"
     >
       <div className="sticky top-0 h-svh w-full overflow-hidden">
         <div
@@ -63,12 +66,12 @@ export function Hero() {
           aria-hidden="true"
         />
 
-        {/* the machine is the stage — it never leaves during the transformation */}
         <div
           className="absolute inset-0 flex items-center justify-center"
           style={{
             transform: `scale(${1 + phase * 0.08})`,
             opacity: 1 - ramp(phase, 0.94, 1) * 0.35,
+            filter: locked && finale > 0.2 ? "saturate(0.55)" : undefined,
           }}
         >
           <div className="h-full w-full max-w-[1600px]" data-cursor="inspect">
@@ -76,19 +79,37 @@ export function Hero() {
           </div>
         </div>
 
+        {/* financing visual state */}
+        <div className="pointer-events-none absolute inset-x-0 top-20 flex justify-center px-4">
+          <span
+            className={cn(
+              "mt-mono border px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] backdrop-blur-sm",
+              financingVisual === "restricted" && "border-destructive/40 text-destructive",
+              financingVisual === "enabled" && "border-primary/40 text-primary",
+              financingVisual === "active" && "border-success/40 text-success",
+              financingVisual === "closed" && "border-border text-muted-foreground",
+            )}
+          >
+            {financingVisual === "restricted" && "Financing restricted"}
+            {financingVisual === "enabled" && "Financing enabled"}
+            {financingVisual === "active" && "Loan active"}
+            {financingVisual === "closed" && "Loan closed"}
+            {eligibility?.layers.cvi === "VERIFIED" ? " · CVI verified" : ""}
+          </span>
+        </div>
+
         <Shell className="relative flex h-full flex-col justify-center">
-          {/* headline choreography: one line replaces the other in the same slot */}
-          <div className="relative w-full" style={{ maxWidth: "min(560px, 90vw)" }}>
+          <div className="relative w-full" style={{ maxWidth: "min(620px, 90vw)" }}>
             <div style={{ opacity: 1 - introOut }}>
               <motion.div {...rise(0.15)} className="mb-8 flex flex-wrap items-center gap-3">
                 <span className="mt-mono border border-border px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  RWA · Machine infrastructure
+                  Interactive machine finance
                 </span>
                 <DemoTag />
               </motion.div>
             </div>
 
-            <div className="relative grid max-w-[9ch] text-[length:var(--text-hero)] font-medium leading-[0.95] tracking-[-0.04em] [&>*]:col-start-1 [&>*]:row-start-1">
+            <div className="relative grid max-w-[14ch] text-[length:var(--text-hero)] font-medium leading-[0.95] tracking-[-0.04em] [&>*]:col-start-1 [&>*]:row-start-1">
               <motion.span
                 className="block"
                 style={{
@@ -101,7 +122,7 @@ export function Hero() {
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 transition={{ duration: 1.2, delay: 0.25, ease: EASE.expoOut }}
               >
-                Trust the machine.
+                Finance machines.
               </motion.span>
 
               <span
@@ -112,22 +133,22 @@ export function Hero() {
                   filter: `blur(${(1 - secondIn) * 10 + secondOut * 8}px)`,
                 }}
               >
-                Program the asset.
+                Verify the borrower.
               </span>
             </div>
 
             <div style={{ opacity: 1 - introOut, pointerEvents: introOut > 0.6 ? "none" : "auto" }}>
               <motion.p
                 {...rise(0.56)}
-                className="mt-6 max-w-[42ch] text-[15px] leading-relaxed text-muted-foreground"
+                className="mt-6 max-w-[44ch] text-[15px] leading-relaxed text-muted-foreground"
               >
-                Machine Trust connects physical machine identity, provenance and ownership with
-                compliance-aware on-chain transactions.
+                Verified identity unlocks compliant machine finance. A CVI-gated DeFi market for
+                verified borrowers — Cleanverse decides access, Monad executes the loan.
               </motion.p>
 
               <motion.div {...rise(0.68)} className="mt-7 flex flex-wrap items-center gap-3">
-                <MagneticButton href="#passport" cursor="open">
-                  Explore Machine
+                <MagneticButton href="#finance" cursor="open">
+                  Check Eligibility
                   <span
                     aria-hidden="true"
                     className="transition-transform group-hover:translate-x-1"
@@ -135,14 +156,13 @@ export function Hero() {
                     →
                   </span>
                 </MagneticButton>
-                <MagneticButton href="#architecture" variant="outline">
-                  View Architecture
+                <MagneticButton href="#inspect" variant="outline">
+                  Explore Machine
                 </MagneticButton>
               </motion.div>
             </div>
           </div>
 
-          {/* technical annotations resolve as the scan passes each component */}
           <div className="pointer-events-none absolute inset-0 hidden lg:block" aria-hidden="true">
             {LABELS.map((l, i) => {
               const a =
@@ -166,19 +186,18 @@ export function Hero() {
             })}
           </div>
 
-          {/* the machine's identity record materialises on the right */}
           <div
             className="pointer-events-none absolute right-6 top-1/2 hidden w-[260px] -translate-y-1/2 md:block xl:right-10"
             style={{ opacity: ramp(phase, 0.38, 0.52) }}
           >
-            <p className="mt-label">Machine record</p>
+            <p className="mt-label">Finance path</p>
             <dl className="mt-3 divide-y divide-border border border-border bg-background/60 backdrop-blur-sm">
               {[
-                ["Index", "MACHINE 042"],
-                ["Model", "ABB IRB 6700"],
-                ["Serial", "IRB6700-92831"],
-                ["Commissioned", "2025-03-11"],
-                ["Provenance", "17 events"],
+                ["Machine", "ABB IRB 6700"],
+                ["Passport", "MT-000042"],
+                ["Gate", "CVI / A-Pass"],
+                ["Market", "USDC pool"],
+                ["Settlement", "Monad"],
               ].map(([k, v], i) => (
                 <div
                   key={k}
@@ -194,31 +213,30 @@ export function Hero() {
             </dl>
           </div>
 
-          {/* final state: the machine is now a verified asset */}
           <AnimatePresence>
-            {verified > 0.02 ? (
+            {finale > 0.02 ? (
               <motion.div
-                key="verified"
+                key="finale"
                 initial={{ opacity: 0 }}
-                animate={{ opacity: verified }}
+                animate={{ opacity: finale }}
                 exit={{ opacity: 0 }}
                 className="pointer-events-none absolute inset-x-0 bottom-24 flex flex-col items-center gap-4 text-center md:bottom-28"
-                style={{ transform: `translateY(${(1 - verified) * 24}px)` }}
+                style={{ transform: `translateY(${(1 - finale) * 24}px)` }}
               >
                 <span className="mt-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-                  Machine 042
+                  Machine finance
                 </span>
-                <span className="text-[clamp(2rem,5vw,3.6rem)] font-medium leading-none tracking-[-0.03em]">
-                  Verified asset
+                <span className="text-[clamp(1.8rem,4.5vw,3.2rem)] font-medium leading-none tracking-[-0.03em]">
+                  {locked ? "Access gated by identity" : "Compliant credit unlocked"}
                 </span>
                 <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-                  {["Identity", "Provenance", "Compliance"].map((k, i) => (
+                  {["Machine", "Verified owner", "Eligible borrower", "Financing"].map((k, i) => (
                     <span
                       key={k}
                       className="mt-mono flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-primary"
                       style={{ opacity: ramp(phase, 0.84 + i * 0.03, 0.9 + i * 0.03) }}
                     >
-                      {k} <span aria-hidden="true">✓</span>
+                      {k} <span aria-hidden="true">→</span>
                     </span>
                   ))}
                 </div>
@@ -226,27 +244,22 @@ export function Hero() {
             ) : null}
           </AnimatePresence>
 
-          {/* stage rail — the transformation index */}
-          <div className="absolute inset-x-0 bottom-6 md:bottom-8">
-            <div className="flex items-center justify-between gap-4">
-              <div className="mt-mono text-[9px] uppercase tracking-[0.24em] text-muted-foreground">
-                {STAGES[stageIndex]?.label}
-                <span className="ml-3 text-primary">{STAGES[stageIndex]?.note}</span>
-              </div>
-              <div className="mt-mono text-[9px] tabular-nums text-muted-foreground">
-                {String(Math.round(phase * 100)).padStart(3, "0")}%
-              </div>
-            </div>
-            <div className="mt-3 flex gap-1.5">
+          <div className="pointer-events-none absolute inset-x-0 bottom-6">
+            <ol className="mx-auto flex max-w-[720px] flex-wrap justify-center gap-2 px-4">
               {STAGES.map((s, i) => (
-                <div key={s.key} className="h-px flex-1 bg-border">
-                  <div
-                    className="h-px bg-primary"
-                    style={{ width: `${ramp(phase, s.at, STAGES[i + 1]?.at ?? 1) * 100}%` }}
-                  />
-                </div>
+                <li
+                  key={s.key}
+                  className={cn(
+                    "mt-mono border px-2 py-1 text-[9px] uppercase tracking-[0.16em]",
+                    i === stageIndex
+                      ? "border-primary/50 text-primary"
+                      : "border-border/60 text-muted-foreground",
+                  )}
+                >
+                  {s.label}
+                </li>
               ))}
-            </div>
+            </ol>
           </div>
         </Shell>
       </div>

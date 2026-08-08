@@ -3,10 +3,11 @@ import { SiteNav } from "@/components/navigation/SiteNav";
 import { Shell, Eyebrow, Reveal, DemoTag, StatusDot } from "@/components/primitives";
 import { demoMachine, auditTrail } from "@/data/demoMachine";
 import { Inspection } from "@/components/sections/Inspection";
+import { useAssetState } from "@/lib/asset-state";
 
 const title = "Explorer — Machine Trust machine asset MT-000042";
 const description =
-  "Inspect the canonical demo machine asset: identity, ownership state and the full compliance-verified event history.";
+  "Inspect the canonical demo machine asset: identity, live ownership state and compliance-gated event history.";
 
 export const Route = createFileRoute("/explorer")({
   head: () => ({
@@ -21,6 +22,22 @@ export const Route = createFileRoute("/explorer")({
 });
 
 function Explorer() {
+  const { owner, issued, previousOwner, extraEvents } = useAssetState();
+
+  const events = [
+    ...auditTrail,
+    ...extraEvents.map((e) => ({
+      time: e.timestamp,
+      entity: e.kind === "transferred" ? owner : "Machine Trust",
+      action: e.label,
+      verification:
+        e.kind === "issued" || e.kind === "transferred" || e.kind === "verified"
+          ? "CVI · CVA · CCP"
+          : "Machine Trust",
+      tx: e.hash,
+    })),
+  ];
+
   return (
     <>
       <SiteNav />
@@ -40,10 +57,15 @@ function Explorer() {
           <Reveal delay={0.1}>
             <dl className="mt-12 grid gap-px border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
               {[
-                ["Owner", demoMachine.currentOwner],
-                ["Status", demoMachine.status],
+                ["Owner", owner],
+                ["Status", issued ? "RWA_ISSUED" : demoMachine.status],
                 ["Settlement network", "Monad"],
-                ["Events", `${demoMachine.provenanceEvents}`],
+                [
+                  "Events",
+                  `${demoMachine.provenanceEvents + extraEvents.length}${
+                    previousOwner ? " · transferred" : ""
+                  }`,
+                ],
               ].map(([k, v]) => (
                 <div key={k} className="bg-background px-5 py-6">
                   <dt className="mt-label">{k}</dt>
@@ -59,8 +81,8 @@ function Explorer() {
                 className="absolute left-[3px] top-2 bottom-2 w-px bg-border"
                 aria-hidden="true"
               />
-              {auditTrail.map((e) => (
-                <li key={e.time} className="relative pb-9 last:pb-0">
+              {events.map((e, i) => (
+                <li key={`${e.time}-${e.tx}-${i}`} className="relative pb-9 last:pb-0">
                   <span className="absolute -left-6 top-1.5 size-[7px] rounded-full bg-primary" />
                   <p className="mt-mono text-[11px] text-muted-foreground">{e.time}</p>
                   <p className="mt-1.5 text-[15px]">{e.action}</p>

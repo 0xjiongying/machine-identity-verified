@@ -7,26 +7,26 @@ export function FooterCTA() {
     <footer className="border-t border-border">
       <Shell className="py-28 md:py-40">
         <Reveal>
-          <h2 className="max-w-[16ch] text-[length:var(--text-hero)] font-medium leading-[0.95] tracking-[-0.04em]">
-            Give every machine a trusted identity.
+          <h2 className="max-w-[18ch] text-[length:var(--text-hero)] font-medium leading-[0.95] tracking-[-0.04em]">
+            Verified identity unlocks machine finance.
           </h2>
           <p className="mt-7 max-w-[54ch] text-[15px] leading-relaxed text-muted-foreground">
-            Machine Trust connects physical asset provenance with compliance-aware programmable
-            ownership.
+            Machine Trust is a CVI-gated Compliant DeFi market — passport context, Cleanverse access
+            control, Monad loan execution.
           </p>
           <div className="mt-10 flex flex-wrap gap-3">
             <a
-              href="#passport"
+              href="#finance"
               data-cursor="inspect"
               className="border border-foreground bg-foreground px-5 py-3 text-[13px] font-medium text-background transition-colors hover:border-primary hover:bg-primary"
             >
-              Explore the Machine
+              Check Eligibility
             </a>
             <a
-              href="#architecture"
+              href="#inspect"
               className="border border-border px-5 py-3 text-[13px] transition-colors hover:border-foreground"
             >
-              View Architecture
+              Explore Machine
             </a>
           </div>
         </Reveal>

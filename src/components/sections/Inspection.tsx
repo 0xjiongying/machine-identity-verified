@@ -7,6 +7,8 @@ import { demoMachine } from "@/data/demoMachine";
 import { usePerf } from "@/lib/perf";
 import { useFinePointer, useHydrated, useReducedMotion } from "@/hooks/useMotionPrefs";
 import { play } from "@/lib/sound";
+import { useLending } from "@/lib/lending-state";
+import { cn } from "@/lib/utils";
 
 const TrustModuleScene = lazy(() => import("@/components/trust/TrustModuleScene"));
 
@@ -17,6 +19,7 @@ export function Inspection() {
   const hydrated = useHydrated();
   const reduced = useReducedMotion();
   const fine = useFinePointer();
+  const { financingVisual } = useLending();
   const controls = useRef<OrbitControlsImpl | null>(null);
 
   const [hovered, setHovered] = useState<ModuleKey | null>(null);
@@ -90,8 +93,24 @@ export function Inspection() {
             {/* HUD */}
             <div className="pointer-events-none absolute inset-0 p-5">
               <div className="mt-mono flex items-start justify-between text-[10px] text-muted-foreground">
-                <span>{demoMachine.id} · LIVE VIEWPORT</span>
+                <span>{demoMachine.id} · DEMO VIEWPORT</span>
                 <span>{engaged ? "ZOOM ACTIVE" : "CLICK TO ENGAGE ZOOM"}</span>
+              </div>
+              <div className="mt-3 flex justify-end">
+                <span
+                  className={cn(
+                    "mt-mono border px-2 py-1 text-[10px] uppercase tracking-[0.18em] backdrop-blur-sm",
+                    financingVisual === "restricted" && "border-destructive/50 text-destructive",
+                    financingVisual === "enabled" && "border-primary/50 text-primary",
+                    financingVisual === "active" && "border-success/50 text-success",
+                    financingVisual === "closed" && "border-border text-muted-foreground",
+                  )}
+                >
+                  {financingVisual === "restricted" && "LOCKED · FINANCING RESTRICTED"}
+                  {financingVisual === "enabled" && "FINANCING ENABLED"}
+                  {financingVisual === "active" && "LOAN ACTIVE"}
+                  {financingVisual === "closed" && "LOAN CLOSED"}
+                </span>
               </div>
             </div>
 

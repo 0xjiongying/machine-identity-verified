@@ -1,65 +1,93 @@
 /**
- * Cleanverse Sandbox HTTP client — the ONLY place credentials and endpoints live.
+ * Cleanverse Cooperate API client (API v5.6) — server-only.
  *
- * Contract (Cleanverse cooperate API, as used by the sandbox credentials issued
- * for the hackathon):
- *   base   sandbox https://uatapi.cleanverse.com/api/cooperate
- *          prod    https://api.cleanverse.com/api/cooperate
- *   auth   header `api-id: <API ID>` + per-request `X-Request-ID: <uuid>`.
- *          The API key is NOT a bearer token: it is the AES-CBC key used to
- *          encrypt the JSON body of protected write endpoints, which are sent
- *          as { "data": "<base64 ciphertext>" }.
- *   envelope { code, message, data } — code "0000" means success.
+ * Source of truth: https://docs.cleanverse.com/docs/cleanverse (Cleanverse API v5.6).
+ * Secrets stay in process.env (never VITE_*). This module must not be imported
+ * from client components.
  *
- * Server-side env only (never VITE_ prefixed):
- *   CLEANVERSE_API_URL          base URL (optional, defaults to sandbox)
- *   CLEANVERSE_SANDBOX_API_ID   api-id header value
- *   CLEANVERSE_SANDBOX_API_KEY  base64 AES key for protected writes
- *   CLEANVERSE_CHAIN            chain slug, defaults to "monad"
- *   CLEANVERSE_ATOKEN_SYMBOL    optional A-Token symbol to bind the asset to
+ * Env:
+ *   CLEANVERSE_API_URL          default sandbox base
+ *   CLEANVERSE_SANDBOX_API_ID   api-id header
+ *   CLEANVERSE_SANDBOX_API_KEY  Base64 AES key (encrypt only; never sent)
+ *   CLEANVERSE_CHAIN            default "monad"
+ *   CLEANVERSE_ORIGIN_SYMBOL    origin token filter for query_deposit_atoken_list (e.g. usdc)
+ *   CLEANVERSE_ATOKEN_SYMBOL    preferred A-Token symbol to select from the list (e.g. ausdc)
  */
 
 const SANDBOX_BASE = "https://uatapi.cleanverse.com/api/cooperate";
+const PROD_BASE = "https://api.cleanverse.com/api/cooperate";
+
+/** Docs: endpoints whose plaintext JSON must be sent as {"data":"<Base64 ciphertext>"}. */
+const ENCRYPTED_PATHS = new Set([
+  "/generate_apass",
+  "/update_status",
+  "/atoken/register_atoken",
+  "/atoken/launch",
+  "/atoken/register_wrapped_atoken",
+  "/atoken/launch_wrapped_atoken",
+  "/atoken/add_rule",
+  "/atoken/remove_rule",
+  "/atoken/set_paused",
+  "/atoken/add_whitelist_for_institutional",
+  "/atoken/remove_whitelist_for_institutional",
+  "/atoken/restore_whitelist_for_institutional",
+  "/blacklist/add",
+  "/validator/grant",
+  "/validator/register",
+  "/validator/set_rule",
+  "/validator/add_rule",
+  "/validator/remove_rule",
+  "/validator/set_paused",
+]);
 
 export type CleanverseConfig = {
   baseUrl: string;
   apiId: string;
   apiKey: string;
   chain: string;
+  /** Origin (native) symbol sent to query_deposit_atoken_list — not an A-Token symbol. */
+  originSymbol: string | null;
+  /** Preferred A-Token symbol selected client-side from the returned list. */
   atokenSymbol: string | null;
+  environment: "sandbox" | "production" | "custom";
 };
 
-export type Envelope<T = Record<string, unknown>> = {
+export type Envelope<T = unknown> = {
   code: string;
   message: string;
   data: T | null;
 };
 
 export function readConfig(): CleanverseConfig | null {
-  const apiId = process.env["CLEANVERSE_SANDBOX_API_ID"];
-  const apiKey = process.env["CLEANVERSE_SANDBOX_API_KEY"];
+  const apiId = process.env["CLEANVERSE_SANDBOX_API_ID"]?.trim();
+  const apiKey = process.env["CLEANVERSE_SANDBOX_API_KEY"]?.trim();
   if (!apiId || !apiKey) return null;
+
   const baseUrl = (process.env["CLEANVERSE_API_URL"] || SANDBOX_BASE).replace(/\/$/, "");
+  const environment =
+    baseUrl === SANDBOX_BASE ? "sandbox" : baseUrl === PROD_BASE ? "production" : "custom";
+
   return {
     baseUrl,
     apiId,
     apiKey,
-    chain: process.env["CLEANVERSE_CHAIN"] || "monad",
-    atokenSymbol: process.env["CLEANVERSE_ATOKEN_SYMBOL"] || null,
+    chain: (process.env["CLEANVERSE_CHAIN"] || "monad").toLowerCase(),
+    originSymbol: process.env["CLEANVERSE_ORIGIN_SYMBOL"]?.trim() || "usdc",
+    atokenSymbol: process.env["CLEANVERSE_ATOKEN_SYMBOL"]?.trim() || "ausdc",
+    environment,
   };
 }
 
-/** Endpoints whose body must be AES-CBC encrypted with the API key. */
-const ENCRYPTED = new Set([
-  "/generate_apass",
-  "/update_status",
-  "/atoken/register_atoken",
-  "/atoken/launch",
-  "/atoken/add_rule",
-  "/atoken/remove_rule",
-  "/atoken/set_paused",
-  "/blacklist/add",
-]);
+export class CleanverseError extends Error {
+  code: string;
+  httpStatus: number;
+  constructor(code: string, message: string, httpStatus = 0) {
+    super(`Cleanverse ${code}: ${message}`);
+    this.code = code;
+    this.httpStatus = httpStatus;
+    this.name = "CleanverseError";
+  }
+}
 
 function b64ToBytes(value: string) {
   const bin = atob(value);
@@ -74,7 +102,7 @@ function bytesToB64(bytes: Uint8Array) {
   return btoa(bin);
 }
 
-/** AES-CBC, zero IV, key = base64-decoded API key (16/24/32 bytes). */
+/** AES/CBC/PKCS5Padding, zero IV, key = Base64-decoded api-key (docs Encryption). */
 async function encryptBody(apiKey: string, payload: unknown) {
   const raw = b64ToBytes(apiKey);
   const key = await crypto.subtle.importKey("raw", raw, { name: "AES-CBC" }, false, ["encrypt"]);
@@ -87,102 +115,348 @@ async function encryptBody(apiKey: string, payload: unknown) {
   return bytesToB64(new Uint8Array(buf));
 }
 
-export class CleanverseError extends Error {
-  code: string;
-  constructor(code: string, message: string) {
-    super(`Cleanverse ${code}: ${message}`);
-    this.code = code;
-  }
-}
+type RequestOpts = {
+  method?: "GET" | "POST";
+  path: string;
+  body?: Record<string, unknown> | null;
+  /** Force encryption even if path is not in the docs set (tests). */
+  encrypt?: boolean;
+};
 
-/** POST an endpoint and return the raw envelope (no throwing on business codes). */
-export async function post<T = Record<string, unknown>>(
+/**
+ * Low-level cooperate call. Returns the JSON envelope without throwing on
+ * business codes (0001/0002/…). Throws CleanverseError on HTTP/transport failure.
+ */
+export async function cooperateRequest<T = unknown>(
   cfg: CleanverseConfig,
-  path: string,
-  body: Record<string, unknown>,
+  opts: RequestOpts,
 ): Promise<Envelope<T>> {
-  const payload = ENCRYPTED.has(path) ? { data: await encryptBody(cfg.apiKey, body) } : body;
-  const res = await fetch(`${cfg.baseUrl}${path}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "api-id": cfg.apiId,
-      "X-Request-ID": crypto.randomUUID(),
-    },
-    body: JSON.stringify(payload),
-  });
+  const method = opts.method ?? "POST";
+  const encrypt = opts.encrypt ?? ENCRYPTED_PATHS.has(opts.path);
+  let bodyText: string | undefined;
+  if (method !== "GET" && opts.body != null) {
+    const payload = encrypt ? { data: await encryptBody(cfg.apiKey, opts.body) } : opts.body;
+    bodyText = JSON.stringify(payload);
+  }
+
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    "api-id": cfg.apiId,
+    "X-Request-ID": crypto.randomUUID(),
+    // Cloudflare on uatapi rejects bare Node UAs (error 1010); send a product UA.
+    "User-Agent":
+      "MachineTrust/1.0 (Cleanverse Cooperate; +https://github.com/0xjiongying/machine-identity-verified)",
+  };
+  if (bodyText) headers["Content-Type"] = "application/json";
+
+  const init: RequestInit = { method, headers };
+  if (bodyText) init.body = bodyText;
+
+  const res = await fetch(`${cfg.baseUrl}${opts.path}`, init);
+
   const text = await res.text();
-  if (!res.ok) throw new CleanverseError(String(res.status), text.slice(0, 240));
+  if (!res.ok) {
+    throw new CleanverseError(String(res.status), text.slice(0, 240), res.status);
+  }
+
   let parsed: Envelope<T>;
   try {
     parsed = JSON.parse(text) as Envelope<T>;
   } catch {
-    throw new CleanverseError("parse", text.slice(0, 240));
+    throw new CleanverseError("parse", text.slice(0, 240), res.status);
   }
   return parsed;
 }
 
-/** Throwing variant for calls where anything but 0000 is an outage, not a denial. */
-export async function postOk<T = Record<string, unknown>>(
+export async function cooperateOk<T = unknown>(
   cfg: CleanverseConfig,
-  path: string,
-  body: Record<string, unknown>,
+  opts: RequestOpts,
 ): Promise<T> {
-  const env = await post<T>(cfg, path, body);
+  const env = await cooperateRequest<T>(cfg, opts);
   if (env.code !== "0000") throw new CleanverseError(env.code, env.message);
   return (env.data ?? ({} as T)) as T;
 }
 
-/* ── CVI (A-Pass) ─────────────────────────────────────────────────────── */
+/* ── CVI / A-Pass ─────────────────────────────────────────────────────── */
+
+export type GenerateApassRequest = {
+  customerId: string;
+  kycSource?: string;
+  kycId?: string;
+  subTier?: number;
+  subGroup?: string;
+  override?: boolean;
+  expirationTime: number;
+  wallet: { address: string; chain: string };
+  identityDataList?: Array<{
+    idType: string;
+    fullName: string;
+    idNumber?: string;
+    validUntil?: string;
+    issuingCountryISO2: string;
+  }>;
+  bankAccountList?: Array<Record<string, unknown>>;
+};
+
+export type GenerateApassData = {
+  customerId?: string;
+  cvRecordId?: string;
+  tier?: string;
+  wallet?: {
+    operate?: string;
+    address?: string;
+    chain?: string;
+    txHash?: string;
+    depositUSDCWallet?: string;
+    depositUSDTWallet?: string;
+    apassAddress?: string;
+  };
+};
+
+export function generateApass(cfg: CleanverseConfig, body: GenerateApassRequest) {
+  return cooperateRequest<GenerateApassData>(cfg, {
+    path: "/generate_apass",
+    body: body as unknown as Record<string, unknown>,
+  });
+}
 
 export type ApassRecord = {
   cvRecordId?: string;
-  status?: string | number;
+  status?: number | string | null;
   tier?: string | number;
-  subTier?: string | number;
-  group?: string;
-  subGroup?: string;
-  expirationTime?: string | number;
+  subTier?: number;
+  group?: string | null;
+  subGroup?: string | null;
+  expirationTime?: number;
   currentKycHash?: string;
+  countries?: string[];
 };
 
-export function queryApass(cfg: CleanverseConfig, address: string) {
-  return post<ApassRecord>(cfg, "/query_apass", { chain: cfg.chain, address });
+export function queryApass(cfg: CleanverseConfig, address: string, chain = cfg.chain) {
+  return cooperateRequest<ApassRecord>(cfg, {
+    path: "/query_apass",
+    body: { chain, address },
+  });
 }
 
-/* ── CVA (A-Token registry) ───────────────────────────────────────────── */
+export type ApassListItem = {
+  cvRecordId?: string;
+  customerId?: string;
+  chain?: string;
+  walletAddress?: string;
+  status?: number | null;
+  tier?: string;
+  subTier?: number;
+  group?: string | null;
+  subGroup?: string | null;
+  countries?: string[];
+  expirationTime?: number;
+  txHash?: string;
+  registeredAt?: string;
+};
+
+export function queryApassList(
+  cfg: CleanverseConfig,
+  filters: {
+    page?: number;
+    pageSize?: number;
+    chain?: string;
+    walletAddress?: string;
+    customerId?: string;
+    status?: number;
+  } = {},
+) {
+  return cooperateRequest<{
+    total?: number;
+    page?: number;
+    pageSize?: number;
+    items?: ApassListItem[];
+  }>(cfg, { path: "/query_apass_list", body: { page: 1, pageSize: 20, ...filters } });
+}
+
+/* ── CVA / A-Token ────────────────────────────────────────────────────── */
 
 export type AtokenListing = {
-  origin_token?: { address?: string; symbol?: string; name?: string };
-  atoken?: { address?: string; symbol?: string; name?: string };
+  origin_token?: { address?: string; symbol?: string; name?: string; decimals?: number };
+  atoken?: { address?: string; symbol?: string; name?: string; decimals?: number };
   accesscore_address?: string;
   apass_address?: string;
 };
 
-export function queryDepositAtokenList(cfg: CleanverseConfig, symbol?: string | null) {
-  return post<{ chain?: string; tokens?: AtokenListing[] }>(cfg, "/query_deposit_atoken_list", {
-    chain: cfg.chain,
-    ...(symbol ? { symbol } : {}),
+export function queryDepositAtokenList(
+  cfg: CleanverseConfig,
+  opts: { chain?: string; originSymbol?: string | null; address?: string } = {},
+) {
+  const chain = opts.chain ?? cfg.chain;
+  // Docs: `symbol` filters the ORIGIN token (usdc), not the A-Token (ausdc).
+  const symbol = opts.originSymbol === undefined ? cfg.originSymbol : opts.originSymbol;
+  return cooperateRequest<{ chain?: string; tokens?: AtokenListing[] }>(cfg, {
+    path: "/query_deposit_atoken_list",
+    body: {
+      chain,
+      ...(symbol ? { symbol } : {}),
+      ...(opts.address ? { address: opts.address } : {}),
+    },
   });
 }
 
-/* ── CCP (pre-transaction check) ──────────────────────────────────────── */
+export type ComplianceRule = {
+  allowed_group: string;
+  allowed_sub_group: string;
+  min_tier: number;
+  min_sub_tier: number;
+  is_black_list?: boolean;
+  countries?: string[];
+};
+
+export type LaunchAtokenRequest = {
+  chain: string;
+  token_name: string;
+  token_symbol: string;
+  decimals: number;
+  admin_address: string;
+  rule: ComplianceRule;
+  icon: string;
+  callback_url?: string;
+};
+
+export function launchAtoken(cfg: CleanverseConfig, body: LaunchAtokenRequest) {
+  return cooperateRequest<{ requestId?: string; issueAssetId?: number }>(cfg, {
+    path: "/atoken/launch",
+    body: body as unknown as Record<string, unknown>,
+  });
+}
+
+export type ApplyStatus = {
+  flowType?: string;
+  requestId?: string;
+  applyStatus?: string;
+  rejectReason?: string;
+  issueErrorMsg?: string;
+  chain?: string;
+  atokenAddress?: string;
+  originTokenAddress?: string;
+  tokenSymbol?: string;
+  txHash?: string;
+  issuedAt?: string;
+  callbackUrl?: string;
+  callbackStatus?: string;
+  callbackAttempts?: number;
+  callbackLastError?: string;
+};
+
+export function queryApplyStatus(cfg: CleanverseConfig, requestId: string) {
+  return cooperateRequest<ApplyStatus>(cfg, {
+    method: "GET",
+    path: `/atoken/query_apply_status/${encodeURIComponent(requestId)}`,
+  });
+}
+
+export type MyAtokenItem = {
+  flowType?: string;
+  requestId?: string;
+  applyStatus?: string;
+  chain?: string;
+  atokenAddress?: string;
+  originTokenAddress?: string;
+  tokenSymbol?: string;
+  tokenName?: string;
+  txHash?: string;
+  issuedAt?: string;
+  createTime?: string;
+};
+
+export function listMyAtokens(
+  cfg: CleanverseConfig,
+  query: {
+    page?: number;
+    page_size?: number;
+    chain?: string;
+    apply_status?: string;
+    flow_type?: string;
+  } = {},
+) {
+  const qs = new URLSearchParams();
+  for (const [k, v] of Object.entries(query)) {
+    if (v !== undefined && v !== null && v !== "") qs.set(k, String(v));
+  }
+  const suffix = qs.toString() ? `?${qs}` : "";
+  return cooperateRequest<{
+    total?: number;
+    page?: number;
+    pageSize?: number;
+    items?: MyAtokenItem[];
+  }>(cfg, { method: "GET", path: `/atoken/list_my_atokens${suffix}` });
+}
+
+/* ── CCP / pre-transaction (verify_apass) + Validator ─────────────────── */
 
 /**
- * verify_apass is Cleanverse's pre-transaction gate: it answers whether this
- * address may move this A-Token right now. code 0000 = allowed, 2 = no A-Pass
- * (onboarding required), 3 = A-Pass exists but cannot transfer.
+ * Docs Verify A-Pass — data.code:
+ *   1 AToken not found
+ *   2 User does not have APass
+ *   3 APass exists but cannot transfer (expired/frozen)
+ *   4 Success — valid APass and transfer allowed
  */
-export type VerifyApassResult = {
+export type VerifyApassData = {
+  chain?: string;
+  atoken?: string;
+  address?: string;
   code?: number | string;
   message?: string;
   magickLink?: string;
 };
 
-export function verifyApass(cfg: CleanverseConfig, atoken: string, address: string) {
-  return post<VerifyApassResult>(cfg, "/verify_apass", {
-    chain: cfg.chain,
-    atoken,
-    address,
+export function verifyApass(
+  cfg: CleanverseConfig,
+  atoken: string,
+  address: string,
+  chain = cfg.chain,
+) {
+  return cooperateRequest<VerifyApassData>(cfg, {
+    path: "/verify_apass",
+    body: { chain, atoken, address },
+  });
+}
+
+export function validatorIsRegister(
+  cfg: CleanverseConfig,
+  contractAddress: string,
+  chain = cfg.chain,
+) {
+  return cooperateRequest<{ chain?: string; contract_address?: string; registered?: boolean }>(
+    cfg,
+    {
+      path: "/validator/is_register",
+      body: { chain, contract_address: contractAddress },
+    },
+  );
+}
+
+export function validatorVerify(
+  cfg: CleanverseConfig,
+  contractAddress: string,
+  userAddress: string,
+  chain = cfg.chain,
+) {
+  return cooperateRequest<{
+    chain?: string;
+    contract_address?: string;
+    user_address?: string;
+    valid?: boolean;
+  }>(cfg, {
+    path: "/validator/verify",
+    body: { chain, contract_address: contractAddress, user_address: userAddress },
+  });
+}
+
+export function validatorRules(cfg: CleanverseConfig, contractAddress: string, chain = cfg.chain) {
+  return cooperateRequest<{
+    chain?: string;
+    contract_address?: string;
+    rules?: ComplianceRule[];
+  }>(cfg, {
+    path: "/validator/rules",
+    body: { chain, contract_address: contractAddress },
   });
 }

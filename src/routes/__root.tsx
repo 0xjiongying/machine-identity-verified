@@ -20,6 +20,7 @@ import { SystemControls } from "../components/system/SystemControls";
 import { PerfProvider } from "../lib/perf";
 import { AssetStateProvider } from "../lib/asset-state";
 import { CleanverseProvider } from "../lib/cleanverse-state";
+import { LendingProvider } from "../lib/lending-state";
 
 function NotFoundComponent() {
   return (
@@ -86,11 +87,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Machine Trust — Trust the machine. Program the asset." },
+      { title: "Machine Trust — Finance machines. Verify the borrower." },
       {
         name: "description",
         content:
-          "Compliance infrastructure for programmable machine assets: machine passports, verified participants and compliant transfers.",
+          "CVI-gated Compliant DeFi for machine financing: Cleanverse verifies the borrower; Monad executes the loan.",
       },
       { name: "author", content: "Machine Trust" },
       { name: "theme-color", content: "#08090A" },
@@ -139,15 +140,17 @@ function RootComponent() {
       <PerfProvider>
         <AssetStateProvider>
           <CleanverseProvider>
-            <SmoothScroll />
-            <MachineCursor />
-            <AmbientField />
-            <BootSequence />
-            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-            <SystemControls />
-            <PageTransition>
-              <Outlet />
-            </PageTransition>
+            <LendingProvider>
+              <SmoothScroll />
+              <MachineCursor />
+              <AmbientField />
+              <BootSequence />
+              {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+              <SystemControls />
+              <PageTransition>
+                <Outlet />
+              </PageTransition>
+            </LendingProvider>
           </CleanverseProvider>
         </AssetStateProvider>
       </PerfProvider>

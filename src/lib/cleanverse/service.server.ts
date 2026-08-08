@@ -1,26 +1,21 @@
 /**
- * Cleanverse service layer.
+ * Cleanverse Track 1 orchestration (server-only).
  *
- * One entry point per Track 1 primitive, orchestrated in the required order:
- *   CVI (A-Pass) → CVA (A-Token) → CCP pre-transaction → Monad execution.
+ * Order (docs + hackathon Track 1):
+ *   Machine Passport → CVI (APassService) → CVA (ATokenService)
+ *   → CCP (ComplianceService.verify_apass) → Monad settlement record
  *
- * LIVE — when the sandbox API ID + API key are present, every gate is a real
- *        call to the Cleanverse cooperate API (query_apass,
- *        query_deposit_atoken_list, verify_apass). Nothing is simulated: a
- *        failed call fails the transaction closed.
- * DEMO — otherwise the local CCP engine evaluates the local fixtures.
+ * LIVE  — credentials present; every gate is a real cooperate call. Fail closed.
+ * DEMO  — local CCP engine over fixtures (no network). Clearly labelled.
+ *
+ * Never invent a successful Cleanverse result. Custom A-Token launch may be
+ * attempted; if Sandbox returns ISSUE_FAILED, that fact is recorded and the
+ * registered A-Token binding (aUSDC) is used for CCP — not a fabricated mint.
  */
 
-import {
-  CleanverseError,
-  queryApass,
-  queryDepositAtokenList,
-  readConfig,
-  verifyApass,
-  type AtokenListing,
-  type CleanverseConfig,
-} from "./api.server";
+import { CleanverseError, readConfig } from "./api.server";
 import { RULESET, atokenIdFor, evaluateCcp, hash, unissuedToken } from "./ccp";
+import { APassService, ATokenService, ComplianceService } from "./services/index.server";
 import type { AtokenRecord, Evaluation, PolicyInput, RuleResult } from "./types";
 
 export type CleanverseMode = "demo" | "live";
@@ -70,66 +65,6 @@ function errText(error: unknown) {
       : "unknown error";
 }
 
-function listingsOf(data: { tokens?: AtokenListing[] } | null): AtokenListing[] {
-  return data?.tokens ?? [];
-}
-
-function symbolOf(listing: AtokenListing | undefined) {
-  return listing?.atoken?.symbol ?? listing?.origin_token?.symbol ?? null;
-}
-
-function addressOf(listing: AtokenListing | undefined) {
-  return listing?.atoken?.address ?? listing?.accesscore_address ?? null;
-}
-
-/** CCP verdict from verify_apass: 0000 allowed, 2 no A-Pass, 3 not transferable. */
-function ccpVerdict(code: string, message: string) {
-  if (code === "0000" || code === "0") return { allowed: true, reason: "Cleanverse allows this address to move the A-Token." };
-  if (String(code) === "2")
-    return { allowed: false, reason: "No A-Pass for this address — Cleanverse onboarding required." };
-  if (String(code) === "3")
-    return { allowed: false, reason: "A-Pass exists but is not permitted to transfer this A-Token." };
-  return { allowed: false, reason: message || `Cleanverse denied the transaction (code ${code}).` };
-}
-
-async function cviRule(
-  cfg: CleanverseConfig,
-  who: string,
-  code: string,
-  address: string,
-): Promise<{ rule: RuleResult; ref: string | null; unregistered: boolean }> {
-  const env = await queryApass(cfg, address);
-  const record = env.data ?? {};
-  const active = env.code === "0000" && !!record.cvRecordId;
-  const detail = [
-    record.status !== undefined ? `status ${record.status}` : null,
-    record.tier !== undefined ? `tier ${record.tier}` : null,
-    record.expirationTime ? `until ${record.expirationTime}` : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-  // "apass not found" is not an outage and not a policy denial: the sandbox
-  // registry simply has no record for this demo wallet yet.
-  const unregistered = !active && /not found|not exist/i.test(env.message ?? "");
-  return {
-    ref: record.cvRecordId ?? null,
-    unregistered,
-    rule: {
-      code: `${code}.apass`,
-      label: `${who} A-Pass`,
-      requirement: "Cleanverse must return an active A-Pass for this wallet",
-      observed: `${address.slice(0, 10)}… ${detail || env.message}`,
-      status: active ? "pass" : unregistered ? "skipped" : "fail",
-      reason: active
-        ? "Requirement satisfied — A-Pass resolved from the live Cleanverse registry."
-        : unregistered
-          ? "Live sandbox registry holds no A-Pass for this demo wallet — the CVI verdict falls through to the Machine Trust policy mirror below."
-          : `Cleanverse returned no active A-Pass (${env.code}: ${env.message}).`,
-      source: "CVI",
-    },
-  };
-}
-
 export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evaluation> {
   const cfg = readConfig();
   if (!cfg) return evaluateCcp(input);
@@ -137,9 +72,9 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
   const now = new Date();
   const rules: RuleResult[] = [];
   const refs: Record<string, string | null> = {};
-  let unregistered = false;
+  const notices: string[] = [];
 
-  // 1 — CVI / A-Pass for every party in the transaction.
+  // 1 — CVI / A-Pass
   const parties = [
     {
       who: input.kind === "issuance" ? "Issuer" : "Holder",
@@ -150,46 +85,67 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
       ? [{ who: "Recipient", code: "CVI-10", address: input.recipient.holder.wallet }]
       : []),
   ];
+
   for (const p of parties) {
     try {
-      const res = await cviRule(cfg, p.who, p.code, p.address);
-      refs[p.code] = res.ref;
-      unregistered = unregistered || res.unregistered;
-      rules.push(res.rule);
+      const lookup = await APassService.lookup(cfg, p.address);
+      refs[p.code] = lookup.ref;
+      const detail = [
+        lookup.status !== undefined && lookup.status !== null ? `status ${lookup.status}` : null,
+        lookup.tier ? `tier ${lookup.tier}` : null,
+        lookup.countries.length ? `countries ${lookup.countries.join(",")}` : null,
+      ]
+        .filter(Boolean)
+        .join(" · ");
+      rules.push({
+        code: `${p.code}.apass`,
+        label: `${p.who} A-Pass`,
+        requirement: "Cleanverse must return an active A-Pass for this wallet",
+        observed: `${p.address.slice(0, 10)}… ${detail || lookup.envelope.message}`,
+        status: lookup.active ? "pass" : "fail",
+        reason: lookup.active
+          ? "Requirement satisfied — A-Pass resolved from the live Cleanverse registry."
+          : `Cleanverse returned no active A-Pass (${lookup.envelope.code}: ${lookup.envelope.message}).`,
+        source: "CVI",
+      });
     } catch (error) {
       return failClosed(input, "CVI", errText(error));
     }
   }
 
-  // 2 — CVA / A-Token: resolve the Cleanverse-registered A-Token this machine
-  //     asset is bound to. Without a registered A-Token nothing can move.
+  // 2 — CVA / A-Token: bind registered A-Token for CCP
   let atokenAddress: string | null = null;
   let token: AtokenRecord | null = input.aToken ?? null;
   try {
-    const env = await queryDepositAtokenList(cfg, cfg.atokenSymbol);
-    const listings = listingsOf(env.data);
-    const listing = cfg.atokenSymbol
-      ? listings.find((l) => symbolOf(l)?.toLowerCase() === cfg.atokenSymbol?.toLowerCase())
-      : listings[0];
-    atokenAddress = addressOf(listing);
+    const { envelope, bound } = await ATokenService.bindRegistered(cfg);
+    atokenAddress = bound?.address ?? null;
     rules.push({
       code: "CVA-04.atoken",
       label: "A-Token registration",
       requirement: "The asset must resolve to an A-Token registered with Cleanverse",
       observed: atokenAddress
-        ? `${symbolOf(listing) ?? "A-Token"} · ${atokenAddress.slice(0, 12)}…`
-        : `no A-Token returned (${env.code}: ${env.message})`,
+        ? `${bound?.symbol ?? "A-Token"} · ${atokenAddress.slice(0, 12)}…`
+        : `no A-Token returned (${envelope.code}: ${envelope.message})`,
       status: atokenAddress ? "pass" : "fail",
       reason: atokenAddress
         ? "A-Token resolved from the Cleanverse asset registry and bound to the Machine Passport."
         : "Cleanverse returned no registered A-Token for this asset.",
       source: "CVA",
     });
+
+    // Custom /atoken/launch on Monad UAT currently ends ISSUE_FAILED (verified in audit).
+    // We bind CCP to the registered A-Token and never fabricate an ISSUED custom mint.
+    if (input.kind === "issuance") {
+      notices.push(
+        "Custom A-Token launch is Sandbox-unavailable on Monad (ISSUE_FAILED). CVA gate uses the registered A-Token from query_deposit_atoken_list.",
+      );
+    }
+
     if (atokenAddress) {
       token = {
         ref: `cva:atoken/${atokenAddress}`,
-        tokenId: symbolOf(listing)
-          ? `${symbolOf(listing)}:${atokenIdFor(input.asset)}`
+        tokenId: bound?.symbol
+          ? `${bound.symbol}:${atokenIdFor(input.asset)}`
           : atokenIdFor(input.asset),
         credentialId: input.asset.id,
         passportId: input.asset.subject.passportId,
@@ -197,63 +153,47 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
         transferable: input.asset.transferable,
         attestations: input.asset.attestations.filter((a) => a.status === "valid").length,
         mintedAt: input.aToken?.mintedAt ?? now.toISOString(),
+        contractAddress: atokenAddress,
       };
     }
   } catch (error) {
     return failClosed(input, "CVA", errText(error));
   }
 
-  // 3a — Mirror mode. The live sandbox has real A-Pass/A-Token/CCP endpoints,
-  //      but the demo wallets are not onboarded in it. Rather than invent a
-  //      response, we keep the live evidence above and hand the verdict to the
-  //      identical Machine Trust policy mirror, clearly labelled as such.
-  if (unregistered) {
-    const mirrored = evaluateCcp(input);
-    return {
-      ...mirrored,
-      mode: "live",
-      rules: [...rules, ...mirrored.rules],
-      trace: {
-        ...mirrored.trace,
-        cva: {
-          tokenRef: atokenAddress ? `cva:atoken/${atokenAddress}` : mirrored.trace.cva.tokenRef,
-          tokenId: mirrored.trace.cva.tokenId,
-        },
-      },
-      notice:
-        "Live Cleanverse sandbox reached (CVI registry + CVA A-Token registry queried). Demo wallets are not onboarded in the sandbox, so the pre-transaction verdict is produced by the Machine Trust CCP policy mirror.",
-    };
-  }
-
-  // 3 — CCP pre-transaction decision: verify_apass per party against the A-Token.
+  // 3 — CCP via verify_apass (data.code 4 only)
   let decisionRef = `ccp:decision/${hash(`${input.kind}:${input.sender.id}:${input.asset.id}`)}`;
   if (atokenAddress) {
     try {
       const subjects = [
-        { who: input.kind === "issuance" ? "Issuer" : "Holder", code: "CCP-10", address: input.sender.holder.wallet },
+        {
+          who: input.kind === "issuance" ? "Issuer" : "Holder",
+          code: "CCP-10",
+          address: input.sender.holder.wallet,
+        },
         ...(input.kind === "transfer" && input.recipient
           ? [{ who: "Recipient", code: "CCP-20", address: input.recipient.holder.wallet }]
           : []),
       ];
       for (const s of subjects) {
-        const env = await verifyApass(cfg, atokenAddress, s.address);
-        // The pre-transaction verdict lives in the payload: data.code 0 = allowed,
-        // 2 = no A-Pass, 3 = A-Pass cannot transfer. Envelope code covers transport.
-        const inner = env.data ?? {};
-        const verdictCode = env.code !== "0000" ? env.code : String(inner.code ?? 0);
-        const verdictMsg = env.code !== "0000" ? env.message : (inner.message ?? "");
-        const verdict = ccpVerdict(verdictCode, verdictMsg);
+        const verdict = await ComplianceService.verifyTransferEligibility(
+          cfg,
+          atokenAddress,
+          s.address,
+        );
         rules.push({
           code: `${s.code}.pretx`,
           label: `CCP pre-transaction · ${s.who}`,
-          requirement: "Cleanverse must permit this party to move the A-Token",
-          observed: `code ${verdictCode} · ${verdictMsg || (verdict.allowed ? "allowed" : "denied")}`,
+          requirement:
+            "Cleanverse must permit this party to move the A-Token (verify_apass data.code 4)",
+          observed: `verify_apass data.code ${verdict.code} · ${verdict.envelope.data?.message ?? verdict.envelope.message}`,
           status: verdict.allowed ? "pass" : "fail",
           reason: verdict.reason,
           source: "CCP",
         });
       }
-      decisionRef = `ccp:decision/${hash(`${atokenAddress}:${input.sender.holder.wallet}:${input.recipient?.holder.wallet ?? "none"}`)}`;
+      decisionRef = `ccp:decision/${hash(
+        `${atokenAddress}:${input.sender.holder.wallet}:${input.recipient?.holder.wallet ?? "none"}`,
+      )}`;
     } catch (error) {
       return failClosed(input, "CCP", errText(error));
     }
@@ -266,18 +206,18 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
   rules.push({
     code: "MONAD.execute",
     label: input.kind === "transfer" ? "Ownership transfer on Monad" : "A-Token issuance on Monad",
-    requirement: "Execute only after a positive CCP pre-transaction decision",
-    observed: approved ? "submitted" : "not submitted",
+    requirement: "Record settlement only after a positive CCP pre-transaction decision",
+    observed: approved ? "settlement-ref recorded" : "not submitted",
     status: approved ? "pass" : "skipped",
     reason: approved
-      ? "CCP approved off-chain, state change executed on Monad."
+      ? "CCP approved off-chain. Machine Trust records a Monad settlement reference for the demo (hackathon UAT does not expose a Machine Trust custody contract write)."
       : `Execution never reached the chain — blocked at ${blocked?.code}.`,
     source: "MONAD",
   });
 
   if (!approved) token = input.aToken ?? unissuedToken(input.asset);
 
-  return {
+  const evaluation: Evaluation = {
     decisionId: decisionRef,
     policyId: RULESET[input.kind],
     kind: input.kind,
@@ -285,13 +225,27 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
     approved,
     blockedBy: blocked?.code ?? null,
     rules,
-    settlement: approved ? { chain: "Monad", txRef: `monad:tx/0x${hash(seed + "monad")}` } : null,
+    settlement: approved
+      ? {
+          chain: "Monad",
+          txRef: `monad:settlement/0x${hash(seed + "monad")}`,
+          kind: "demo-settlement-ref",
+        }
+      : null,
     aToken: token,
     trace: {
       cvi: { senderRef: refs["CVI-01"] ?? null, recipientRef: refs["CVI-10"] ?? null },
-      cva: { tokenRef: atokenAddress ? `cva:atoken/${atokenAddress}` : null, tokenId: token?.tokenId ?? null },
+      cva: {
+        tokenRef: atokenAddress ? `cva:atoken/${atokenAddress}` : null,
+        tokenId: token?.tokenId ?? null,
+      },
       ccp: { decisionRef, rulesetId: RULESET[input.kind] },
     },
     evaluatedAt: now.toISOString(),
   };
+
+  const sandboxNotice =
+    "Live Cleanverse sandbox (API v5.6). CVI/CVA/CCP gates are real UAT responses. Monad settlement ref is a Machine Trust demo record, not a fabricated Cleanverse approval.";
+  evaluation.notice = [sandboxNotice, ...notices].filter(Boolean).join(" ");
+  return evaluation;
 }

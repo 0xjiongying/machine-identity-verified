@@ -73,9 +73,12 @@ export function unissuedToken(asset: CvaCredential): AtokenRecord {
 
 /* ------------------------------- CVI / A-Pass ------------------------------ */
 
-function cviRules(c: CviCredential | null, who: "sender" | "recipient", kind: PolicyKind): RuleResult[] {
-  const tag =
-    who === "sender" ? (kind === "issuance" ? "Issuer" : "Holder") : "Recipient";
+function cviRules(
+  c: CviCredential | null,
+  who: "sender" | "recipient",
+  kind: PolicyKind,
+): RuleResult[] {
+  const tag = who === "sender" ? (kind === "issuance" ? "Issuer" : "Holder") : "Recipient";
   const prefix = who === "sender" ? "CVI-01" : "CVI-10";
 
   if (!c || c.status === "absent") {
@@ -228,9 +231,7 @@ function ccpRules(recipient: CviCredential, asset: CvaCredential): RuleResult[] 
       requirement: `Accreditation ∈ [${r.allowedAccreditation.join(", ")}]`,
       observed: recipient.accreditation,
       status: accreditationOk ? "pass" : "fail",
-      reason: accreditationOk
-        ? OK
-        : "Recipient is not an eligible holder class for this A-Token.",
+      reason: accreditationOk ? OK : "Recipient is not an eligible holder class for this A-Token.",
       source: "CCP",
     },
   ];
@@ -299,7 +300,7 @@ export function evaluateCcp(input: PolicyInput, now = new Date()): Evaluation {
     observed: approved ? "submitted" : "not submitted",
     status: approved ? "pass" : "skipped",
     reason: approved
-      ? "CCP approved off-chain, state change executed on Monad."
+      ? "CCP approved in the local policy mirror. Machine Trust records a demo Monad settlement reference (no Cleanverse credentials configured)."
       : `Execution never reached the chain — CCP blocked at ${blocked?.code}.`,
     source: "MONAD",
   });
@@ -319,7 +320,9 @@ export function evaluateCcp(input: PolicyInput, now = new Date()): Evaluation {
     approved,
     blockedBy: blocked?.code ?? null,
     rules,
-    settlement: approved ? { chain: "Monad", txRef: ref("monad:tx/", seed) } : null,
+    settlement: approved
+      ? { chain: "Monad", txRef: ref("monad:settlement/", seed), kind: "demo-settlement-ref" }
+      : null,
     aToken: token,
     trace: {
       cvi: { senderRef: apassRef(sender), recipientRef: apassRef(recipient) },
