@@ -4,7 +4,7 @@ import { ProgressRail } from "@/components/navigation/ProgressRail";
 import { Hero } from "@/components/hero/Hero";
 import { TrustGap } from "@/components/sections/TrustGap";
 import { Inspection } from "@/components/sections/Inspection";
-import { CinematicFilm } from "@/components/media/CinematicFilm";
+import { MachineSequence } from "@/components/machine/MachineSequence";
 import { Passport } from "@/components/passport/Passport";
 import { Lifecycle } from "@/components/sections/Lifecycle";
 import { Participants } from "@/components/sections/Participants";
@@ -46,7 +46,7 @@ function Home() {
         <Hero />
         <TrustGap />
         <Inspection />
-        <CinematicFilm caption="Machine footage — scroll-scrubbed / demo asset" />
+        <MachineSequence />
         <Passport />
         <Lifecycle />
         <Participants />
