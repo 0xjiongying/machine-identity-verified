@@ -96,6 +96,7 @@ export function Transfer() {
     recordDecision(evaluation);
     setState("done");
     play(evaluation.approved ? "approve" : "reject");
+    // Ownership moves only when approved. Live transport failure is fail-closed upstream.
     if (evaluation.approved) {
       setSettledFrom(fromOwner);
       settleTransfer(

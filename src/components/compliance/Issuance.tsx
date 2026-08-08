@@ -76,6 +76,8 @@ export function Issuance() {
       setResult(evaluation);
       if (evaluation.aToken) setAToken(evaluation.aToken);
       recordDecision(evaluation);
+      // Live transport failure is fail-closed (approved=false) in the adapter.
+      // DEMO local CCP may approve and is labelled in VerdictBanner / notice.
       if (evaluation.approved) {
         markVerified();
         markIssued({
@@ -219,8 +221,13 @@ export function Issuance() {
                     <VerdictBanner result={result} />
                     {result.approved ? (
                       <p className="mt-mono text-[11px] uppercase tracking-[0.18em] text-primary">
-                        RWA ISSUED · CVI + CVA bound + CCP
-                        {result.degraded ? " · DEGRADED" : ""}
+                        {result.degraded
+                          ? "RWA ISSUED · DEMO local CCP · not a live Sandbox decision"
+                          : "RWA ISSUED · CVI + CVA bound + CCP"}
+                      </p>
+                    ) : result.degraded ? (
+                      <p className="mt-mono text-[11px] uppercase tracking-[0.18em] text-destructive">
+                        Not issued · fail-closed (transport / Sandbox unreachable)
                       </p>
                     ) : null}
                     {result.notice ? (

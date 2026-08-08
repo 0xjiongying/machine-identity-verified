@@ -12,16 +12,30 @@ export function VerdictBanner({ result }: { result: Evaluation }) {
       return m?.[1] ?? null;
     })
     .filter(Boolean);
-  const codeLabel = codes.length ? codes.map((c) => `code ${c}`).join(" · ") : "CCP";
+  const liveCodes = codes.length > 0;
+  const codeLabel = liveCodes
+    ? codes.map((c) => `code ${c}`).join(" · ")
+    : result.mode === "live"
+      ? "CCP"
+      : "local CCP";
+  const modeTag =
+    result.degraded && !result.approved
+      ? "FAIL-CLOSED"
+      : result.mode === "live"
+        ? "SANDBOX"
+        : result.degraded
+          ? "DEMO · degraded"
+          : "DEMO";
 
   if (result.approved) {
     return (
       <div className="border border-primary/50 bg-primary/10 px-4 py-4">
         <p className="mt-mono text-[11px] uppercase tracking-[0.2em] text-primary">
-          verify_apass · {codeLabel} · APPROVED
+          verify_apass · {codeLabel} · APPROVED · {modeTag}
         </p>
         <p className="mt-2 text-[13px] text-foreground">
           CCP gate passed. {result.kind === "issuance" ? "RWA may issue." : "Transfer may settle."}
+          {liveCodes ? " Live data.code 4." : " Demo local policy mirror."}
         </p>
         {result.settlement ? (
           <p className="mt-mono mt-2 break-all text-[11px] text-muted-foreground">
@@ -36,10 +50,12 @@ export function VerdictBanner({ result }: { result: Evaluation }) {
   return (
     <div className="border border-destructive/60 bg-destructive/10 px-4 py-4">
       <p className="mt-mono text-[11px] uppercase tracking-[0.2em] text-destructive">
-        verify_apass · {codeLabel || result.blockedBy} · BLOCKED
+        verify_apass · {codeLabel || result.blockedBy} · BLOCKED · {modeTag}
       </p>
       <p className="mt-2 text-[13px] text-foreground">
-        Compliance rejected. Nothing submitted to Monad. Ownership unchanged.
+        {result.blockedBy === "TRANSPORT"
+          ? "Sandbox unreachable. Fail-closed — nothing submitted to Monad."
+          : "Compliance rejected. Nothing submitted to Monad. Ownership unchanged."}
       </p>
       <p className="mt-mono mt-2 text-[11px] text-muted-foreground">
         HTTP 200 ≠ approval · only data.code 4 allows

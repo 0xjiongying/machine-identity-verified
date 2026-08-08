@@ -26,6 +26,13 @@ export type {
 export { atokenIdFor, unissuedToken };
 
 export async function requestEvaluation(input: PolicyInput): Promise<Evaluation> {
+  let intendedMode: "demo" | "live" = "demo";
+  try {
+    intendedMode = await fetchCleanverseMode();
+  } catch {
+    intendedMode = "demo";
+  }
+
   try {
     // Never let a stalled transport freeze the demo: fall back after 9s.
     const timeout = new Promise<never>((_, reject) =>
@@ -38,10 +45,26 @@ export async function requestEvaluation(input: PolicyInput): Promise<Evaluation>
     if (!evaluation?.rules?.length) throw new Error("cleanverse: empty evaluation");
     return evaluation;
   } catch (error) {
-    // Transport failure: run the same deterministic CCP engine the server runs.
-    // Surface degraded=true so the UI never looks like a live Cleanverse approval.
     const reason = error instanceof Error ? error.message : "cleanverse: transport failure";
     const fallback = evaluateCcp(input);
+
+    // Live Sandbox unreachable → fail closed. Never surface local CCP as a live approval.
+    if (intendedMode === "live") {
+      return {
+        ...fallback,
+        approved: false,
+        blockedBy: "TRANSPORT",
+        mode: "demo",
+        degraded: true,
+        settlement: null,
+        notice: [
+          `Fail-closed: ${reason}. Live Cleanverse Sandbox unreachable — transaction not approved.`,
+          "Retry when the Cooperate API responds. Local CCP was not used as a substitute approval.",
+        ].join(" "),
+      };
+    }
+
+    // Demo mode (no credentials): local CCP is the intended engine — label it clearly.
     return {
       ...fallback,
       mode: "demo",

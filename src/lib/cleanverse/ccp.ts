@@ -44,14 +44,17 @@ export function atokenIdFor(asset: CvaCredential) {
   return `cva:atoken/${asset.subject.passportId}-${hash(asset.id).slice(0, 6)}`;
 }
 
-/** The A-Token record produced by a successful issuance. */
+/**
+ * Demo-mode A-Token record after a successful local CCP issuance.
+ * Status is `bound` (registered-path semantics) — never pretends custom `/atoken/launch` ISSUED.
+ */
 export function mintedToken(asset: CvaCredential, now: Date): AtokenRecord {
   return {
     ref: ref("cva:tx/", asset.id + now.toISOString().slice(0, 10)),
     tokenId: atokenIdFor(asset),
     credentialId: asset.id,
     passportId: asset.subject.passportId,
-    status: "minted",
+    status: "bound",
     transferable: asset.transferable,
     attestations: asset.attestations.filter((a) => a.status === "valid").length,
     mintedAt: now.toISOString(),
@@ -163,7 +166,7 @@ function cvaRules(a: CvaCredential, kind: PolicyKind, token: AtokenRecord | null
       observed: atokenIdFor(a),
       status: rules.every((r) => r.status === "pass") ? "pass" : "skipped",
       reason: rules.every((r) => r.status === "pass")
-        ? "A-Token minted against the Machine Passport and bound to the issuer A-Pass."
+        ? "A-Token bound against the Machine Passport and issuer A-Pass (demo local CCP)."
         : "Mint not attempted — the verified asset record failed an earlier check.",
       source: "CVA",
     });
