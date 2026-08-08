@@ -57,14 +57,19 @@ export function TrustGap() {
           <div className="mt-20 grid gap-10 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
             <ul className="grid gap-px bg-border">
               {silos.map((s, i) => (
-                <Reveal key={s} delay={i * 0.06}>
-                  <li className="flex items-center justify-between bg-background px-4 py-3.5">
-                    <span className="text-[13px] text-muted-foreground">{s}</span>
-                    <span className="mt-mono text-[10px] uppercase tracking-[0.18em] text-destructive">
-                      Isolated
-                    </span>
-                  </li>
-                </Reveal>
+                <motion.li
+                  key={s}
+                  initial={{ opacity: 0, y: 12 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-8% 0px" }}
+                  transition={{ duration: 0.6, delay: i * 0.07, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex items-center justify-between bg-background px-4 py-3.5"
+                >
+                  <span className="text-[13px] text-muted-foreground">{s}</span>
+                  <span className="mt-mono text-[10px] uppercase tracking-[0.18em] text-destructive">
+                    Isolated
+                  </span>
+                </motion.li>
               ))}
             </ul>
 
