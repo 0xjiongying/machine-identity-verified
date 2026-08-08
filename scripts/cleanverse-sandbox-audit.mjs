@@ -26,10 +26,9 @@ function loadEnvLocal() {
 
 loadEnvLocal();
 
-const base = (process.env.CLEANVERSE_API_URL || "https://uatapi.cleanverse.com/api/cooperate").replace(
-  /\/$/,
-  "",
-);
+const base = (
+  process.env.CLEANVERSE_API_URL || "https://uatapi.cleanverse.com/api/cooperate"
+).replace(/\/$/, "");
 const apiId = process.env.CLEANVERSE_SANDBOX_API_ID;
 const apiKey = process.env.CLEANVERSE_SANDBOX_API_KEY;
 const chain = (process.env.CLEANVERSE_CHAIN || "monad").toLowerCase();
@@ -42,7 +41,8 @@ if (!apiId || !apiKey) {
 function encrypt(payload) {
   const key = Buffer.from(apiKey, "base64");
   const iv = Buffer.alloc(16, 0);
-  const algo = key.length === 16 ? "aes-128-cbc" : key.length === 24 ? "aes-192-cbc" : "aes-256-cbc";
+  const algo =
+    key.length === 16 ? "aes-128-cbc" : key.length === 24 ? "aes-192-cbc" : "aes-256-cbc";
   const cipher = crypto.createCipheriv(algo, key, iv);
   const json = JSON.stringify(payload);
   return Buffer.concat([cipher.update(json, "utf8"), cipher.final()]).toString("base64");
@@ -122,7 +122,11 @@ async function check(name, fn) {
 }
 
 await check("env present (redacted)", async () =>
-  assertShape("credentials configured", apiId.length > 8 && apiKey.length > 8, `api-id len=${apiId.length}`),
+  assertShape(
+    "credentials configured",
+    apiId.length > 8 && apiKey.length > 8,
+    `api-id len=${apiId.length}`,
+  ),
 );
 
 let atoken = null;

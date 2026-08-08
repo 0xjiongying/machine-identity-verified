@@ -159,13 +159,31 @@ export async function cooperateRequest<T = unknown>(
     throw new CleanverseError(String(res.status), text.slice(0, 240), res.status);
   }
 
-  let parsed: Envelope<T>;
+  let parsed: unknown;
   try {
-    parsed = JSON.parse(text) as Envelope<T>;
+    parsed = JSON.parse(text) as unknown;
   } catch {
     throw new CleanverseError("parse", text.slice(0, 240), res.status);
   }
-  return parsed;
+  if (!parsed || typeof parsed !== "object") {
+    throw new CleanverseError("shape", "Cleanverse response was not an object", res.status);
+  }
+  const envelope = parsed as Record<string, unknown>;
+  const code = envelope["code"];
+  const message = envelope["message"];
+  if (typeof code !== "string" || typeof message !== "string") {
+    throw new CleanverseError(
+      "shape",
+      "Cleanverse response missing code/message strings",
+      res.status,
+    );
+  }
+  const dataField = envelope["data"];
+  return {
+    code,
+    message,
+    data: (dataField === undefined ? null : (dataField as T)) as T | null,
+  };
 }
 
 export async function cooperateOk<T = unknown>(

@@ -21,7 +21,9 @@ function trim(value: string | undefined) {
 export function readMonadConfig(): MonadConfig {
   const rpcUrl = trim(process.env["MONAD_TESTNET_RPC_URL"] ?? process.env["MONAD_RPC_URL"]);
   const registryAddress = trim(process.env["MACHINETRUST_REGISTRY_ADDRESS"]);
-  const operatorKey = trim(process.env["MONAD_TESTNET_PRIVATE_KEY"] ?? process.env["MONAD_PRIVATE_KEY"]);
+  const operatorKey = trim(
+    process.env["MONAD_TESTNET_PRIVATE_KEY"] ?? process.env["MONAD_PRIVATE_KEY"],
+  );
   const chainIdRaw = trim(process.env["MONAD_CHAIN_ID"]);
   // Official Monad Testnet chain id per docs.monad.xyz/developer-essentials/testnet
   const chainId = chainIdRaw ? Number(chainIdRaw) : rpcUrl ? 10143 : null;

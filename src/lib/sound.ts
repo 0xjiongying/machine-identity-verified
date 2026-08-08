@@ -36,14 +36,19 @@ export function setSoundEnabled(on: boolean) {
     /* ignore */
   }
   if (on && !ctx) {
-    const AC = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const AC =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     ctx = AC ? new AC() : null;
   }
   void ctx?.resume();
   listeners.forEach((l) => l(on));
 }
 
-const CUES: Record<Cue, { f: number; to: number; dur: number; type: OscillatorType; gain: number }> = {
+const CUES: Record<
+  Cue,
+  { f: number; to: number; dur: number; type: OscillatorType; gain: number }
+> = {
   inspect: { f: 880, to: 1180, dur: 0.05, type: "square", gain: 0.012 },
   verify: { f: 520, to: 1040, dur: 0.12, type: "triangle", gain: 0.02 },
   approve: { f: 320, to: 760, dur: 0.22, type: "sine", gain: 0.03 },

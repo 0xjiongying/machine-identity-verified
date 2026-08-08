@@ -116,15 +116,7 @@ export const moduleParts: ModulePart[] = [
 
 /** Signature motion sequence mapped onto the RWA story. */
 export type StageId =
-  | "compact"
-  | "wake"
-  | "unfold"
-  | "assemble"
-  | "scan"
-  | "inspect"
-  | "verify"
-  | "tokenize"
-  | "ready";
+  "compact" | "wake" | "unfold" | "assemble" | "scan" | "inspect" | "verify" | "tokenize" | "ready";
 
 export type Stage = {
   id: StageId;

@@ -53,7 +53,6 @@ export function BootSequence() {
       }
     }, 32);
     return () => window.clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
 
   function finish() {

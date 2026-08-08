@@ -16,7 +16,7 @@ Built for the **Cleanverse Build: Trusted Assets Hackathon — Track 1 RWA**.
 | **Contract**        | [contracts/MachineTrustRegistry.sol](./contracts/MachineTrustRegistry.sol) · **NOT DEPLOYED** |
 | **Repo**            | https://github.com/0xjiongying/machine-identity-verified            |
 
-> **Submission blockers (owner):** (1) make this GitHub repository **public**, (2) add live demo URL, (3) upload demo video.
+> **Submission blockers (owner):** (1) make this GitHub repository **public**, (2) set Cleanverse Sandbox secrets on Render when UAT `verify_apass` returns `data.code` 4 again, (3) upload demo video.
 
 ---
 
@@ -105,7 +105,7 @@ If the live Sandbox is unreachable, the adapter **fails closed** (no approval, n
 | CVI `query_apass` | **SANDBOX / REAL** | Live UAT with credentials |
 | CVA registered bind (aUSDC) | **SANDBOX / REAL** | Status `bound` · address from `query_deposit_atoken_list` (UAT can rotate) |
 | CVA custom `/atoken/launch` | **UNAVAILABLE** | Not on hot path; UAT `ISSUE_FAILED` — never faked as ISSUED |
-| CCP `verify_apass` | **SANDBOX / REAL** | Issuer/Fund → code 4; Unknown → code 2 |
+| CCP `verify_apass` | **SANDBOX / REAL** | Unknown → `data.code` 2 (BLOCK). Issuer/Fund currently may return envelope `0002` / atoken validation failure on UAT — app **fails closed** (never fabricates code 4). When UAT recovers, code 4 is the only APPROVE path. |
 | Validator pool `/validator/verify` | **UNAVAILABLE** | Needs owned registered pool |
 | Monad settlement | **DEMO** | Settlement **reference** after CCP (no fabricated explorer hash) |
 | `MachineTrustRegistry` | **ROADMAP** | Contract source included · **not deployed** |
@@ -137,14 +137,17 @@ cp .env.example .env.local
 
 npm run cleanverse:audit   # schema checks against UAT
 npm run typecheck
-npm run dev
-npm run build && npm run preview
+npm run lint
+npm run test
+npm run build && npm start
 ```
 
 ### Environment variables (server only)
 
 | Variable | Purpose |
 | --- | --- |
+| `HOST` / `PORT` | Bind `0.0.0.0` + Render-injected port |
+| `FRONTEND_URL` | Public origin allowlist for server-function CSRF (no wildcard) |
 | `CLEANVERSE_API_URL` | Sandbox cooperate base |
 | `CLEANVERSE_SANDBOX_API_ID` | `api-id` header |
 | `CLEANVERSE_SANDBOX_API_KEY` | Local AES key — **never sent, never VITE_** |
@@ -152,6 +155,7 @@ npm run build && npm run preview
 | `CLEANVERSE_ORIGIN_SYMBOL` | Origin filter for deposit list (`usdc`) |
 | `CLEANVERSE_ATOKEN_SYMBOL` | Preferred A-Token (`ausdc`) |
 | `CLEANVERSE_DOCS_INVITATION_CODE` | Docs unlock only — local tooling, never shipped to client |
+| `MONAD_TESTNET_*` / `MACHINETRUST_REGISTRY_ADDRESS` | Optional on-chain registry write |
 
 Without credentials the adapter runs labelled **DEMO** local CCP — never disguised as live Cleanverse.
 

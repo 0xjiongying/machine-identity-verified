@@ -56,9 +56,7 @@ export function Overview() {
                 <li key={l.k} className="bg-background px-5 py-6 sm:px-7">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex min-w-0 items-center gap-2.5">
-                      {l.brand === "mt" ? (
-                        <LogoMark className="size-4 text-foreground" />
-                      ) : null}
+                      {l.brand === "mt" ? <LogoMark className="size-4 text-foreground" /> : null}
                       {l.brand === "cv" ? (
                         <CleanverseMark className="size-4 text-foreground" />
                       ) : null}

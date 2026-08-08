@@ -25,11 +25,10 @@ if (!src.includes("contract MachineTrustRegistry")) {
 
 const forge = spawnSync("forge", ["--version"], { encoding: "utf8" });
 if (forge.status === 0) {
-  const build = spawnSync(
-    "forge",
-    ["build", "--contracts", "contracts/MachineTrustRegistry.sol"],
-    { encoding: "utf8", stdio: "inherit" },
-  );
+  const build = spawnSync("forge", ["build", "--contracts", "contracts/MachineTrustRegistry.sol"], {
+    encoding: "utf8",
+    stdio: "inherit",
+  });
   process.exit(build.status ?? 1);
 }
 

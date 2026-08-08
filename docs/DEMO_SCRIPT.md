@@ -10,17 +10,20 @@ Captions in the Guided demo are designed so the story works **without narration*
 
 ## Beat sheet
 
-| Time      | Beat              | On-screen caption                                                    | Action                         |
-| --------- | ----------------- | -------------------------------------------------------------------- | ------------------------------ |
-| 0:00–0:20 | Problem + product | `PROBLEM → fragmented machine records · PRODUCT → Machine Trust RWA` | Hero · brand **Machine Trust** |
-| 0:20–0:50 | 3D + Passport     | `INTERACTIVE 3D MACHINE → MACHINE PASSPORT`                          | Inspect → Passport             |
-| 0:50–1:20 | CVI issuer        | `CVI / A-PASS · ISSUER → must be VERIFIED before issuance`           | Credentials · issuer card      |
-| 1:20–1:50 | CVA + issue       | `ISSUANCE · CVI → CVA (bind aUSDC) → CCP → RWA ISSUED`               | Issue Machine Asset            |
-| 1:50–2:20 | CCP               | Verdict banner `verify_apass · code 4 · APPROVED`                    | Hold on VerdictBanner          |
-| 2:20–2:45 | Blocked           | `BUYER A · UNVERIFIED → verify_apass code 2 → TRANSFER BLOCKED`      | Unknown Wallet                 |
-| 2:45–3:15 | Approved          | `BUYER B · VERIFIED → verify_apass code 4 · APPROVED`                | Equipment Fund B               |
-| 3:15–3:35 | Monad + ownership | `MONAD SETTLEMENT REF → OWNERSHIP UPDATED`                           | Ownership panel → Audit        |
-| 3:35–4:00 | Architecture      | `ARCHITECTURE · Passport \| CVI · CVA · CCP \| Monad`                | Architecture + scale (roadmap) |
+| Time      | Beat                 | On-screen caption                                                    | Action                         |
+| --------- | -------------------- | -------------------------------------------------------------------- | ------------------------------ |
+| 0:00–0:20 | Problem + product    | `PROBLEM → fragmented machine records · PRODUCT → Machine Trust RWA` | Hero · brand **Machine Trust** |
+| 0:20–0:50 | 3D + Passport        | `INTERACTIVE 3D MACHINE → MACHINE PASSPORT`                          | Inspect → Passport             |
+| 0:50–1:20 | CVI issuer           | `CVI / A-PASS · ISSUER → must be VERIFIED before issuance`           | Credentials · issuer card      |
+| 1:20–1:50 | CVA asset issuance   | `ISSUANCE · CVI → CVA (bind aUSDC) → CCP → RWA ISSUED`               | Issue Machine Asset            |
+| 1:50–2:15 | CCP compliance       | Verdict banner `verify_apass · CCP · APPROVED`                       | Hold on VerdictBanner          |
+| 2:15–2:35 | Unverified → BLOCKED | `BUYER A · UNVERIFIED → TRANSFER BLOCKED`                            | Unknown Wallet                 |
+| 2:35–3:05 | Verified → APPROVED  | `BUYER B · VERIFIED → CCP APPROVED`                                  | Equipment Fund B               |
+| 3:05–3:30 | Monad transaction    | `MONAD SETTLEMENT → after CCP only`                                  | Settlement / ownership panel   |
+| 3:30–3:50 | Ownership + Audit    | `OWNERSHIP UPDATED · AUDIT TRAIL`                                    | Ownership → Audit              |
+| 3:50–4:00 | Architecture         | `Cleanverse essential · Passport \| CVI · CVA · CCP \| Monad`        | Architecture + scale           |
+
+**Say on camera:** Cleanverse is essential — CVI, CVA and CCP decide before Monad runs.
 
 ## Do not say / show as fact
 

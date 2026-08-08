@@ -52,7 +52,7 @@ Starts Node on `HOST` (default `0.0.0.0`) and `PORT` (Render-injected).
 | `NODE_ENV` | `production` |
 | `HOST` | `0.0.0.0` |
 | `PORT` | Injected by Render |
-| `FRONTEND_URL` | Public URL of this service (docs / future allowlist) |
+| `FRONTEND_URL` | Public origin (e.g. `https://machine-trust.onrender.com`) — CSRF Origin allowlist for server functions; **never `*`** |
 
 ### Cleanverse (server-only — never `VITE_*`)
 
@@ -209,9 +209,20 @@ npm start
 
 ---
 
+## CORS / API
+
+This deploy is a **same-origin monolith** (UI + server functions on one Web Service). Browser CORS to a separate API host is not required.
+
+Server functions are protected by TanStack Start CSRF middleware. When `FRONTEND_URL` is set, its origin is allowlisted together with the request’s own origin. Wildcard CORS is not used.
+
+Do not hardcode `localhost` API bases in client code. Production clients call same-origin server functions only.
+
+---
+
 ## Security reminders
 
 - Never prefix Cleanverse or Monad secrets with `VITE_`
 - Never commit `.env` / `.env.local`
 - Never put secrets in `render.yaml` values (use `sync: false`)
 - Never claim Mainnet without an explorer-verifiable tx hash
+- Client error pages never include stack traces

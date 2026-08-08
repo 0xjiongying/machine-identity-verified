@@ -394,7 +394,18 @@ function DataLine({
 
   return (
     <group>
-      <primitive object={new THREE.Line(geo.geometry, new THREE.LineBasicMaterial({ color: ACCENT, transparent: true, opacity: 0.12 + live * 0.35 }))} />
+      <primitive
+        object={
+          new THREE.Line(
+            geo.geometry,
+            new THREE.LineBasicMaterial({
+              color: ACCENT,
+              transparent: true,
+              opacity: 0.12 + live * 0.35,
+            }),
+          )
+        }
+      />
       <mesh ref={dot}>
         <sphereGeometry args={[0.03, 10, 10]} />
         <meshBasicMaterial color={ACCENT} transparent opacity={0.35 + live * 0.65} />
@@ -452,13 +463,7 @@ function Cage({ on }: { on: number }) {
 }
 
 /** Verification laser, locked to the active module or stage target. */
-function Laser({
-  target,
-  strength,
-}: {
-  target: [number, number, number];
-  strength: number;
-}) {
+function Laser({ target, strength }: { target: [number, number, number]; strength: number }) {
   const g = useRef<THREE.Group>(null);
   const dot = useRef<THREE.Mesh>(null);
   const origin = useMemo(() => new THREE.Vector3(0, 3.1, 1.4), []);
@@ -626,14 +631,14 @@ function Rig({
     // Cursor parallax only on fine pointers — on touch it fights orbit drag.
     const px = coarse ? 0 : pointer.x;
     const py = coarse ? 0 : pointer.y;
-    node.rotation.y = damp(
-      node.rotation.y,
-      -0.5 + p * 1.0 + px * 0.35,
+    node.rotation.y = damp(node.rotation.y, -0.5 + p * 1.0 + px * 0.35, 3, dt);
+    node.rotation.x = damp(node.rotation.x, 0.08 - py * 0.14, 3, dt);
+    node.position.y = damp(
+      node.position.y,
+      -0.5 + Math.sin(s.clock.elapsedTime * 0.6) * 0.02,
       3,
       dt,
     );
-    node.rotation.x = damp(node.rotation.x, 0.08 - py * 0.14, 3, dt);
-    node.position.y = damp(node.position.y, -0.5 + Math.sin(s.clock.elapsedTime * 0.6) * 0.02, 3, dt);
   });
 
   // compact→wake→unfold→assemble→scan→inspect→verify→tokenize→ready

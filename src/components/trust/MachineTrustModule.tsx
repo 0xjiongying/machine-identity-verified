@@ -69,7 +69,8 @@ export function MachineTrustModule() {
 
   const step = STEP_AT.reduce((acc, at, i) => (p >= at ? i : acc), 0);
   const verified = step >= verifySteps.length - 1;
-  const part = (selected ?? hovered) ? moduleParts.find((m) => m.key === (selected ?? hovered)) : undefined;
+  const part =
+    (selected ?? hovered) ? moduleParts.find((m) => m.key === (selected ?? hovered)) : undefined;
   const use3d = hydrated && webgl === true;
   const activeTarget = verifySteps[step]?.target;
 
@@ -266,7 +267,12 @@ export function MachineTrustModule() {
               {selected === "controller" ? (
                 <motion.div
                   key="identity"
-                  initial={{ opacity: 0, y: 18, clipPath: "inset(0 0 100% 0)", filter: "blur(6px)" }}
+                  initial={{
+                    opacity: 0,
+                    y: 18,
+                    clipPath: "inset(0 0 100% 0)",
+                    filter: "blur(6px)",
+                  }}
                   animate={{ opacity: 1, y: 0, clipPath: "inset(0 0 0% 0)", filter: "blur(0px)" }}
                   exit={{ opacity: 0, y: 12, clipPath: "inset(0 0 100% 0)", filter: "blur(6px)" }}
                   transition={{ duration: 0.6, ease: EASE.expoOut }}

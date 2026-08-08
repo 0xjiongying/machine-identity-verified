@@ -86,7 +86,7 @@ export function Issuance() {
         });
       }
     } catch (error) {
-      console.error("[MachineTrust] issuance failed", error);
+      console.error("[MachineTrust] issuance failed");
       setResult(null);
       setChecks([]);
     } finally {

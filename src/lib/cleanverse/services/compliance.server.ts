@@ -43,8 +43,9 @@ export const ComplianceService = {
     if (envelope.code !== "0000") {
       const msg = envelope.message || `Cleanverse deny (envelope ${envelope.code}).`;
       // Envelope 0002 with ComplianceFailed is a Sandbox/chain validation failure — not approval.
-      const sandboxInfra =
-        /ComplianceFailed|failed to validate atoken|failed to check apass/i.test(msg);
+      const sandboxInfra = /ComplianceFailed|failed to validate atoken|failed to check apass/i.test(
+        msg,
+      );
       return {
         allowed: false,
         code: envelope.code,

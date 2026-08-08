@@ -57,9 +57,8 @@ export function MachineTwin({ phase = 0, explode = 0, bare = false }: TwinProps)
   }, []);
 
   const use3d = hydrated && booted && !reduced && wide && webgl === true;
-  const part = (selected ?? hovered)
-    ? moduleParts.find((p) => p.key === (selected ?? hovered))
-    : undefined;
+  const part =
+    (selected ?? hovered) ? moduleParts.find((p) => p.key === (selected ?? hovered)) : undefined;
 
   // scroll phase → verification step (scan → identity → provenance → parts → maintenance → chain)
   const step = Math.min(5, Math.floor(phase * 6));

@@ -69,9 +69,8 @@ export async function maybeWriteRegistry(input: {
   }
 
   try {
-    const { createWalletClient, createPublicClient, http, parseAbi, getAddress } = await import(
-      "viem"
-    );
+    const { createWalletClient, createPublicClient, http, parseAbi, getAddress } =
+      await import("viem");
     const { privateKeyToAccount } = await import("viem/accounts");
 
     const account = privateKeyToAccount(

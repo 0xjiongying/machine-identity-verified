@@ -89,7 +89,7 @@ Open `/?demo=1` — see `docs/DEMO_SCRIPT.md`.
 
 | REAL | SANDBOX | DEMO ONLY | ROADMAP |
 | --- | --- | --- | --- |
-| CVI/CVA/CCP API calls with credentials | UAT Cooperate API v5.6 | Passport/maintenance metadata; Monad settlement ref | Custom A-Token ISSUED; validator pool CCP; registry deploy |
+| CVI/CVA/CCP calls with credentials; fail-closed on UAT CCP infra errors | UAT Cooperate API v5.6 | Passport/maintenance metadata; Monad settlement ref; local CCP when secrets unset | Custom A-Token ISSUED; validator pool CCP; registry deploy |
 
 **Live demo:** https://machine-trust.onrender.com  
 **Health:** https://machine-trust.onrender.com/health  

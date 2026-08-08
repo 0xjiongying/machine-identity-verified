@@ -76,5 +76,7 @@ await party("issuer", ISSUER, true, 4);
 await party("fund", FUND, true, 4);
 await party("unknown", UNKNOWN, false, 2);
 
-console.log("\nTrack 1 sandbox gates: Machine Passport holders → CVI → CVA(aUSDC) → CCP(verify_apass).");
+console.log(
+  "\nTrack 1 sandbox gates: Machine Passport holders → CVI → CVA(aUSDC) → CCP(verify_apass).",
+);
 console.log("Custom A-Token launch remains ISSUE_FAILED on Monad (see list_my_atokens).");

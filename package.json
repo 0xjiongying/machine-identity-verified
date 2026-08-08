@@ -19,7 +19,7 @@
     "typecheck": "tsc --noEmit",
     "registry:compile": "node scripts/compile-registry.mjs",
     "registry:deploy": "node scripts/deploy-registry.mjs",
-    "test": "npm run typecheck && npm run registry:compile",
+    "test": "npm run typecheck && npm run registry:compile && node scripts/security-smoke.mjs",
     "test:integration": "npm run cleanverse:audit"
   },
   "dependencies": {
