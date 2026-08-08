@@ -223,7 +223,7 @@ function Machine({ phase, hovered, selected, onHover, onSelect }: Props) {
         </mesh>
       </group>
 
-      <ScanPlane phase={phase} />
+      {/* <ScanPlane phase={phase} /> */}
       <DataPoints phase={phase} />
     </group>
   );
