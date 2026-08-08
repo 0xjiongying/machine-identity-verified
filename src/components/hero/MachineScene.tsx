@@ -19,9 +19,9 @@ const ACCENT = "#836ef9";
 function Metal({ dim, emissive = 0 }: { dim: boolean; emissive?: number }) {
   return (
     <meshStandardMaterial
-      color={dim ? "#1b1c20" : "#2b2d33"}
-      metalness={0.92}
-      roughness={0.38}
+      color={dim ? "#191a1e" : "#33363d"}
+      metalness={0.85}
+      roughness={0.3}
       emissive={new THREE.Color(ACCENT)}
       emissiveIntensity={emissive}
     />
@@ -62,7 +62,7 @@ function Region({
       if (!mat || !("emissiveIntensity" in mat)) return;
       mat.emissiveIntensity = damp(
         mat.emissiveIntensity ?? 0,
-        active ? 0.55 : muted ? 0 : 0.06 + phase * 0.25,
+        active ? 0.5 : muted ? 0 : 0.015 + phase * 0.14,
         6,
         dt,
       );
@@ -106,19 +106,19 @@ function Machine({ phase, hovered, selected, onHover, onSelect }: Props) {
     const targetX = -pointer.current.y * 0.22;
     g.rotation.y = damp(g.rotation.y, targetY, 2.6, dt);
     g.rotation.x = damp(g.rotation.x, targetX, 2.6, dt);
-    g.position.y = damp(g.position.y, -0.9 + Math.sin(state.clock.elapsedTime * 0.6) * 0.02, 4, dt);
+    g.position.y = damp(g.position.y, -1.5 + Math.sin(state.clock.elapsedTime * 0.6) * 0.02, 4, dt);
 
     // Scroll pushes the camera back; selecting a part pulls it in.
-    const dist = selected ? 4.1 : 6.4 + phase * 1.6;
+    const dist = selected ? 5.2 : 7.4 + phase * 1.6;
     camera.position.z = damp(camera.position.z, dist, 2.4, dt);
-    camera.position.y = damp(camera.position.y, 1.4 - pointer.current.y * 0.5, 2.4, dt);
-    camera.lookAt(0, 0.45, 0);
+    camera.position.y = damp(camera.position.y, 0.6 - pointer.current.y * 0.45, 2.4, dt);
+    camera.lookAt(0, 0.15, 0);
   });
 
   const wire = useMemo(() => new THREE.Color(ACCENT), []);
 
   return (
-    <group ref={root} position={[0, -0.9, 0]}>
+    <group ref={root} position={[-0.5, -1.5, 0]} scale={0.72}>
       {/* base + column: controller */}
       <Region
         id="controller"
@@ -238,7 +238,7 @@ function ScanPlane({ phase }: { phase: number }) {
     const t = (state.clock.elapsedTime * 0.35) % 1;
     m.position.y = t * 3.4;
     const mat = m.material as THREE.MeshBasicMaterial;
-    mat.opacity = (0.35 + phase * 0.4) * Math.sin(t * Math.PI);
+    mat.opacity = (0.18 + phase * 0.28) * Math.sin(t * Math.PI);
   });
   return (
     <mesh ref={ref} rotation={[-Math.PI / 2, 0, 0]}>
@@ -289,7 +289,7 @@ export default function MachineScene(props: Props) {
   return (
     <Canvas
       dpr={dpr}
-      camera={{ position: [0, 1.4, 6.4], fov: 38 }}
+      camera={{ position: [0, 0.6, 7.4], fov: 38 }}
       gl={{ antialias: true, powerPreference: "high-performance" }}
       onPointerMissed={() => props.onSelect(null)}
       onCreated={({ gl }) => {
@@ -299,8 +299,8 @@ export default function MachineScene(props: Props) {
       }}
     >
       <ambientLight intensity={0.35} />
-      <directionalLight position={[4, 7, 5]} intensity={1.6} color="#cfd4e0" />
-      <directionalLight position={[-5, 2, -4]} intensity={0.7} color={ACCENT} />
+      <directionalLight position={[4, 7, 5]} intensity={2.1} color="#e6eaf2" />
+      <directionalLight position={[-5, 2, -4]} intensity={0.45} color={ACCENT} />
       <Suspense fallback={null}>
         <Machine {...props} />
       </Suspense>
