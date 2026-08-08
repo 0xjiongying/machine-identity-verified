@@ -16,9 +16,19 @@ dist-ssr
 .nitro
 *.local
 
+# Secrets / env
+.env
+.env.*
+!.env.example
+
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
+
+# Foundry / Solidity artifacts
+cache/
+out/
+broadcast/
 
 # Editor directories and files
 .vscode/*

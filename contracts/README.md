@@ -22,11 +22,18 @@ Deploy only when you have a funded operator key and a Cleanverse-gated write pat
 2. Wire Machine Trust server to call the contract only on CCP approve
 3. Monad **Mainnet** — only claim Mainnet once the tx hash is independently verifiable
 
-## Compile (Foundry)
+## Compile / deploy (explicit — never during Render build)
 
 ```bash
-# from repo root, if Foundry is installed
-forge build --contracts contracts/MachineTrustRegistry.sol
+npm run registry:compile   # Foundry if installed; otherwise presence check
+# Deploy only when you intend to:
+export MONAD_TESTNET_RPC_URL=...
+export MONAD_TESTNET_PRIVATE_KEY=...
+export MACHINETRUST_OPERATOR_ADDRESS=0x...
+npm run registry:deploy
+# Then set MACHINETRUST_REGISTRY_ADDRESS on Render
 ```
+
+Runtime writes use `viem` only when RPC + registry address + operator key are all configured.
 
 Do not implement KYC/AML/CVI/CVA inside this contract.

@@ -102,7 +102,7 @@ If the live Sandbox is unreachable, the adapter **fails closed** (no approval, n
 | Capability | Label | Notes |
 | --- | --- | --- |
 | CVI `query_apass` | **SANDBOX / REAL** | Live UAT with credentials |
-| CVA registered bind (aUSDC) | **SANDBOX / REAL** | Status `bound` · `0xaC0893567D43C3E7e6e35a72803df05416C1f20D` |
+| CVA registered bind (aUSDC) | **SANDBOX / REAL** | Status `bound` · address from `query_deposit_atoken_list` (UAT can rotate) |
 | CVA custom `/atoken/launch` | **UNAVAILABLE** | Not on hot path; UAT `ISSUE_FAILED` — never faked as ISSUED |
 | CCP `verify_apass` | **SANDBOX / REAL** | Issuer/Fund → code 4; Unknown → code 2 |
 | Validator pool `/validator/verify` | **UNAVAILABLE** | Needs owned registered pool |
@@ -156,10 +156,21 @@ Without credentials the adapter runs labelled **DEMO** local CCP — never disgu
 
 ---
 
-## Deployment
+## Deployment (Render.com)
 
-- Frontend: Lovable / Vercel / Cloudflare Workers (set server env for Cleanverse credentials)
-- Contract: see [contracts/README.md](./contracts/README.md) — deploy Testnet before Mainnet; never claim Mainnet without a verifiable tx
+Production target is a **single Render Web Service** (TanStack Start monolith — SSR + Cleanverse server functions).
+
+| | |
+| --- | --- |
+| **Build** | `npm install && npm run build` |
+| **Start** | `npm start` (`HOST=0.0.0.0`, `PORT` from Render) |
+| **Health** | `GET /health` |
+| **Blueprint** | [`render.yaml`](./render.yaml) |
+| **Guide** | [`docs/RENDER_DEPLOYMENT.md`](./docs/RENDER_DEPLOYMENT.md) |
+
+Contract deploy is **manual** (`npm run registry:deploy`) — never part of the Render build. Set `MACHINETRUST_REGISTRY_ADDRESS` after deploy.
+
+Also see [contracts/README.md](./contracts/README.md). Never claim Mainnet without a verifiable tx.
 
 ---
 

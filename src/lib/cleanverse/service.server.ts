@@ -13,6 +13,7 @@
  * registered A-Token binding (aUSDC) is used for CCP — not a fabricated mint.
  */
 
+import { maybeWriteRegistry } from "../monad/registry.server";
 import { CleanverseError, readConfig } from "./api.server";
 import { RULESET, atokenIdFor, evaluateCcp, hash, unissuedToken } from "./ccp";
 import { APassService, ATokenService, ComplianceService } from "./services/index.server";
@@ -206,19 +207,56 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
   const approved = !blocked;
   const seed = `${input.kind}:${input.sender.id}:${input.recipient?.id ?? "none"}:${input.asset.id}`;
 
+  if (!approved) token = input.aToken ?? unissuedToken(input.asset);
+
+  let settlement: Evaluation["settlement"] = null;
+  if (approved) {
+    const write = await maybeWriteRegistry({
+      kind: input.kind,
+      machineKey: input.asset.subject.passportId,
+      passportId: input.asset.subject.passportId,
+      cleanverseAssetRef: atokenAddress ?? token?.tokenId ?? input.asset.id,
+      ownerAddress: input.sender.holder.wallet,
+      recipientAddress: input.recipient?.holder.wallet ?? null,
+      decisionRef,
+    });
+
+    if (write.ok) {
+      settlement = { chain: "Monad", txRef: write.txHash, kind: "on-chain" };
+      notices.push(`Monad registry write confirmed: ${write.txHash}`);
+    } else {
+      settlement = {
+        chain: "Monad",
+        txRef: `monad:settlement/0x${hash(seed + "monad")}`,
+        kind: "demo-settlement-ref",
+      };
+      if (write.kind === "error") {
+        notices.push(`Monad registry write failed — keeping DEMO settlement ref. ${write.reason}`);
+      } else {
+        notices.push(
+          "Monad registry not fully configured — DEMO settlement reference recorded (not an explorer hash).",
+        );
+      }
+    }
+  }
+
   rules.push({
     code: "MONAD.execute",
-    label: input.kind === "transfer" ? "Ownership transfer on Monad" : "A-Token issuance on Monad",
+    label: input.kind === "transfer" ? "Ownership transfer on Monad" : "Machine registry on Monad",
     requirement: "Record settlement only after a positive CCP pre-transaction decision",
-    observed: approved ? "settlement-ref recorded" : "not submitted",
+    observed: settlement
+      ? settlement.kind === "on-chain"
+        ? `on-chain ${settlement.txRef}`
+        : "settlement-ref recorded"
+      : "not submitted",
     status: approved ? "pass" : "skipped",
     reason: approved
-      ? "CCP approved off-chain. Machine Trust records a Monad settlement reference for the demo (hackathon UAT does not expose a Machine Trust custody contract write)."
+      ? settlement?.kind === "on-chain"
+        ? "CCP approved. MachineTrustRegistry write confirmed on Monad."
+        : "CCP approved off-chain. Machine Trust recorded a DEMO Monad settlement reference (registry write not configured or skipped)."
       : `Execution never reached the chain — blocked at ${blocked?.code}.`,
     source: "MONAD",
   });
-
-  if (!approved) token = input.aToken ?? unissuedToken(input.asset);
 
   const evaluation: Evaluation = {
     decisionId: decisionRef,
@@ -228,13 +266,7 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
     approved,
     blockedBy: blocked?.code ?? null,
     rules,
-    settlement: approved
-      ? {
-          chain: "Monad",
-          txRef: `monad:settlement/0x${hash(seed + "monad")}`,
-          kind: "demo-settlement-ref",
-        }
-      : null,
+    settlement,
     aToken: token,
     trace: {
       cvi: { senderRef: refs["CVI-01"] ?? null, recipientRef: refs["CVI-10"] ?? null },
@@ -248,7 +280,7 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
   };
 
   const sandboxNotice =
-    "Live Cleanverse sandbox (API v5.6). CVI/CVA/CCP gates are real UAT responses. Monad settlement ref is a Machine Trust demo record, not a fabricated Cleanverse approval.";
+    "Live Cleanverse sandbox (API v5.6). CVI/CVA/CCP gates are real UAT responses. On-chain registry writes require MACHINETRUST_REGISTRY_ADDRESS + Monad operator key; otherwise settlement refs stay DEMO.";
   evaluation.notice = [sandboxNotice, ...notices].filter(Boolean).join(" ");
   return evaluation;
 }

@@ -1,0 +1,48 @@
+# Machine Trust — Render Blueprint (single Web Service)
+# Architecture: TanStack Start monolith (SSR + server functions + static assets)
+# Frontend → same service → Cleanverse Sandbox → (optional) Monad Testnet registry
+#
+# Never put real secrets in this file. Use sync: false dashboard secrets.
+
+services:
+  - type: web
+    name: machine-trust
+    runtime: node
+    plan: starter
+    region: oregon
+    rootDir: .
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: "0.0.0.0"
+      - key: NITRO_PRESET
+        value: node-server
+      - key: FRONTEND_URL
+        sync: false
+      - key: CLEANVERSE_API_URL
+        value: https://uatapi.cleanverse.com/api/cooperate
+      - key: CLEANVERSE_SANDBOX_API_ID
+        sync: false
+      - key: CLEANVERSE_SANDBOX_API_KEY
+        sync: false
+      - key: CLEANVERSE_CHAIN
+        value: monad
+      - key: CLEANVERSE_ORIGIN_SYMBOL
+        value: usdc
+      - key: CLEANVERSE_ATOKEN_SYMBOL
+        value: ausdc
+      - key: MONAD_TESTNET_RPC_URL
+        sync: false
+      - key: MONAD_CHAIN_ID
+        value: "10143"
+      - key: MONAD_NETWORK_LABEL
+        value: monad-testnet
+      - key: MONAD_TESTNET_PRIVATE_KEY
+        sync: false
+      - key: MACHINETRUST_REGISTRY_ADDRESS
+        sync: false

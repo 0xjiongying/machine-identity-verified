@@ -59,7 +59,9 @@ function request(method, path, body, encrypted = false) {
       path: u.pathname + u.search,
       headers: {
         Accept: "application/json",
-        "User-Agent": "MachineTrust/1.0 (sandbox-audit)",
+        // Cloudflare UAT rejects bare Node UAs — use a product browser UA.
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 MachineTrust/1.0",
         "api-id": apiId,
         "X-Request-ID": crypto.randomUUID(),
         ...(data

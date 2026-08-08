@@ -60,8 +60,12 @@ export const SANDBOX_WALLETS = {
   issuer: "0x5d6b84e2cab95b72ed74fb4768324763f4950d9e",
   fund: "0xc8ba032092cc2499637f4e331e841ab24d1c9964",
   unknown: "0xda45b2481b679b6a2eacb413fdcf761ab1637d2e",
-  /** Cleanverse Monad aUSDC A-Token (from POST /query_deposit_atoken_list). */
-  ausdcAtoken: "0xaC0893567D43C3E7e6e35a72803df05416C1f20D",
+  /**
+   * Fallback only — live issuance binds whatever address
+   * POST /query_deposit_atoken_list returns for origin `usdc` / symbol `aUSDC`.
+   * UAT addresses can rotate; never treat this constant as authoritative on-chain truth.
+   */
+  ausdcAtoken: "0xfa96de5b8f434c26fdff953303dd66ff80af1026",
 } as const;
 
 export const cviIssuer: CviCredential = {

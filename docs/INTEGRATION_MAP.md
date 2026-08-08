@@ -29,7 +29,7 @@ Source of truth: https://docs.cleanverse.com (Cooperate API **v5.6**, revision 2
 | `/validator/is_register`          | POST   | No        | Issue                 | **SANDBOX**       | Pool discovery                                                |
 | `/validator/verify`               | POST   | No        | Issue                 | **UNAVAILABLE**** | On-chain validator pool CCP                                   |
 
-\* Custom `/atoken/launch` is **not** on the hot issuance path (historically `ISSUE_FAILED` on Monad UAT). Hot path **binds** registered Monad **aUSDC** `0xaC0893567D43C3E7e6e35a72803df05416C1f20D` for CCP — never fabricates ISSUED.
+\* Custom `/atoken/launch` is **not** on the hot issuance path (historically `ISSUE_FAILED` on Monad UAT). Hot path **binds** the registered Monad **aUSDC** address returned by `query_deposit_atoken_list` for CCP — never fabricates ISSUED. UAT token addresses can rotate.
 
 \*\* Requires Machine Trust–owned registered pool + EIP-191 owner signatures.
 
