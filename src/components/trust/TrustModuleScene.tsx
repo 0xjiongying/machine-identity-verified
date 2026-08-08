@@ -1,6 +1,7 @@
 import { Suspense, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { ContactShadows, Edges, Environment, OrbitControls } from "@react-three/drei";
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
 import { damp } from "@/lib/motion";
 import { dataCards, type ModuleKey } from "@/data/trustModule";
@@ -19,6 +20,15 @@ export type TrustSceneProps = {
   onHover: (k: ModuleKey | null) => void;
   onSelect: (k: ModuleKey | null) => void;
   onCardFocus?: (k: string | null) => void;
+  /** 0..1 exploded-view separation of the sub-assemblies. */
+  explode?: number;
+  /** Technical wireframe overlay. */
+  wireframe?: boolean;
+  /** Hide the floating holographic cards (inspection mode). */
+  hideCards?: boolean;
+  autoRotate?: boolean;
+  zoomEnabled?: boolean;
+  controlsRef?: React.MutableRefObject<OrbitControlsImpl | null>;
 };
 
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
@@ -45,10 +55,19 @@ function Metal({ tone = "#8d94a4", rough = 0.24 }: { tone?: string; rough?: numb
 }
 
 /** Selectable sub-assembly of the module. */
+const EXPLODE_OFFSET: Record<ModuleKey, [number, number, number]> = {
+  chip: [0, 1.5, 0],
+  board: [0, 0.35, 0],
+  enclosure: [0, 0.9, 0],
+  mechanics: [0, -0.6, 0],
+};
+
 function Part({
   id,
   hovered,
   selected,
+  explode = 0,
+  wireframe = false,
   onHover,
   onSelect,
   children,
@@ -56,6 +75,8 @@ function Part({
   id: ModuleKey;
   hovered: ModuleKey | null;
   selected: ModuleKey | null;
+  explode?: number;
+  wireframe?: boolean;
   onHover: (k: ModuleKey | null) => void;
   onSelect: (k: ModuleKey | null) => void;
   children: React.ReactNode;
@@ -67,9 +88,15 @@ function Part({
   useFrame((_, dt) => {
     const node = g.current;
     if (!node) return;
+    const off = EXPLODE_OFFSET[id];
+    node.position.y = damp(node.position.y, off[1] * explode, 4, dt);
+    node.position.x = damp(node.position.x, off[0] * explode, 4, dt);
     node.traverse((o) => {
-      const mat = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
-      if (!mat || !("emissiveIntensity" in mat)) return;
+      const mesh = o as THREE.Mesh;
+      const mat = mesh.material as THREE.MeshStandardMaterial | undefined;
+      if (!mat) return;
+      if ("wireframe" in mat) mat.wireframe = wireframe && id !== "enclosure";
+      if (!("emissiveIntensity" in mat)) return;
       mat.emissiveIntensity = damp(mat.emissiveIntensity ?? 0, active ? 0.5 : 0.03, 8, dt);
       if ("opacity" in mat) mat.opacity = damp(mat.opacity ?? 1, muted ? 0.4 : 1, 8, dt);
     });
@@ -370,6 +397,7 @@ function Motes({ count }: { count: number }) {
 
 function Module(props: TrustSceneProps) {
   const { hovered, selected, onHover, onSelect, tier } = props;
+  const shared = { hovered, selected, onHover, onSelect, explode: props.explode ?? 0, wireframe: props.wireframe ?? false };
   const root = useRef<THREE.Group>(null);
   const lid = useRef<THREE.Group>(null);
   const shellA = useRef<THREE.Group>(null);
@@ -407,7 +435,7 @@ function Module(props: TrustSceneProps) {
   return (
     <group ref={root}>
       {/* verification board + chip */}
-      <Part id="board" hovered={hovered} selected={selected} onHover={onHover} onSelect={onSelect}>
+      <Part id="board" {...shared}>
         <mesh position={[0, 0, 0]} receiveShadow castShadow>
           <boxGeometry args={[3.1, 0.06, 2.1]} />
           <meshStandardMaterial color="#101319" metalness={0.5} roughness={0.5} />
@@ -431,12 +459,12 @@ function Module(props: TrustSceneProps) {
         </mesh>
       </Part>
 
-      <Part id="chip" hovered={hovered} selected={selected} onHover={onHover} onSelect={onSelect}>
+      <Part id="chip" {...shared}>
         <TrustChip active={hovered === "chip" || selected === "chip" || props.step === 1} step={props.step} />
       </Part>
 
       {/* metallic frame + mounts */}
-      <Part id="mechanics" hovered={hovered} selected={selected} onHover={onHover} onSelect={onSelect}>
+      <Part id="mechanics" {...shared}>
         {[
           [-1.62, 1.12],
           [1.62, 1.12],
@@ -460,7 +488,7 @@ function Module(props: TrustSceneProps) {
       </Part>
 
       {/* transparent protective enclosure — splits open on activation */}
-      <Part id="enclosure" hovered={hovered} selected={selected} onHover={onHover} onSelect={onSelect}>
+      <Part id="enclosure" {...shared}>
         <group ref={lid}>
           <mesh position={[0, 1.0, 0]}>
             <boxGeometry args={[3.4, 0.04, 2.4]} />
@@ -494,14 +522,18 @@ function Module(props: TrustSceneProps) {
         </mesh>
       </Part>
 
-      {dataCards.map((c, i) => (
+      {props.hideCards
+        ? null
+        : dataCards.map((c, i) => (
         <HoloCard
           key={c.key}
           index={i}
           position={CARD_POS[c.key] ?? [0, 0, 0]}
-          active={["module", "id", "provenance", "parts", "maintenance", "module"][props.step] === c.key}
-        />
-      ))}
+            active={
+              ["module", "id", "provenance", "parts", "maintenance", "module"][props.step] === c.key
+            }
+          />
+        ))}
 
       <Laser step={props.step} progress={props.progress} />
       <Motes count={tier === "reduced" ? 60 : 220} />
@@ -538,9 +570,11 @@ export default function TrustModuleScene(props: TrustSceneProps) {
         )}
       </Suspense>
       <OrbitControls
+        ref={props.controlsRef as never}
         makeDefault
+        autoRotate={props.autoRotate ?? false}
+        autoRotateSpeed={0.6}
         enablePan={false}
-        enableZoom
         minDistance={5}
         maxDistance={11}
         minPolarAngle={0.5}
