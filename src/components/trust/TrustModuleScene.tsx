@@ -41,7 +41,7 @@ const CARD_POS: Record<string, [number, number, number]> = {
   parts: [2.6, -1.2, 0.65],
 };
 
-function Metal({ tone = "#8d94a4", rough = 0.24 }: { tone?: string; rough?: number }) {
+function Metal({ tone = "#4b5262", rough = 0.3 }: { tone?: string; rough?: number }) {
   return (
     <meshStandardMaterial
       color={tone}
@@ -420,11 +420,11 @@ function Module(props: TrustSceneProps) {
 
   const glassProps =
     tier === "reduced"
-      ? { color: "#9fb0d8", transparent: true, opacity: 0.12, metalness: 0.1, roughness: 0.1 }
+      ? { color: "#6d7ba0", transparent: true, opacity: 0.07, metalness: 0.1, roughness: 0.1 }
       : {
-          color: "#aebbdc",
+          color: "#7e8db6",
           transparent: true,
-          opacity: 0.16,
+          opacity: 0.08,
           metalness: 0.05,
           roughness: 0.06,
           transmission: 0.85,
@@ -433,7 +433,7 @@ function Module(props: TrustSceneProps) {
         };
 
   return (
-    <group ref={root}>
+    <group ref={root} scale={0.62}>
       {/* verification board + chip */}
       <Part id="board" {...shared}>
         <mesh position={[0, 0, 0]} receiveShadow castShadow>
@@ -473,17 +473,17 @@ function Module(props: TrustSceneProps) {
         ].map(([x, z]) => (
           <mesh key={`p${x}${z}`} position={[x!, 0.42, z!]} castShadow>
             <boxGeometry args={[0.1, 1.0, 0.1]} />
-            <Metal tone="#9aa3b5" />
+            <Metal tone="#5c6474" />
           </mesh>
         ))}
         <mesh position={[0, -0.09, 0]} castShadow receiveShadow>
           <boxGeometry args={[3.5, 0.14, 2.5]} />
-          <Metal tone="#767f92" rough={0.35} />
+          <Metal tone="#3d4351" rough={0.4} />
           <Edges color="#2b3040" />
         </mesh>
         <mesh position={[0, 0.94, 0]}>
           <boxGeometry args={[3.5, 0.08, 2.5]} />
-          <Metal tone="#767f92" rough={0.35} />
+          <Metal tone="#3d4351" rough={0.4} />
         </mesh>
       </Part>
 
@@ -547,22 +547,22 @@ export default function TrustModuleScene(props: TrustSceneProps) {
     <Canvas
       shadows={!reduced}
       dpr={reduced ? 1 : [1, 1.6]}
-      camera={{ position: [4.6, 2.6, 6.4], fov: 32 }}
+      camera={{ position: [5.2, 2.9, 7.2], fov: 30 }}
       gl={{ antialias: true, powerPreference: "high-performance" }}
       onPointerMissed={() => props.onSelect(null)}
       onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
     >
-      <ambientLight intensity={0.5} />
-      <Environment preset="city" />
+      <ambientLight intensity={0.28} />
+      <Environment preset="city" environmentIntensity={0.35} />
       <directionalLight
         position={[5, 8, 4]}
-        intensity={3.4}
-        color="#dfe6f5"
+        intensity={1.7}
+        color="#c9d4ea"
         castShadow={!reduced}
         shadow-mapSize={[1024, 1024]}
       />
       <directionalLight position={[-6, 2, -4]} intensity={0.9} color={ACCENT} />
-      <hemisphereLight args={["#c4d0e8", "#0e1014", 0.5]} />
+      <hemisphereLight args={["#8fa0c4", "#0a0b0e", 0.3]} />
       <Suspense fallback={null}>
         <Module {...props} />
         {reduced ? null : (
@@ -576,7 +576,7 @@ export default function TrustModuleScene(props: TrustSceneProps) {
         autoRotateSpeed={0.6}
         enablePan={false}
         enableZoom={props.zoomEnabled ?? true}
-        minDistance={5}
+        minDistance={4.5}
         maxDistance={11}
         minPolarAngle={0.5}
         maxPolarAngle={Math.PI / 2.02}
