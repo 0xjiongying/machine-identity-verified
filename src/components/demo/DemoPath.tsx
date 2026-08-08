@@ -69,7 +69,7 @@ export function DemoPath() {
   };
 
   return (
-    <div className="pointer-events-none fixed bottom-5 left-5 z-40 hidden md:block">
+    <div className="pointer-events-none fixed bottom-5 right-5 z-40 hidden md:block">
       <div className="pointer-events-auto w-[280px] border border-border bg-background/85 backdrop-blur-md">
         <button
           type="button"
