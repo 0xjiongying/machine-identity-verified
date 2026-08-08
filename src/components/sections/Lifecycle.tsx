@@ -12,19 +12,20 @@ import { EASE } from "@/lib/motion";
  */
 export function Lifecycle() {
   const ref = useRef<HTMLDivElement>(null);
-  const { owner } = useAssetState();
+  const { owner, previousOwner } = useAssetState();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 80%", "end 60%"] });
   const spine = useTransform(scrollYProgress, [0, 1], [0, 1]);
 
-  const timeline = ownershipHistory.map((o) =>
-    o.year === "Current" ? { ...o, entity: owner } : o,
-  );
+  // The transfer entry only exists once the demo transfer has settled.
+  const timeline = ownershipHistory
+    .filter((o) => (o.action === "Compliant transfer" ? Boolean(previousOwner) : true))
+    .map((o) => (o.year === "Current" ? { ...o, entity: owner } : o));
 
   return (
     <Section id="lifecycle" label="Lifecycle" className="scroll-mt-16">
       <Shell>
         <Reveal>
-          <Eyebrow index="04">Lifecycle</Eyebrow>
+          <Eyebrow index="03">Lifecycle</Eyebrow>
         </Reveal>
         <KineticHeading text="Ownership and service, on one continuous spine." />
         <Reveal delay={0.1}>

@@ -18,7 +18,7 @@ export function AuditTrail() {
     <Section id="audit" label="Asset history" className="scroll-mt-16">
       <Shell>
         <Reveal>
-          <Eyebrow index="06">Asset history</Eyebrow>
+          <Eyebrow index="07">Asset history</Eyebrow>
           <Heading>Every state change leaves a trace.</Heading>
           <Lede>
             Registration, service, issuance and transfer accumulate into one auditable record — the
