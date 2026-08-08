@@ -55,7 +55,7 @@ export function Reveal({
 }) {
   return (
     <motion.div
-      className={className}
+      className={cn("min-w-0", className)}
       initial={{ opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-12% 0px" }}
