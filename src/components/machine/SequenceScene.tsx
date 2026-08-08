@@ -1,6 +1,6 @@
 import { Suspense, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { ContactShadows, OrbitControls } from "@react-three/drei";
+import { ContactShadows, Environment, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { damp } from "@/lib/motion";
 import { machineComponents, type ComponentKey } from "@/data/machineComponents";
@@ -34,8 +34,8 @@ function pose(p: number, time: number) {
 
   // coiled → extended joint targets, plus the working cycle once activated.
   const cycle = time * 0.55;
-  const shoulder = -2.3 + open * 1.95 + run * Math.sin(cycle) * 0.34;
-  const elbow = 2.55 - open * 1.55 + run * Math.sin(cycle * 1.6 + 0.9) * 0.4;
+  const shoulder = -2.2 + open * 2.05 + run * Math.sin(cycle) * 0.34;
+  const elbow = 2.6 - open * 1.85 + run * Math.sin(cycle * 1.6 + 0.9) * 0.4;
   const wrist = -0.6 + open * 0.6 + run * Math.sin(cycle * 2.1) * 0.5;
   const yaw = run * Math.sin(cycle * 0.7) * 0.95;
   const lift = open * 0.18;
@@ -47,7 +47,7 @@ function Steel({ tone = "#6b7080", rough = 0.28 }: { tone?: string; rough?: numb
   return (
     <meshStandardMaterial
       color={tone}
-      metalness={0.9}
+      metalness={0.72}
       roughness={rough}
       transparent
       emissive={new THREE.Color(ACCENT)}
@@ -327,7 +327,8 @@ export default function SequenceScene(props: SequenceProps) {
       onPointerMissed={() => props.onSelect(null)}
       onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
     >
-      <ambientLight intensity={1.35} />
+      <ambientLight intensity={0.55} />
+      <Environment preset="warehouse" />
       <directionalLight
         position={[5, 9, 5]}
         intensity={5.2}
@@ -337,7 +338,7 @@ export default function SequenceScene(props: SequenceProps) {
       />
       <directionalLight position={[-6, 3, -4]} intensity={0.45} color={ACCENT} />
       <directionalLight position={[0, 2, 8]} intensity={2.4} color="#cfd6e6" />
-      <hemisphereLight args={["#c8d2e4", "#14161c", 1.5]} />
+      <hemisphereLight args={["#c8d2e4", "#14161c", 0.6]} />
       <Suspense fallback={null}>
         <Machine {...props} />
         {reduced ? null : (
