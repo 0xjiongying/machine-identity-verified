@@ -9,9 +9,7 @@ import { MachineTrustModule } from "@/components/trust/MachineTrustModule";
 import { Passport } from "@/components/passport/Passport";
 import { Lifecycle } from "@/components/sections/Lifecycle";
 import { Participants } from "@/components/sections/Participants";
-import { Credentials } from "@/components/sections/Credentials";
-import { Issuance } from "@/components/compliance/Issuance";
-import { Transfer } from "@/components/transfer/Transfer";
+import { LendingMarket } from "@/components/defi/LendingMarket";
 import { AuditTrail } from "@/components/sections/AuditTrail";
 import { Architecture } from "@/components/architecture/Architecture";
 import { Scale } from "@/components/sections/Scale";
@@ -19,9 +17,9 @@ import { Roadmap } from "@/components/sections/Roadmap";
 import { FooterCTA } from "@/components/footer/FooterCTA";
 import { DemoPath } from "@/components/demo/DemoPath";
 
-const title = "Machine Trust — Trust the machine. Program the asset.";
+const title = "Machine Trust — Finance machines. Verify the borrower.";
 const description =
-  "Machine passports, verified participants and compliance-aware transfers that turn industrial machines into programmable on-chain assets.";
+  "CVI-gated Compliant DeFi for machine financing: Cleanverse identity verification unlocks a USDC lending pool; Monad executes the loan.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -43,7 +41,7 @@ function Home() {
       <DemoPath />
       <main id="main">
         <h1 className="sr-only">
-          Machine Trust — compliance infrastructure for programmable machine assets
+          Machine Trust — verified identity unlocks compliant machine finance
         </h1>
         <Hero />
         <Overview />
@@ -53,9 +51,7 @@ function Home() {
         <Passport />
         <Lifecycle />
         <Participants />
-        <Credentials />
-        <Issuance />
-        <Transfer />
+        <LendingMarket />
         <AuditTrail />
         <Architecture />
         <Scale />

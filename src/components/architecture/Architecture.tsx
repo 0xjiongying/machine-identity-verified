@@ -8,59 +8,58 @@ const layers = [
     key: "physical",
     label: "Physical world",
     value: "Industrial machine",
-    note: "The asset exists, works and wears — but carries no shared record.",
+    note: "The asset that needs financing — identity comes from the Machine Passport.",
   },
   {
     key: "mt",
     label: "Machine Trust",
-    value: "Machine Passport",
-    note: "Persistent identity: provenance, ownership, service and parts.",
+    value: "Passport + lending UX",
+    note: "Machine context, pool UI, and orchestration. Does not hold Cleanverse secrets.",
   },
   {
     key: "cvi",
     label: "Cleanverse · CVI",
-    value: "A-Pass / verified identity",
-    note: "Who may participate — issuer and buyer identity resolved from the A-Pass registry.",
-  },
-  {
-    key: "cva",
-    label: "Cleanverse · CVA",
-    value: "A-Token / verified asset",
-    note: "What the asset is — bound to a registered A-Token before any compliance check.",
+    value: "A-Pass entry gate",
+    note: "OFF-CHAIN: query_apass decides whether the borrower exists as verified identity.",
   },
   {
     key: "ccp",
     label: "Cleanverse · CCP",
-    value: "Validator Compliance gate",
-    note: "Whether this transaction may proceed — verify_apass data.code 4 only. HTTP 200 alone is not approval.",
+    value: "verify_apass eligibility",
+    note: "OFF-CHAIN: data.code 4 only. HTTP 200 / envelope 0000 alone is never approval.",
+  },
+  {
+    key: "cva",
+    label: "Cleanverse · CVA",
+    value: "A-Token settlement layer",
+    note: "Registered aUSDC binds the CCP check — not Track 1 issuance theatre.",
+  },
+  {
+    key: "protocol",
+    label: "MachineTrustLending",
+    value: "On-chain loan primitive",
+    note: "Eligibility mapping, liquidity, borrow, interest, repay — after off-chain compliance.",
   },
   {
     key: "monad",
     label: "Monad",
-    value: "Execution",
-    note: "After CCP approval, settlement is recorded and ownership state becomes canonical.",
-  },
-  {
-    key: "asset",
-    label: "Result",
-    value: "Programmable machine RWA",
-    note: "A verified asset with an auditable history — only after real gates succeed.",
+    value: "Execution network",
+    note: "Settlement references for loan activation and repayment.",
   },
 ];
 
 export function Architecture() {
-  const [active, setActive] = useState<string>("mt");
+  const [active, setActive] = useState<string>("cvi");
 
   return (
     <Section id="architecture" label="Architecture" className="scroll-mt-16">
       <Shell>
         <Reveal>
           <Eyebrow index="11">Architecture</Eyebrow>
-          <Heading>Distinct layers, one transaction path.</Heading>
+          <Heading>Identity gates credit. Chain executes it.</Heading>
           <Lede>
-            Machine Trust owns the passport. Cleanverse owns identity, asset verification, and the
-            compliance decision. Monad owns execution. Keeping them separate is what makes the
-            system legible to engineers, operators and regulators at the same time.
+            Cleanverse owns verification. Machine Trust owns the passport and market UX. The lending
+            contract owns loan state — never Cleanverse API keys.
           </Lede>
         </Reveal>
 

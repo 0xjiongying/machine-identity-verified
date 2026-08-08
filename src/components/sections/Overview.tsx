@@ -3,24 +3,23 @@ import { Section, Shell, Eyebrow, Reveal, DemoTag } from "@/components/primitive
 const LAYERS = [
   {
     k: "Machine Trust",
-    q: "What is this asset?",
-    v: "Machine passport, parts, service history and provenance for one physical machine.",
+    q: "What is being financed?",
+    v: "Machine Passport — identity, parts, service history and ownership context for one physical machine.",
   },
   {
     k: "Cleanverse",
-    q: "Who may transact?",
-    v: "CVI credentials for participants, CVA attestations for the asset, and the policy decision itself.",
+    q: "Who may borrow?",
+    v: "CVI / A-Pass verifies the borrower. CCP (verify_apass) decides pool eligibility. No valid CVI → access blocked.",
   },
   {
     k: "Monad",
     q: "What executes?",
-    v: "Issuance and ownership transfer, only after Cleanverse has approved the request.",
+    v: "MachineTrustLending loan state — borrow, interest, repay — only after off-chain compliance unlocks eligibility.",
   },
 ];
 
 /**
- * The first 30 seconds. A judge landing here should know what the product is,
- * which problem it removes, and where Cleanverse sits — before scrolling.
+ * The first 30 seconds. A judge landing here should know this is Compliant DeFi.
  */
 export function Overview() {
   return (
@@ -29,17 +28,17 @@ export function Overview() {
         <div className="grid gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
           <Reveal>
             <Eyebrow index="01">In one paragraph</Eyebrow>
-            <p className="mt-6 max-w-[34ch] text-[length:var(--text-display)] font-medium leading-[1.05]">
-              A machine is worth financing only if someone can prove what it is and who may own it.
+            <p className="mt-6 max-w-[36ch] text-[length:var(--text-display)] font-medium leading-[1.05]">
+              Verified identity unlocks compliant machine finance.
             </p>
             <p className="mt-6 max-w-[54ch] text-[15px] leading-relaxed text-muted-foreground">
-              Machine Trust gives an industrial machine a verifiable passport — identity, parts,
-              service history, ownership. Cleanverse verifies the participants and the asset itself,
-              and returns the compliance decision. Monad executes only what Cleanverse approved.
+              Machine Trust is a CVI-gated DeFi market. The Machine Passport describes the asset.
+              Cleanverse verifies the borrower. Only then can they enter the USDC Machine Finance
+              Pool. Monad executes the loan — never before compliance clears.
             </p>
             <p className="mt-4 max-w-[54ch] text-[15px] leading-relaxed text-muted-foreground">
-              Without verified identity, a tokenised machine is a picture of a machine. That is the
-              gap this product closes.
+              Without verified identity, there is no credit line. That is the protocol rule — not a
+              badge on the page.
             </p>
             <DemoTag className="mt-7" />
           </Reveal>
@@ -63,9 +62,6 @@ export function Overview() {
                 </li>
               ))}
             </ul>
-            <p className="mt-mono mt-4 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              Lending · leasing · insurance · secondary markets = roadmap, not built
-            </p>
           </Reveal>
         </div>
       </Shell>

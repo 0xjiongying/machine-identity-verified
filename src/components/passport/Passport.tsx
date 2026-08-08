@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAssetState } from "@/lib/asset-state";
 import { useCleanverse } from "@/lib/cleanverse-state";
+import { useLending } from "@/lib/lending-state";
 
 const tabs = ["Overview", "Ownership", "Maintenance", "Parts", "Provenance", "Compliance"] as const;
 type Tab = (typeof tabs)[number];
@@ -50,6 +51,7 @@ function Row({ k, v, accent }: { k: string; v: string; accent?: boolean }) {
 export function Passport() {
   const { owner, previousOwner, verified, issued, extraEvents } = useAssetState();
   const { aToken, mode, issuer: issuerCredential } = useCleanverse();
+  const { loan, eligibility, financingVisual } = useLending();
   const [tab, setTab] = useState<Tab>("Overview");
   const [part, setPart] = useState<MachinePart>(machineParts[1] as MachinePart);
 
@@ -83,8 +85,26 @@ export function Passport() {
     return [...base, ...transferRows, current];
   }, [owner, previousOwner, issued, extraEvents]);
 
-  const headerTone: "ok" | "neutral" = verified || issued ? "ok" : "neutral";
-  const headerLabel = issued ? "RWA issued" : verified ? "Identity verified" : "Passport ready";
+  const headerTone: "ok" | "neutral" | "fail" =
+    financingVisual === "restricted" && eligibility && !eligibility.eligible
+      ? "fail"
+      : financingVisual === "enabled" ||
+          financingVisual === "active" ||
+          financingVisual === "closed"
+        ? "ok"
+        : verified || issued
+          ? "ok"
+          : "neutral";
+  const headerLabel =
+    loan?.status === "active"
+      ? "Financing active"
+      : loan?.status === "closed" || loan?.status === "repaid"
+        ? "Financing closed"
+        : eligibility?.eligible
+          ? "Financing enabled"
+          : eligibility && !eligibility.eligible
+            ? "Financing restricted"
+            : "Passport ready";
 
   return (
     <Section id="passport" label="Machine Passport">
@@ -292,20 +312,18 @@ export function Passport() {
                         <Row k="Service events" v="4 signed records (demo)" />
                         <Row k="Part replacements" v="1 (motor, 2026-02 · demo)" />
                         <Row
-                          k="Issuance"
+                          k="Financing"
                           v={
-                            issued
-                              ? `RWA issued · ${aToken.tokenId}`
-                              : "Not issued — run Cleanverse issuance"
+                            loan
+                              ? `${loan.status.toUpperCase()} · $${loan.principal.toLocaleString()}`
+                              : "None — check eligibility in Machine Finance Pool"
                           }
-                          accent={issued}
+                          accent={Boolean(loan)}
                         />
                         <Row
-                          k="Transfers"
+                          k="Ownership"
                           v={
-                            previousOwner
-                              ? `1 compliant transfer → ${owner}`
-                              : "None — ownership unchanged"
+                            previousOwner ? `Transferred → ${owner}` : `${owner} · passport holder`
                           }
                         />
                         <Row
@@ -318,30 +336,43 @@ export function Passport() {
                     {tab === "Compliance" ? (
                       <div className="space-y-0">
                         <Row
-                          k="Asset credential (CVA)"
-                          v={
-                            aToken.status === "unissued" ? "UNISSUED" : aToken.status.toUpperCase()
-                          }
-                          accent={aToken.status !== "unissued"}
+                          k="Borrower CVI"
+                          v={eligibility?.layers.cvi ?? "NOT CHECKED"}
+                          accent={eligibility?.layers.cvi === "VERIFIED"}
                         />
                         <Row
-                          k="Owner credential (CVI)"
-                          v={
-                            verified || issuerCredential.status === "active"
-                              ? `${issuerCredential.status.toUpperCase()} · tier ${issuerCredential.kycTier}`
-                              : "PENDING"
-                          }
-                          accent={verified || issuerCredential.status === "active"}
+                          k="CCP eligibility"
+                          v={eligibility?.layers.compliance ?? "PENDING"}
+                          accent={eligibility?.layers.compliance === "APPROVED"}
                         />
-                        <Row k="Transfer policy" v="verify_apass · CCP gate" />
-                        <Row k="Eligible counterparties" v="Active A-Pass only" />
+                        <Row
+                          k="Pool access"
+                          v={eligibility?.layers.pool ?? "LOCKED"}
+                          accent={eligibility?.layers.pool === "ELIGIBLE"}
+                        />
+                        <Row
+                          k="Loan status"
+                          v={loan?.status?.toUpperCase() ?? "NONE"}
+                          accent={loan?.status === "active"}
+                        />
+                        <Row
+                          k="CVA bind (CCP)"
+                          v={
+                            eligibility?.ccp?.atoken
+                              ? `${eligibility.ccp.atoken.slice(0, 12)}…`
+                              : "resolved at eligibility check"
+                          }
+                        />
                         <Row k="Settlement network" v="Monad" />
                         <Row k="Adapter mode" v={mode.toUpperCase()} />
                         <p className="mt-5 text-[12px] leading-relaxed text-muted-foreground">
-                          Compliance state is evaluated through the Cleanverse adapter (API v5.6).
-                          Issuance and transfer only advance when CVI, CVA, and CCP gates pass. Mode{" "}
-                          {mode}:{" "}
-                          {mode === "live" ? "sandbox credentials present." : "local demo engine."}
+                          Track 2: CVI is the protocol entry condition. Passport supports
+                          underwriting display — the machine is not automatic on-chain collateral.
+                          Mode {mode}
+                          {issuerCredential.status === "active"
+                            ? ` · fixture issuer tier ${issuerCredential.kycTier}`
+                            : ""}
+                          {aToken.status !== "unissued" ? ` · local aToken ${aToken.status}` : ""}.
                         </p>
                       </div>
                     ) : null}

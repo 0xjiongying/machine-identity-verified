@@ -8,10 +8,9 @@ const CHAPTERS = [
   { id: "inspect", n: "03", label: "Inspect" },
   { id: "passport", n: "04", label: "Passport" },
   { id: "participants", n: "06", label: "Parties" },
-  { id: "credentials", n: "07", label: "CVI / CVA" },
-  { id: "issuance", n: "08", label: "Issue" },
-  { id: "transfer", n: "09", label: "Transfer" },
+  { id: "finance", n: "08", label: "Finance" },
   { id: "audit", n: "10", label: "Trace" },
+  { id: "architecture", n: "11", label: "Layers" },
 ];
 
 /** Narrative progress rail — replaces the scrollbar with the story index. */
@@ -38,49 +37,34 @@ export function ProgressRail() {
   }, []);
 
   return (
-    <nav
+    <aside
       aria-label="Section progress"
-      className="pointer-events-none fixed left-5 top-1/2 z-40 hidden -translate-y-1/2 2xl:block"
+      className="pointer-events-none fixed right-3 top-1/2 z-40 hidden -translate-y-1/2 xl:block"
     >
-      <motion.div
-        className="absolute -left-3 top-0 w-px origin-top bg-primary/70"
-        style={{ scaleY: scrollYProgress, height: "100%" }}
-        aria-hidden="true"
-      />
-      <div className="absolute -left-3 top-0 h-full w-px bg-border" aria-hidden="true" />
-      <ul className="flex flex-col gap-4">
-        {CHAPTERS.map((c) => {
-          const on = active === c.id;
-          return (
-            <li key={c.id}>
-              <a
-                href={`#${c.id}`}
-                className="pointer-events-auto group flex items-center gap-2.5"
-                data-cursor="open"
-              >
-                <span
+      <div className="pointer-events-auto relative pl-3">
+        <div className="absolute bottom-1 left-0 top-1 w-px bg-border" aria-hidden="true">
+          <motion.div className="w-px origin-top bg-primary" style={{ scaleY: scrollYProgress }} />
+        </div>
+        <ol className="space-y-3">
+          {CHAPTERS.map((c) => {
+            const on = active === c.id;
+            return (
+              <li key={c.id}>
+                <a
+                  href={`#${c.id}`}
                   className={cn(
-                    "mt-mono text-[9px] tabular-nums transition-colors",
-                    on ? "text-primary" : "text-muted-foreground/60",
+                    "mt-mono block text-[10px] uppercase tracking-[0.16em] transition-colors",
+                    on ? "text-primary" : "text-muted-foreground hover:text-foreground",
                   )}
                 >
-                  {c.n}
-                </span>
-                <span
-                  className={cn(
-                    "mt-mono overflow-hidden whitespace-nowrap text-[9px] uppercase tracking-[0.2em] transition-all duration-500",
-                    on
-                      ? "max-w-[110px] text-foreground opacity-100"
-                      : "max-w-0 opacity-0 group-hover:max-w-[110px] group-hover:opacity-70",
-                  )}
-                >
+                  <span className="mr-2 opacity-60">{c.n}</span>
                   {c.label}
-                </span>
-              </a>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
+                </a>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    </aside>
   );
 }
