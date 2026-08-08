@@ -90,7 +90,7 @@ export function Inspection() {
             {/* HUD */}
             <div className="pointer-events-none absolute inset-0 p-5">
               <div className="mt-mono flex items-start justify-between text-[10px] text-muted-foreground">
-                <span>{demoMachine.id} · LIVE VIEWPORT</span>
+                <span>{demoMachine.id} · DEMO VIEWPORT</span>
                 <span>{engaged ? "ZOOM ACTIVE" : "CLICK TO ENGAGE ZOOM"}</span>
               </div>
             </div>

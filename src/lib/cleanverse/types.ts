@@ -70,11 +70,21 @@ export type Evaluation = {
   approved: boolean;
   blockedBy: string | null;
   rules: RuleResult[];
-  settlement: { chain: "Monad"; txRef: string } | null;
+  settlement: {
+    chain: "Monad";
+    txRef: string;
+    /** Real chain write vs Machine Trust demo settlement reference. */
+    kind?: "demo-settlement-ref" | "on-chain";
+  } | null;
   aToken: AtokenRecord | null;
   trace: CleanverseTrace;
   evaluatedAt: string;
   notice?: string;
+  /**
+   * True when the client fell back to the local CCP engine after a transport
+   * timeout/error. Never present this as a live Cleanverse approval.
+   */
+  degraded?: boolean;
 };
 
 export type PolicyInput = {

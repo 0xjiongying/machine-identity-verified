@@ -12,15 +12,24 @@ import { useCleanverse } from "@/lib/cleanverse-state";
 import { useAssetState } from "@/lib/asset-state";
 import { CheckSequence, type SequenceState } from "./CheckSequence";
 import { TraceStrip } from "./TraceStrip";
+import { PipelineStages } from "./PipelineStages";
+import { derivePipelineStage } from "./pipeline";
 
 export function Issuance() {
-  const { issuer: issuerCredential, asset, aToken, mode, recordDecision, setAToken } =
-    useCleanverse();
-  const { markIssued } = useAssetState();
+  const {
+    issuer: issuerCredential,
+    asset,
+    aToken,
+    mode,
+    recordDecision,
+    setAToken,
+  } = useCleanverse();
+  const { markIssued, markVerified } = useAssetState();
   const [state, setState] = useState<SequenceState>("idle");
   const [checks, setChecks] = useState<RuleResult[]>([]);
   const [revealed, setRevealed] = useState(0);
   const [result, setResult] = useState<Evaluation | null>(null);
+  const stage = derivePipelineStage("issuance", state, result, revealed);
 
   const preview = previewEvaluation({
     kind: "issuance",
@@ -55,6 +64,7 @@ export function Issuance() {
       if (result.aToken) setAToken(result.aToken);
       recordDecision(result);
       if (result.approved) {
+        markVerified();
         markIssued({
           tokenId: result.aToken?.tokenId ?? "—",
           txRef: result.settlement?.txRef ?? "0x",
@@ -62,6 +72,8 @@ export function Issuance() {
       }
     } catch (error) {
       console.error("[MachineTrust] issuance failed", error);
+      setResult(null);
+      setChecks([]);
     }
     setState("done");
   }
@@ -138,19 +150,21 @@ export function Issuance() {
               <div className="mt-px grid grid-cols-1 gap-px bg-border">
                 <div className="bg-background px-4 py-4">
                   <p className="mt-label">A-Token · CVA</p>
-                  <p className="mt-mono mt-1.5 break-all text-[12px]">
-                    {aToken.tokenId}
-                  </p>
+                  <p className="mt-mono mt-1.5 break-all text-[12px]">{aToken.tokenId}</p>
                   <p
                     className={`mt-mono mt-1 text-[11px] uppercase tracking-[0.18em] ${
                       aToken.status === "unissued" ? "text-muted-foreground" : "text-success"
                     }`}
                   >
                     {aToken.status}
-                    {aToken.mintedAt ? ` · minted ${aToken.mintedAt.slice(0, 16).replace("T", " ")}` : ""}
+                    {aToken.mintedAt
+                      ? ` · minted ${aToken.mintedAt.slice(0, 16).replace("T", " ")}`
+                      : ""}
                   </p>
                 </div>
               </div>
+
+              <PipelineStages kind="issuance" active={stage} />
 
               <div className="mt-7">
                 <CheckSequence
@@ -181,13 +195,22 @@ export function Issuance() {
                           result.approved ? "text-primary" : "text-destructive"
                         }`}
                       >
-                        {result.approved ? "A-Token issued" : "Issuance rejected"}
+                        {result.approved
+                          ? result.degraded
+                            ? "RWA issued · degraded local CCP"
+                            : "RWA issued · CVI + CVA + CCP"
+                          : "Issuance rejected"}
                       </p>
                       <p className="mt-mono mt-2 text-[12px] text-muted-foreground">
                         {result.approved
-                          ? `${result.settlement?.txRef} · Monad settlement`
+                          ? `${result.settlement?.txRef} · ${result.settlement?.kind === "demo-settlement-ref" ? "Monad settlement ref (demo)" : "Monad"} · mode ${result.mode}${result.degraded ? " · degraded" : ""}`
                           : `Blocked at ${result.blockedBy} — nothing was minted and nothing reached the chain.`}
                       </p>
+                      {result.notice ? (
+                        <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+                          {result.notice}
+                        </p>
+                      ) : null}
                     </div>
                     <TraceStrip result={result} className="mt-4" />
                   </motion.div>
@@ -210,4 +233,3 @@ export function Issuance() {
     </Section>
   );
 }
-

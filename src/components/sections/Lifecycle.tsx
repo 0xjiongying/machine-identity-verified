@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { motion, useScroll, useTransform } from "motion/react";
 import { Section, Shell, Eyebrow, Lede, Reveal, StatusDot } from "@/components/primitives";
 import { KineticHeading, TiltCard } from "@/components/motion/Kinetic";
@@ -12,14 +12,43 @@ import { EASE } from "@/lib/motion";
  */
 export function Lifecycle() {
   const ref = useRef<HTMLDivElement>(null);
-  const { owner, previousOwner } = useAssetState();
+  const { owner, previousOwner, issued, extraEvents } = useAssetState();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 80%", "end 60%"] });
   const spine = useTransform(scrollYProgress, [0, 1], [0, 1]);
 
-  // The transfer entry only exists once the demo transfer has settled.
-  const timeline = ownershipHistory
-    .filter((o) => (o.action === "Compliant transfer" ? Boolean(previousOwner) : true))
-    .map((o) => (o.year === "Current" ? { ...o, entity: owner } : o));
+  const timeline = useMemo(() => {
+    const registration = ownershipHistory.filter((o) => o.action === "Initial registration");
+    const issuedRow = issued
+      ? [
+          {
+            year: "Live",
+            entity: previousOwner ?? owner,
+            action: "RWA issued · CVI + CVA + CCP",
+            ref: extraEvents.find((e) => e.kind === "issued")?.hash ?? "cva:atoken/issued",
+            verified: true,
+          },
+        ]
+      : [];
+    const transferRows = previousOwner
+      ? [
+          {
+            year: "Live",
+            entity: owner,
+            action: "Compliant transfer",
+            ref: extraEvents.find((e) => e.kind === "transferred")?.hash ?? "monad:settlement",
+            verified: true,
+          },
+        ]
+      : [];
+    const current = {
+      year: "Current",
+      entity: owner,
+      action: issued ? "Active ownership" : "Active ownership · awaiting RWA issuance",
+      ref: "state:owner",
+      verified: issued,
+    };
+    return [...registration, ...issuedRow, ...transferRows, current];
+  }, [owner, previousOwner, issued, extraEvents]);
 
   return (
     <Section id="lifecycle" label="Lifecycle" className="scroll-mt-16">
@@ -30,8 +59,8 @@ export function Lifecycle() {
         <KineticHeading text="Ownership and service, on one continuous spine." />
         <Reveal delay={0.1}>
           <Lede>
-            A machine's value is its history. Every transfer and every service event attaches to the
-            same record, so the asset can be underwritten instead of inspected.
+            A machine&apos;s value is its history. Every transfer and every service event attaches
+            to the same record, so the asset can be underwritten instead of inspected.
           </Lede>
         </Reveal>
 
@@ -46,7 +75,7 @@ export function Lifecycle() {
             <ul className="mt-6 space-y-px">
               {timeline.map((o, i) => (
                 <motion.li
-                  key={`${o.year}-${i}`}
+                  key={`${o.year}-${o.action}-${i}`}
                   initial={{ opacity: 0, x: -14 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, margin: "-15% 0px" }}

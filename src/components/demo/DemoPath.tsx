@@ -57,7 +57,7 @@ export function DemoPath() {
       n: "06",
       label: "Transfer approved",
       target: "transfer",
-      say: "Verified buyer → approved → settled on Monad.",
+      say: "Verified buyer → CCP approved → Monad settlement ref.",
       action: () => {
         fire({ action: "select", counterparty: "Equipment Fund B" });
         window.setTimeout(() => fire({ action: "run" }), 900);

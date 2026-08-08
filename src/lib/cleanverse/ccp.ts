@@ -300,7 +300,7 @@ export function evaluateCcp(input: PolicyInput, now = new Date()): Evaluation {
     observed: approved ? "submitted" : "not submitted",
     status: approved ? "pass" : "skipped",
     reason: approved
-      ? "CCP approved off-chain, state change executed on Monad."
+      ? "CCP approved in the local policy mirror. Machine Trust records a demo Monad settlement reference (no Cleanverse credentials configured)."
       : `Execution never reached the chain — CCP blocked at ${blocked?.code}.`,
     source: "MONAD",
   });
@@ -320,7 +320,9 @@ export function evaluateCcp(input: PolicyInput, now = new Date()): Evaluation {
     approved,
     blockedBy: blocked?.code ?? null,
     rules,
-    settlement: approved ? { chain: "Monad", txRef: ref("monad:tx/", seed) } : null,
+    settlement: approved
+      ? { chain: "Monad", txRef: ref("monad:settlement/", seed), kind: "demo-settlement-ref" }
+      : null,
     aToken: token,
     trace: {
       cvi: { senderRef: apassRef(sender), recipientRef: apassRef(recipient) },

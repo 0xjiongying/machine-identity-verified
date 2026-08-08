@@ -76,15 +76,7 @@ export function CheckSequence({
                         : "text-success",
                 )}
               >
-                {!shown
-                  ? state === "running"
-                    ? "…"
-                    : "—"
-                  : failed
-                    ? "✕"
-                    : skipped
-                      ? "∅"
-                      : "✓"}
+                {!shown ? (state === "running" ? "…" : "—") : failed ? "✕" : skipped ? "∅" : "✓"}
               </span>
             </li>
           );

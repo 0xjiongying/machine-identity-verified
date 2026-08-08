@@ -1,6 +1,8 @@
 /**
  * Canonical demo machine for the Machine Trust prototype.
- * DEMO DATA — not sourced from a production system.
+ * DEMO DATA — physical/passport metadata only.
+ * Ownership, issuance, and transfer claims come from live asset state
+ * after real Cleanverse gates succeed — never pre-settled here.
  */
 
 export const demoMachine = {
@@ -13,32 +15,30 @@ export const demoMachine = {
   commissioned: "2025-03-11",
   location: "Plant 2 — Cell 14",
   valuation: "$120,000",
-  status: "ACTIVE" as const,
-  currentOwner: "Equipment Fund B",
-  provenanceEvents: 17,
+  status: "PASSPORT_READY" as const,
+  /** Initial owner before any Cleanverse-gated transfer. */
+  currentOwner: "ABC Manufacturing",
+  provenanceEvents: 2,
 };
 
+/**
+ * Passport-only ownership seed. Compliant transfers are appended from
+ * `useAssetState` after CCP approval — never invent a settled Fund B transfer.
+ */
 export const ownershipHistory = [
   {
     year: "2025",
     entity: "ABC Manufacturing",
     action: "Initial registration",
-    ref: "mt:reg/0x5d6b…0d9e",
-    verified: true,
-  },
-  {
-    year: "2026",
-    entity: "Equipment Fund B",
-    action: "Compliant transfer",
-    ref: "monad:tx/0xc8ba…9964",
-    verified: true,
+    ref: "mt:reg/demo-passport",
+    verified: false,
   },
   {
     year: "Current",
-    entity: "Equipment Fund B",
-    action: "Active ownership",
+    entity: "ABC Manufacturing",
+    action: "Active ownership · awaiting RWA issuance",
     ref: "state:owner",
-    verified: true,
+    verified: false,
   },
 ];
 
@@ -98,40 +98,24 @@ export const machineParts: MachinePart[] = [
   },
 ];
 
+/**
+ * Base audit trail — Machine Trust passport events only.
+ * Issuance / transfer rows appear only after real Cleanverse decisions
+ * via `extraEvents` in asset state.
+ */
 export const auditTrail = [
   {
     time: "2025-03-11 09:14 UTC",
     entity: "ABC Manufacturing",
     action: "Machine registered",
-    verification: "Passport issued",
-    tx: "mt:reg/0x5d6b…0d9e",
+    verification: "Passport (demo metadata)",
+    tx: "mt:reg/demo-passport",
   },
   {
     time: "2026-06-02 13:40 UTC",
     entity: "ABB Service 11",
     action: "Maintenance completed",
-    verification: "Signed service record",
-    tx: "mt:svc/0x1d55…77ab",
-  },
-  {
-    time: "2026-08-04 10:02 UTC",
-    entity: "ABC Manufacturing",
-    action: "RWA issued",
-    verification: "CVI + CVA pass",
-    tx: "monad:tx/0x2f90…be31",
-  },
-  {
-    time: "2026-08-08 08:26 UTC",
-    entity: "ABC Manufacturing → Equipment Fund B",
-    action: "Compliant transfer",
-    verification: "Policy pass",
-    tx: "monad:tx/0xc8ba…9964",
-  },
-  {
-    time: "Current",
-    entity: "Equipment Fund B",
-    action: "Ownership active",
-    verification: "On-chain state",
-    tx: "state:owner",
+    verification: "Signed service record (demo)",
+    tx: "mt:svc/demo-maintenance",
   },
 ];

@@ -51,13 +51,7 @@ function RawToggle({ value }: { value: unknown }) {
   );
 }
 
-function CviCard({
-  credential,
-  onToggle,
-}: {
-  credential: CviCredential;
-  onToggle?: () => void;
-}) {
+function CviCard({ credential, onToggle }: { credential: CviCredential; onToggle?: () => void }) {
   const absent = credential.status === "absent";
   const active = credential.status === "active";
   return (
@@ -139,8 +133,8 @@ export function Credentials() {
             the decision changes, because the decision was never hardcoded.
           </Lede>
           <p className="mt-mono mt-4 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            Adapter mode: {mode} · credential fixtures held locally · no fabricated Cleanverse
-            responses
+            Adapter mode: {mode} · local fixture toggles for demo policy experiments · live sandbox
+            decisions still come from Cleanverse when credentials are present
           </p>
         </Reveal>
 

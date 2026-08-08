@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   Section,
@@ -19,6 +19,7 @@ import {
 } from "@/data/demoMachine";
 import { cn } from "@/lib/utils";
 import { useAssetState } from "@/lib/asset-state";
+import { useCleanverse } from "@/lib/cleanverse-state";
 
 const tabs = ["Overview", "Ownership", "Maintenance", "Parts", "Provenance", "Compliance"] as const;
 type Tab = (typeof tabs)[number];
@@ -47,9 +48,43 @@ function Row({ k, v, accent }: { k: string; v: string; accent?: boolean }) {
 }
 
 export function Passport() {
-  const { owner, previousOwner } = useAssetState();
+  const { owner, previousOwner, verified, issued, extraEvents } = useAssetState();
+  const { aToken, mode, issuer: issuerCredential } = useCleanverse();
   const [tab, setTab] = useState<Tab>("Overview");
   const [part, setPart] = useState<MachinePart>(machineParts[1] as MachinePart);
+
+  const ownershipRows = useMemo(() => {
+    const base = ownershipHistory
+      .filter((o) => o.action !== "Active ownership · awaiting RWA issuance")
+      .map((o) => ({ ...o, entity: o.year === "Current" ? owner : o.entity }));
+
+    const current = {
+      year: "Current",
+      entity: owner,
+      action: issued
+        ? previousOwner
+          ? "Active ownership · post-transfer"
+          : "Active ownership · RWA issued"
+        : "Active ownership · awaiting RWA issuance",
+      ref: "state:owner",
+      verified: issued,
+    };
+
+    const transferRows = extraEvents
+      .filter((e) => e.kind === "transferred")
+      .map((e) => ({
+        year: e.timestamp.slice(0, 4) || "Live",
+        entity: owner,
+        action: e.label,
+        ref: e.hash,
+        verified: true,
+      }));
+
+    return [...base, ...transferRows, current];
+  }, [owner, previousOwner, issued, extraEvents]);
+
+  const headerTone: "ok" | "neutral" = verified || issued ? "ok" : "neutral";
+  const headerLabel = issued ? "RWA issued" : verified ? "Identity verified" : "Passport ready";
 
   return (
     <Section id="passport" label="Machine Passport">
@@ -66,7 +101,7 @@ export function Passport() {
               <Row k="Machine ID" v={demoMachine.id} accent />
               <Row k="Serial" v={demoMachine.serial} />
               <Row k="Manufacturer" v={demoMachine.manufacturer} />
-              <Row k="Status" v={demoMachine.status} />
+              <Row k="Status" v={issued ? "RWA_ISSUED" : demoMachine.status} />
               <Row k="Current owner" v={owner} accent={Boolean(previousOwner)} />
               {previousOwner ? <Row k="Previous owner" v={previousOwner} /> : null}
             </div>
@@ -79,8 +114,13 @@ export function Passport() {
                 <p className="mt-mono text-[11px] tracking-[0.16em] text-foreground">
                   {demoMachine.model}
                 </p>
-                <span className="mt-mono flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-success">
-                  <StatusDot tone="ok" /> Verified
+                <span
+                  className={cn(
+                    "mt-mono flex items-center gap-2 text-[10px] uppercase tracking-[0.18em]",
+                    headerTone === "ok" ? "text-success" : "text-muted-foreground",
+                  )}
+                >
+                  <StatusDot tone={headerTone} /> {headerLabel}
                 </span>
               </div>
 
@@ -132,7 +172,10 @@ export function Passport() {
                           ["Commissioned", demoMachine.commissioned],
                           ["Location", demoMachine.location],
                           ["Indicative value", demoMachine.valuation],
-                          ["Provenance events", String(demoMachine.provenanceEvents)],
+                          [
+                            "Provenance events",
+                            String(demoMachine.provenanceEvents + extraEvents.length),
+                          ],
                         ].map(([k, v]) => (
                           <div key={k} className="bg-background px-4 py-5">
                             <p className="mt-label">{k}</p>
@@ -148,9 +191,9 @@ export function Passport() {
                           className="absolute left-[3px] top-2 bottom-2 w-px bg-border"
                           aria-hidden="true"
                         />
-                        {ownershipHistory.map((o, i) => (
+                        {ownershipRows.map((o, i) => (
                           <motion.li
-                            key={o.year + o.entity}
+                            key={o.year + o.entity + o.action + i}
                             initial={{ opacity: 0, x: -8 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: i * 0.12, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
@@ -161,7 +204,12 @@ export function Passport() {
                             <p className="mt-1.5 text-[15px]">{o.entity}</p>
                             <p className="mt-1 text-[13px] text-muted-foreground">{o.action}</p>
                             <p className="mt-mono mt-2 text-[11px] text-muted-foreground">
-                              {o.ref} · <span className="text-success">verified</span>
+                              {o.ref} ·{" "}
+                              <span
+                                className={o.verified ? "text-success" : "text-muted-foreground"}
+                              >
+                                {o.verified ? "CCP gated" : "passport"}
+                              </span>
                             </p>
                           </motion.li>
                         ))}
@@ -171,7 +219,7 @@ export function Passport() {
                     {tab === "Maintenance" ? (
                       <table className="w-full text-left">
                         <caption className="mt-label mb-3 text-left">
-                          Service record — simulated
+                          Service record — demo metadata
                         </caption>
                         <tbody>
                           {maintenanceLog.map((m, i) => (
@@ -240,26 +288,60 @@ export function Passport() {
 
                     {tab === "Provenance" ? (
                       <div className="space-y-0">
-                        <Row k="Registration" v="2025-03-11 · ABC Manufacturing" />
-                        <Row k="Service events" v="4 signed records" />
-                        <Row k="Part replacements" v="1 (motor, 2026-02)" />
-                        <Row k="Issuance" v="2026-08-04 · RWA issued" accent />
-                        <Row k="Transfers" v="1 compliant transfer" />
-                        <Row k="Total events" v={`${demoMachine.provenanceEvents} events`} />
+                        <Row k="Registration" v="2025-03-11 · ABC Manufacturing (demo)" />
+                        <Row k="Service events" v="4 signed records (demo)" />
+                        <Row k="Part replacements" v="1 (motor, 2026-02 · demo)" />
+                        <Row
+                          k="Issuance"
+                          v={
+                            issued
+                              ? `RWA issued · ${aToken.tokenId}`
+                              : "Not issued — run Cleanverse issuance"
+                          }
+                          accent={issued}
+                        />
+                        <Row
+                          k="Transfers"
+                          v={
+                            previousOwner
+                              ? `1 compliant transfer → ${owner}`
+                              : "None — ownership unchanged"
+                          }
+                        />
+                        <Row
+                          k="Total events"
+                          v={`${demoMachine.provenanceEvents + extraEvents.length} events`}
+                        />
                       </div>
                     ) : null}
 
                     {tab === "Compliance" ? (
                       <div className="space-y-0">
-                        <Row k="Asset credential (CVA)" v="ATTESTED" accent />
-                        <Row k="Owner credential (CVI)" v="VERIFIED" accent />
-                        <Row k="Transfer policy" v="MT-TRF-02" />
-                        <Row k="Eligible counterparties" v="CVI-verified only" />
+                        <Row
+                          k="Asset credential (CVA)"
+                          v={
+                            aToken.status === "unissued" ? "UNISSUED" : aToken.status.toUpperCase()
+                          }
+                          accent={aToken.status !== "unissued"}
+                        />
+                        <Row
+                          k="Owner credential (CVI)"
+                          v={
+                            verified || issuerCredential.status === "active"
+                              ? `${issuerCredential.status.toUpperCase()} · tier ${issuerCredential.kycTier}`
+                              : "PENDING"
+                          }
+                          accent={verified || issuerCredential.status === "active"}
+                        />
+                        <Row k="Transfer policy" v="verify_apass · CCP gate" />
+                        <Row k="Eligible counterparties" v="Active A-Pass only" />
                         <Row k="Settlement network" v="Monad" />
+                        <Row k="Adapter mode" v={mode.toUpperCase()} />
                         <p className="mt-5 text-[12px] leading-relaxed text-muted-foreground">
-                          Compliance state is evaluated through the Cleanverse adapter. In this
-                          prototype the adapter runs in demo mode; production credentials resolve
-                          through the same interface.
+                          Compliance state is evaluated through the Cleanverse adapter (API v5.6).
+                          Issuance and transfer only advance when CVI, CVA, and CCP gates pass. Mode{" "}
+                          {mode}:{" "}
+                          {mode === "live" ? "sandbox credentials present." : "local demo engine."}
                         </p>
                       </div>
                     ) : null}

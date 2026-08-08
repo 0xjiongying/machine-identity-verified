@@ -20,6 +20,8 @@ import {
 import { useCleanverse } from "@/lib/cleanverse-state";
 import { CheckSequence, type SequenceState } from "@/components/compliance/CheckSequence";
 import { TraceStrip } from "@/components/compliance/TraceStrip";
+import { PipelineStages } from "@/components/compliance/PipelineStages";
+import { derivePipelineStage } from "@/components/compliance/pipeline";
 import { MagneticButton } from "@/components/motion/MagneticButton";
 import { HashReveal } from "@/components/motion/HashReveal";
 import { EASE } from "@/lib/motion";
@@ -42,6 +44,8 @@ export function Transfer() {
   const [checks, setChecks] = useState<RuleResult[]>([]);
   const [revealed, setRevealed] = useState(0);
   const [result, setResult] = useState<Evaluation | null>(null);
+  const [settledFrom, setSettledFrom] = useState<string | null>(null);
+  const stage = derivePipelineStage("transfer", state, result, revealed);
 
   const recipient = counterparties.find((r) => r.id === selected) ?? null;
   const preview: RuleResult[] = recipient
@@ -59,6 +63,7 @@ export function Transfer() {
     setChecks([]);
     setRevealed(0);
     setResult(null);
+    setSettledFrom(null);
   }
 
   async function run() {
@@ -66,6 +71,8 @@ export function Transfer() {
     setState("running");
     setRevealed(0);
     setResult(null);
+    setSettledFrom(null);
+    const fromOwner = owner;
     const evaluation = await requestEvaluation({
       kind: "transfer",
       sender: senderCredential,
@@ -87,6 +94,7 @@ export function Transfer() {
     setState("done");
     play(evaluation.approved ? "approve" : "reject");
     if (evaluation.approved) {
+      setSettledFrom(fromOwner);
       settleTransfer(
         { name: recipient.holder.name, wallet: recipient.holder.wallet },
         evaluation.settlement?.txRef ?? "0x",
@@ -157,7 +165,9 @@ export function Transfer() {
                   )}
                 >
                   <StatusDot tone={aToken.status === "unissued" ? "fail" : "ok"} /> A-Token ·{" "}
-                  {aToken.status === "unissued" ? "not minted — run issuance first" : aToken.tokenId}
+                  {aToken.status === "unissued"
+                    ? "not minted — run issuance first"
+                    : aToken.tokenId}
                 </p>
               </div>
               <div className="px-5 py-4">
@@ -262,11 +272,14 @@ export function Transfer() {
                 </p>
               ) : (
                 <div className="mt-6">
-                  <CheckSequence
-                    checks={checks.length ? checks : preview}
-                    revealed={revealed}
-                    state={state}
-                  />
+                  <PipelineStages kind="transfer" active={stage} />
+                  <div className="mt-6">
+                    <CheckSequence
+                      checks={checks.length ? checks : preview}
+                      revealed={revealed}
+                      state={state}
+                    />
+                  </div>
 
                   <AnimatePresence mode="wait">
                     {state === "done" && result ? (
@@ -280,22 +293,28 @@ export function Transfer() {
                           className="mt-6 border border-primary/50 bg-primary/10 p-5"
                         >
                           <p className="mt-mono text-[11px] uppercase tracking-[0.2em] text-primary">
-                            Transfer approved
+                            Transfer approved · OWNERSHIP UPDATED
                           </p>
                           <p className="mt-label mt-4">Ownership updated</p>
-                          <p className="mt-2 text-[15px]">{senderCredential.holder.name}</p>
+                          <p className="mt-2 text-[15px]">{settledFrom ?? owner}</p>
                           <p className="mt-mono my-1 text-primary" aria-hidden="true">
                             ↓
                           </p>
                           <p className="text-[15px]">{recipient.holder.name}</p>
                           <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-primary/30 pt-4">
                             <div>
-                              <dt className="mt-label">Network</dt>
-                              <dd className="mt-mono mt-1 text-[12px]">Monad</dd>
+                              <dt className="mt-label">Layers</dt>
+                              <dd className="mt-mono mt-1 text-[11px]">CVI · CVA · CCP · MONAD</dd>
                             </div>
                             <div>
                               <dt className="mt-label">Status</dt>
-                              <dd className="mt-mono mt-1 text-[12px] text-success">CONFIRMED</dd>
+                              <dd className="mt-mono mt-1 text-[12px] text-success">
+                                {result.degraded
+                                  ? "DEGRADED · LOCAL CCP"
+                                  : result.settlement?.kind === "demo-settlement-ref"
+                                    ? `${result.mode.toUpperCase()} · SETTLEMENT REF`
+                                    : `${result.mode.toUpperCase()} · SETTLED`}
+                              </dd>
                             </div>
                           </dl>
                           <p className="mt-mono mt-4 text-[11px] text-muted-foreground">
@@ -303,8 +322,17 @@ export function Transfer() {
                               value={result.settlement?.txRef ?? ""}
                               className="text-primary"
                             />{" "}
-                            · Monad settlement · {result.decisionId}
+                            ·{" "}
+                            {result.settlement?.kind === "demo-settlement-ref"
+                              ? "Monad settlement ref (demo)"
+                              : "Monad"}{" "}
+                            · {result.decisionId}
                           </p>
+                          {result.notice ? (
+                            <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+                              {result.notice}
+                            </p>
+                          ) : null}
                           <TraceStrip result={result} className="mt-5 bg-background" />
                         </motion.div>
                       ) : (
@@ -317,10 +345,10 @@ export function Transfer() {
                           className="mt-6 border border-destructive/60 p-5"
                         >
                           <p className="mt-mono text-[11px] uppercase tracking-[0.2em] text-destructive">
-                            Transfer blocked
+                            Transfer blocked · CCP gate
                           </p>
                           <p className="mt-mono mt-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                            Rule {result.blockedBy}
+                            Rule {result.blockedBy} · mode {result.mode}
                           </p>
                           <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
                             {result.rules.find((r) => r.code === result.blockedBy)?.reason}

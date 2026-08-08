@@ -18,7 +18,7 @@ const STAGES = [
   { at: 0.2, key: "wireframe", label: "Technical scan", note: "Geometry → wireframe" },
   { at: 0.4, key: "metadata", label: "Machine metadata", note: "Identity record forming" },
   { at: 0.6, key: "components", label: "Component identity", note: "Chip · board · enclosure" },
-  { at: 0.8, key: "asset", label: "Verified asset", note: "MACHINE 042" },
+  { at: 0.8, key: "asset", label: "Passport-ready asset", note: "MACHINE 042 · demo" },
 ] as const;
 
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
@@ -121,8 +121,8 @@ export function Hero() {
                 {...rise(0.56)}
                 className="mt-6 max-w-[42ch] text-[15px] leading-relaxed text-muted-foreground"
               >
-                Machine Trust connects physical machine identity, provenance and ownership with
-                compliance-aware on-chain transactions.
+                Machine Trust turns physical machines into verified, programmable RWA assets —
+                passport identity, Cleanverse compliance, Monad settlement.
               </motion.p>
 
               <motion.div {...rise(0.68)} className="mt-7 flex flex-wrap items-center gap-3">
@@ -178,7 +178,7 @@ export function Hero() {
                 ["Model", "ABB IRB 6700"],
                 ["Serial", "IRB6700-92831"],
                 ["Commissioned", "2025-03-11"],
-                ["Provenance", "17 events"],
+                ["Provenance", "passport events"],
               ].map(([k, v], i) => (
                 <div
                   key={k}
@@ -209,16 +209,16 @@ export function Hero() {
                   Machine 042
                 </span>
                 <span className="text-[clamp(2rem,5vw,3.6rem)] font-medium leading-none tracking-[-0.03em]">
-                  Verified asset
+                  Programmable RWA
                 </span>
                 <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-                  {["Identity", "Provenance", "Compliance"].map((k, i) => (
+                  {["Scan", "Passport", "Cleanverse gates"].map((k, i) => (
                     <span
                       key={k}
                       className="mt-mono flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-primary"
                       style={{ opacity: ramp(phase, 0.84 + i * 0.03, 0.9 + i * 0.03) }}
                     >
-                      {k} <span aria-hidden="true">✓</span>
+                      {k} <span aria-hidden="true">→</span>
                     </span>
                   ))}
                 </div>

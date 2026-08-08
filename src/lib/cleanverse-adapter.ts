@@ -18,6 +18,7 @@ export type {
   CleanverseTrace,
   Evaluation,
   PolicyInput,
+  PolicyKind,
   RuleResult,
   RuleSource,
 } from "./cleanverse/types";
@@ -36,10 +37,22 @@ export async function requestEvaluation(input: PolicyInput): Promise<Evaluation>
     ])) as Evaluation;
     if (!evaluation?.rules?.length) throw new Error("cleanverse: empty evaluation");
     return evaluation;
-  } catch {
-    // Transport failure: run the same deterministic CCP engine the server runs,
-    // still clearly marked as demo mode.
-    return evaluateCcp(input);
+  } catch (error) {
+    // Transport failure: run the same deterministic CCP engine the server runs.
+    // Surface degraded=true so the UI never looks like a live Cleanverse approval.
+    const reason = error instanceof Error ? error.message : "cleanverse: transport failure";
+    const fallback = evaluateCcp(input);
+    return {
+      ...fallback,
+      mode: "demo",
+      degraded: true,
+      notice: [
+        `Degraded: ${reason}. Local CCP engine ran — not a live Cleanverse sandbox decision.`,
+        fallback.notice,
+      ]
+        .filter(Boolean)
+        .join(" "),
+    };
   }
 }
 

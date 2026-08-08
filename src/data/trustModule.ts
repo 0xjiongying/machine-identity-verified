@@ -196,31 +196,31 @@ export const dataCards: Instrument[] = [
     label: "CVI · A-Pass",
     at: 2,
     pending: { value: "Unresolved", state: "Issuer unknown" },
-    live: { value: "A-Pass · demo issuer", state: "Verified" },
+    live: { value: "A-Pass · demo sequence", state: "Illustrative" },
   },
   {
     key: "cva",
     label: "CVA · A-Token",
     at: 3,
     pending: { value: "Not minted", state: "Blocked" },
-    live: { value: "aMT-2048 (demo)", state: "Issued" },
+    live: { value: "aMT-2048 (demo sequence)", state: "Illustrative" },
   },
   {
     key: "ccp",
     label: "CCP pre-transaction",
     at: 4,
     pending: { value: "Not evaluated", state: "Pending" },
-    live: { value: "6 / 6 rules", state: "Approved" },
+    live: { value: "Demo sequence", state: "Illustrative" },
   },
 ];
 
 export const onChain = {
-  title: "Machine RWA ready",
+  title: "Demo sequence complete",
   id: "MT-2048 (demo)",
   network: "Monad · demo network",
-  contract: "MachinePassport.sol",
+  contract: "MachinePassport.sol (illustrative)",
   address: "0x8F…A42C (demo)",
-  records: "47 demo records anchored",
+  records: "47 demo records (illustrative)",
 } as const;
 
 /** Identity revealed when the controller module is selected. DEMO DATA. */

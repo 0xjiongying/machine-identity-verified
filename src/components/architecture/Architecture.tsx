@@ -17,22 +17,34 @@ const layers = [
     note: "Persistent identity: provenance, ownership, service and parts.",
   },
   {
-    key: "cv",
-    label: "Cleanverse",
-    value: "CVI + CVA + Compliance",
-    note: "Who may participate, and whether this transaction may proceed.",
+    key: "cvi",
+    label: "Cleanverse · CVI",
+    value: "A-Pass / verified identity",
+    note: "Who may participate — issuer and buyer identity resolved from the A-Pass registry.",
+  },
+  {
+    key: "cva",
+    label: "Cleanverse · CVA",
+    value: "A-Token / verified asset",
+    note: "What the asset is — bound to a registered A-Token before any compliance check.",
+  },
+  {
+    key: "ccp",
+    label: "Cleanverse · CCP",
+    value: "Validator Compliance gate",
+    note: "Whether this transaction may proceed — verify_apass data.code 4 only. HTTP 200 alone is not approval.",
   },
   {
     key: "monad",
     label: "Monad",
     value: "Execution",
-    note: "Approved transactions settle and ownership state becomes canonical.",
+    note: "After CCP approval, settlement is recorded and ownership state becomes canonical.",
   },
   {
     key: "asset",
     label: "Result",
-    value: "Verified machine asset",
-    note: "A programmable asset with an auditable history.",
+    value: "Programmable machine RWA",
+    note: "A verified asset with an auditable history — only after real gates succeed.",
   },
 ];
 
@@ -44,10 +56,11 @@ export function Architecture() {
       <Shell>
         <Reveal>
           <Eyebrow index="11">Architecture</Eyebrow>
-          <Heading>Three layers, one transaction path.</Heading>
+          <Heading>Distinct layers, one transaction path.</Heading>
           <Lede>
-            Each layer answers exactly one question. Keeping them separate is what makes the system
-            legible to engineers, operators and regulators at the same time.
+            Machine Trust owns the passport. Cleanverse owns identity, asset verification, and the
+            compliance decision. Monad owns execution. Keeping them separate is what makes the
+            system legible to engineers, operators and regulators at the same time.
           </Lede>
         </Reveal>
 
