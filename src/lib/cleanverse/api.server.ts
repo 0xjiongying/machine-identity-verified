@@ -173,8 +173,14 @@ export function queryDepositAtokenList(cfg: CleanverseConfig, symbol?: string | 
  * address may move this A-Token right now. code 0000 = allowed, 2 = no A-Pass
  * (onboarding required), 3 = A-Pass exists but cannot transfer.
  */
+export type VerifyApassResult = {
+  code?: number | string;
+  message?: string;
+  magickLink?: string;
+};
+
 export function verifyApass(cfg: CleanverseConfig, atoken: string, address: string) {
-  return post<{ magickLink?: string }>(cfg, "/verify_apass", {
+  return post<VerifyApassResult>(cfg, "/verify_apass", {
     chain: cfg.chain,
     atoken,
     address,

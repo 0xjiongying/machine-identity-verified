@@ -84,7 +84,7 @@ function addressOf(listing: AtokenListing | undefined) {
 
 /** CCP verdict from verify_apass: 0000 allowed, 2 no A-Pass, 3 not transferable. */
 function ccpVerdict(code: string, message: string) {
-  if (code === "0000") return { allowed: true, reason: "Cleanverse allows this address to move the A-Token." };
+  if (code === "0000" || code === "0") return { allowed: true, reason: "Cleanverse allows this address to move the A-Token." };
   if (String(code) === "2")
     return { allowed: false, reason: "No A-Pass for this address — Cleanverse onboarding required." };
   if (String(code) === "3")
@@ -207,12 +207,17 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
       ];
       for (const s of subjects) {
         const env = await verifyApass(cfg, atokenAddress, s.address);
-        const verdict = ccpVerdict(env.code, env.message);
+        // The pre-transaction verdict lives in the payload: data.code 0 = allowed,
+        // 2 = no A-Pass, 3 = A-Pass cannot transfer. Envelope code covers transport.
+        const inner = env.data ?? {};
+        const verdictCode = env.code !== "0000" ? env.code : String(inner.code ?? 0);
+        const verdictMsg = env.code !== "0000" ? env.message : (inner.message ?? "");
+        const verdict = ccpVerdict(verdictCode, verdictMsg);
         rules.push({
           code: `${s.code}.pretx`,
           label: `CCP pre-transaction · ${s.who}`,
           requirement: "Cleanverse must permit this party to move the A-Token",
-          observed: `${env.code} · ${env.message || (verdict.allowed ? "allowed" : "denied")}`,
+          observed: `code ${verdictCode} · ${verdictMsg || (verdict.allowed ? "allowed" : "denied")}`,
           status: verdict.allowed ? "pass" : "fail",
           reason: verdict.reason,
           source: "CCP",
