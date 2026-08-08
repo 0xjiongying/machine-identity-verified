@@ -16,6 +16,9 @@ import { MachineCursor } from "../components/cursor/MachineCursor";
 import { AmbientField } from "../components/background/AmbientField";
 import { BootSequence } from "../components/boot/BootSequence";
 import { PageTransition } from "../components/motion/PageTransition";
+import { SystemControls } from "../components/system/SystemControls";
+import { PerfProvider } from "../lib/perf";
+import { AssetStateProvider } from "../lib/asset-state";
 
 function NotFoundComponent() {
   return (
@@ -132,14 +135,19 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SmoothScroll />
-      <MachineCursor />
-      <AmbientField />
-      <BootSequence />
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <PageTransition>
-        <Outlet />
-      </PageTransition>
+      <PerfProvider>
+        <AssetStateProvider>
+          <SmoothScroll />
+          <MachineCursor />
+          <AmbientField />
+          <BootSequence />
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <SystemControls />
+          <PageTransition>
+            <Outlet />
+          </PageTransition>
+        </AssetStateProvider>
+      </PerfProvider>
     </QueryClientProvider>
   );
 }

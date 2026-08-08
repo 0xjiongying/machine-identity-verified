@@ -1,8 +1,10 @@
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { machineParts } from "@/data/demoMachine";
 import { useFinePointer, useHydrated, useReducedMotion } from "@/hooks/useMotionPrefs";
 import { EASE } from "@/lib/motion";
+import { usePerf } from "@/lib/perf";
+import { play } from "@/lib/sound";
 import { isBootComplete, onBootComplete } from "@/lib/boot-state";
 import { MachinePlate } from "./MachinePlate";
 import type { RegionKey } from "./MachineScene";
@@ -23,7 +25,16 @@ const REGION_LABEL: Record<RegionKey, string> = {
  * Falls back to the technical SVG plate on small screens, reduced motion, or
  * when WebGL is unavailable.
  */
-export function MachineTwin() {
+type TwinProps = {
+  /** 0 → physical machine, 1 → verified digital asset. Driven by the hero scroll. */
+  phase?: number;
+  explode?: number;
+  beam?: number | null;
+  /** Hide the framed chrome when the twin is used as a full-bleed stage. */
+  bare?: boolean;
+};
+
+export function MachineTwin({ phase = 0, explode = 0, beam = null, bare = false }: TwinProps) {
   const hydrated = useHydrated();
   const reduced = useReducedMotion();
   const fine = useFinePointer();
@@ -33,14 +44,8 @@ export function MachineTwin() {
   const [wide, setWide] = useState(false);
   const [hovered, setHovered] = useState<RegionKey | null>(null);
   const [selected, setSelected] = useState<RegionKey | null>(null);
-  const [phase, setPhase] = useState(0);
   const [booted, setBooted] = useState(false);
-
-  const { scrollYProgress } = useScroll({
-    target: wrap,
-    offset: ["start start", "end start"],
-  });
-  useMotionValueEvent(scrollYProgress, "change", (v) => setPhase(Math.min(1, v * 1.4)));
+  const { tier } = usePerf();
 
   useEffect(() => {
     if (isBootComplete()) setBooted(true);
@@ -66,10 +71,16 @@ export function MachineTwin() {
   const part = focus ? machineParts.find((p) => p.key === focus) : undefined;
 
   return (
-    <div ref={wrap} className="relative">
-      <div className="relative aspect-[4/5] w-full min-w-0 border border-border bg-card/40 sm:aspect-square">
+    <div ref={wrap} className={bare ? "relative h-full w-full" : "relative"}>
+      <div
+        className={
+          bare
+            ? "relative h-full w-full min-w-0"
+            : "relative aspect-[4/5] w-full min-w-0 border border-border bg-card/40 sm:aspect-square"
+        }
+      >
         {/* corner registration marks */}
-        {["left-0 top-0", "right-0 top-0", "left-0 bottom-0", "right-0 bottom-0"].map((pos) => (
+        {(bare ? [] : ["left-0 top-0", "right-0 top-0", "left-0 bottom-0", "right-0 bottom-0"]).map((pos) => (
           <span
             key={pos}
             aria-hidden="true"
@@ -81,9 +92,15 @@ export function MachineTwin() {
           <Suspense fallback={null}>
             <MachineScene
               phase={phase}
+              explode={explode}
+              beam={beam}
+              tier={tier}
               hovered={hovered}
               selected={selected}
-              onHover={setHovered}
+              onHover={(k) => {
+                if (k && k !== hovered) play("inspect");
+                setHovered(k);
+              }}
               onSelect={setSelected}
             />
           </Suspense>
@@ -94,7 +111,7 @@ export function MachineTwin() {
         )}
 
         {/* live telemetry HUD */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-4">
+        <div hidden={bare} className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-4">
           <span className="mt-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground">
             ABB IRB 6700 · digital twin
           </span>
@@ -108,7 +125,7 @@ export function MachineTwin() {
           </span>
         </div>
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4">
+        <div hidden={bare} className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4">
           <AnimatePresence mode="wait">
             {part ? (
               <motion.div
@@ -150,12 +167,14 @@ export function MachineTwin() {
         </div>
       </div>
 
+      {bare ? null : (
       <div className="mt-3 h-px w-full bg-border" aria-hidden="true">
         <div
           className="h-px bg-primary transition-[width] duration-200"
           style={{ width: `${Math.round(phase * 100)}%` }}
         />
       </div>
+      )}
     </div>
   );
 }
