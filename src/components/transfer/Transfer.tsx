@@ -18,8 +18,11 @@ import { MagneticButton } from "@/components/motion/MagneticButton";
 import { HashReveal } from "@/components/motion/HashReveal";
 import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
+import { useAssetState } from "@/lib/asset-state";
+import { play } from "@/lib/sound";
 
 export function Transfer() {
+  const { owner, settleTransfer } = useAssetState();
   const [selected, setSelected] = useState<string | null>(null);
   const [state, setState] = useState<SequenceState>("idle");
   const [checks, setChecks] = useState<CheckResult[]>([]);
@@ -53,7 +56,9 @@ export function Transfer() {
     }
     setResult(evaluation);
     setState("done");
+    play(evaluation.approved ? "approve" : "reject");
     if (evaluation.approved) {
+      settleTransfer({ name: recipient.name, wallet: recipient.wallet }, evaluation.txRef ?? "0x");
       setTimeout(() => {
         document.getElementById("audit")?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 1100);
@@ -77,7 +82,7 @@ export function Transfer() {
             <div className="border border-border bg-surface/50">
               <div className="border-b border-border px-5 py-4">
                 <p className="mt-label">From</p>
-                <p className="mt-2 text-[15px]">{issuer.name}</p>
+                <p className="mt-2 text-[15px]">{owner}</p>
                 <p className="mt-mono mt-1 flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-success">
                   <StatusDot tone="ok" /> CVI verified
                 </p>
@@ -222,8 +227,8 @@ export function Transfer() {
                             </div>
                           </dl>
                           <p className="mt-mono mt-4 text-[11px] text-muted-foreground">
-                            <HashReveal value={result.txRef ?? ""} className="text-primary" /> · simulated
-                            settlement reference
+                            <HashReveal value={result.txRef ?? ""} className="text-primary" /> ·
+                            simulated settlement reference
                           </p>
                         </motion.div>
                       ) : (

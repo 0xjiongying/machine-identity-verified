@@ -18,6 +18,7 @@ import {
   type MachinePart,
 } from "@/data/demoMachine";
 import { cn } from "@/lib/utils";
+import { useAssetState } from "@/lib/asset-state";
 
 const tabs = ["Overview", "Ownership", "Maintenance", "Parts", "Provenance", "Compliance"] as const;
 type Tab = (typeof tabs)[number];
@@ -46,6 +47,7 @@ function Row({ k, v, accent }: { k: string; v: string; accent?: boolean }) {
 }
 
 export function Passport() {
+  const { owner, previousOwner } = useAssetState();
   const [tab, setTab] = useState<Tab>("Overview");
   const [part, setPart] = useState<MachinePart>(machineParts[1] as MachinePart);
 
@@ -65,7 +67,8 @@ export function Passport() {
               <Row k="Serial" v={demoMachine.serial} />
               <Row k="Manufacturer" v={demoMachine.manufacturer} />
               <Row k="Status" v={demoMachine.status} />
-              <Row k="Current owner" v={demoMachine.currentOwner} />
+              <Row k="Current owner" v={owner} accent={Boolean(previousOwner)} />
+              {previousOwner ? <Row k="Previous owner" v={previousOwner} /> : null}
             </div>
             <DemoTag className="mt-6" />
           </Reveal>
