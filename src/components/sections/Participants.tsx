@@ -34,7 +34,7 @@ export function Participants() {
     <Section id="participants" label="Verified participants" className="scroll-mt-16">
       <Shell>
         <Reveal>
-          <Eyebrow index="04">Verified participants</Eyebrow>
+          <Eyebrow index="05">Verified participants</Eyebrow>
           <Heading>The asset is only half the trust equation.</Heading>
           <Lede>
             Knowing what a machine is does not make a transaction legitimate. Cleanverse answers the

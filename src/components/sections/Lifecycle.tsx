@@ -25,7 +25,7 @@ export function Lifecycle() {
     <Section id="lifecycle" label="Lifecycle" className="scroll-mt-16">
       <Shell>
         <Reveal>
-          <Eyebrow index="03">Lifecycle</Eyebrow>
+          <Eyebrow index="04">Lifecycle</Eyebrow>
         </Reveal>
         <KineticHeading text="Ownership and service, on one continuous spine." />
         <Reveal delay={0.1}>

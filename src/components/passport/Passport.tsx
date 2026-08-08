@@ -56,7 +56,7 @@ export function Passport() {
       <Shell>
         <div className="grid gap-10 lg:grid-cols-[1fr_1.35fr] lg:gap-16">
           <Reveal>
-            <Eyebrow index="02">Machine Passport</Eyebrow>
+            <Eyebrow index="03">Machine Passport</Eyebrow>
             <Heading>One machine. One persistent identity.</Heading>
             <Lede>
               The passport is the machine&apos;s canonical record: what it is, who owns it, how it
