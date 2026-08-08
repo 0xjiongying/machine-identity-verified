@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "cleanverse:audit": "node scripts/cleanverse-sandbox-audit.mjs"
+    "cleanverse:audit": "node scripts/cleanverse-sandbox-audit.mjs",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
