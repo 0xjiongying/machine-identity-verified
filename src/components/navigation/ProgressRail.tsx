@@ -37,7 +37,7 @@ export function ProgressRail() {
   return (
     <nav
       aria-label="Section progress"
-      className="pointer-events-none fixed left-5 top-1/2 z-40 hidden -translate-y-1/2 xl:block"
+      className="pointer-events-none fixed left-5 top-1/2 z-40 hidden -translate-y-1/2 2xl:block"
     >
       <motion.div
         className="absolute -left-3 top-0 w-px origin-top bg-primary/70"
