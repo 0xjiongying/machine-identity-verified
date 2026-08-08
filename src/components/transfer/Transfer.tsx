@@ -322,28 +322,3 @@ export function Transfer() {
     </Section>
   );
 }
-
-function preview(recipientVerified: boolean): CheckResult[] {
-  return [
-    { id: "identity", label: "Issuer", detail: "CVI — sender credential", status: "pass" },
-    { id: "asset", label: "Asset", detail: "CVA — asset status ACTIVE", status: "pass" },
-    {
-      id: "compliance",
-      label: "Recipient",
-      detail: "CVI — counterparty credential",
-      status: recipientVerified ? "pass" : "fail",
-    },
-    {
-      id: "policy",
-      label: "Policy",
-      detail: "Transfer policy MT-TRF-02",
-      status: recipientVerified ? "pass" : "fail",
-    },
-    {
-      id: "settlement",
-      label: "Monad",
-      detail: "Settlement of approved transfer",
-      status: recipientVerified ? "pass" : "fail",
-    },
-  ];
-}
