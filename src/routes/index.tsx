@@ -35,7 +35,9 @@ function Home() {
     <>
       <SiteNav />
       <main id="main">
-        <h1 className="sr-only">MachineTrust — compliance infrastructure for programmable machine assets</h1>
+        <h1 className="sr-only">
+          MachineTrust — compliance infrastructure for programmable machine assets
+        </h1>
         <Hero />
         <TrustGap />
         <Passport />

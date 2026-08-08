@@ -10,8 +10,8 @@ export function AuditTrail() {
           <Eyebrow index="06">Asset history</Eyebrow>
           <Heading>Every state change leaves a trace.</Heading>
           <Lede>
-            Registration, service, issuance and transfer accumulate into one auditable record — the proof
-            that makes a machine financeable rather than merely photographed.
+            Registration, service, issuance and transfer accumulate into one auditable record — the
+            proof that makes a machine financeable rather than merely photographed.
           </Lede>
         </Reveal>
 
@@ -47,7 +47,8 @@ export function AuditTrail() {
           </table>
         </div>
         <p className="mt-6 text-[12px] text-muted-foreground">
-          Simulated references. Production deployments resolve these to real settlement transactions.
+          Simulated references. Production deployments resolve these to real settlement
+          transactions.
         </p>
       </Shell>
     </Section>

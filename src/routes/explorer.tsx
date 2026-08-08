@@ -27,7 +27,9 @@ function Explorer() {
         <Shell>
           <Reveal>
             <Eyebrow index="EX">Machine explorer</Eyebrow>
-            <h1 className="mt-6 text-[length:var(--text-display)] font-medium leading-[1.02]">{demoMachine.id}</h1>
+            <h1 className="mt-6 text-[length:var(--text-display)] font-medium leading-[1.02]">
+              {demoMachine.id}
+            </h1>
             <p className="mt-4 text-[15px] text-muted-foreground">
               {demoMachine.model} · serial {demoMachine.serial}
             </p>
@@ -52,7 +54,10 @@ function Explorer() {
 
           <Reveal delay={0.16}>
             <ol className="mt-16 relative pl-6">
-              <span className="absolute left-[3px] top-2 bottom-2 w-px bg-border" aria-hidden="true" />
+              <span
+                className="absolute left-[3px] top-2 bottom-2 w-px bg-border"
+                aria-hidden="true"
+              />
               {auditTrail.map((e) => (
                 <li key={e.time} className="relative pb-9 last:pb-0">
                   <span className="absolute -left-6 top-1.5 size-[7px] rounded-full bg-primary" />

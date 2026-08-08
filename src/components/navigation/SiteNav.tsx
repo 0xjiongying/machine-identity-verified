@@ -28,7 +28,9 @@ export function SiteNav() {
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
         "fixed inset-x-0 top-0 z-50 transition-all duration-500",
-        scrolled ? "border-b border-border bg-background/72 backdrop-blur-xl" : "border-b border-transparent",
+        scrolled
+          ? "border-b border-border bg-background/72 backdrop-blur-xl"
+          : "border-b border-transparent",
       )}
     >
       <nav

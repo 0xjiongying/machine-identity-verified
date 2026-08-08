@@ -10,8 +10,14 @@ const rise = (delay: number) => ({
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden pb-24 pt-28 md:pb-32 md:pt-36" aria-label="MachineTrust introduction">
-      <div className="mt-grid-bg pointer-events-none absolute inset-0 -z-10 opacity-40" aria-hidden="true" />
+    <section
+      className="relative overflow-hidden pb-24 pt-28 md:pb-32 md:pt-36"
+      aria-label="MachineTrust introduction"
+    >
+      <div
+        className="mt-grid-bg pointer-events-none absolute inset-0 -z-10 opacity-40"
+        aria-hidden="true"
+      />
       <Shell>
         <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_1fr] lg:gap-20">
           <div className="order-2 lg:order-1">
@@ -31,7 +37,10 @@ export function Hero() {
               </motion.span>
             </h1>
 
-            <motion.p {...rise(0.56)} className="mt-7 max-w-[52ch] text-[15px] leading-relaxed text-muted-foreground">
+            <motion.p
+              {...rise(0.56)}
+              className="mt-7 max-w-[52ch] text-[15px] leading-relaxed text-muted-foreground"
+            >
               MachineTrust connects physical machine identity, provenance and ownership with
               compliance-aware on-chain transactions.
             </motion.p>
@@ -43,7 +52,9 @@ export function Hero() {
                 className="group inline-flex items-center gap-3 border border-foreground bg-foreground px-5 py-3 text-[13px] font-medium text-background transition-colors hover:border-primary hover:bg-primary"
               >
                 Explore Machine
-                <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span>
+                <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">
+                  →
+                </span>
               </a>
               <a
                 href="#architecture"
@@ -53,7 +64,10 @@ export function Hero() {
               </a>
             </motion.div>
 
-            <motion.dl {...rise(0.82)} className="mt-12 grid max-w-md grid-cols-3 gap-6 border-t border-border pt-6">
+            <motion.dl
+              {...rise(0.82)}
+              className="mt-12 grid max-w-md grid-cols-3 gap-6 border-t border-border pt-6"
+            >
               {[
                 ["Layer 01", "MachineTrust"],
                 ["Layer 02", "Cleanverse"],

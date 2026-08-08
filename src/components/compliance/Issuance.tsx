@@ -17,7 +17,10 @@ export function Issuance() {
     setState("running");
     setRevealed(0);
     setTxRef(null);
-    const result = await cleanverse.evaluateIssuance({ issuerVerified: issuer.cvi, assetEligible: true });
+    const result = await cleanverse.evaluateIssuance({
+      issuerVerified: issuer.cvi,
+      assetEligible: true,
+    });
     setChecks(result.checks);
     for (let i = 1; i <= result.checks.length; i++) {
       await new Promise((r) => setTimeout(r, 420));
@@ -35,14 +38,16 @@ export function Issuance() {
             <Eyebrow index="04">RWA issuance</Eyebrow>
             <Heading>Issue the machine as a compliant asset.</Heading>
             <Lede>
-              Issuance is not a mint button. The issuer identity and the asset record are both evaluated
-              before anything is written to the settlement layer.
+              Issuance is not a mint button. The issuer identity and the asset record are both
+              evaluated before anything is written to the settlement layer.
             </Lede>
             <div className="mt-8 border border-border bg-surface/50">
               <div className="border-b border-border px-5 py-4">
                 <p className="mt-label">Machine</p>
                 <p className="mt-2 text-[15px]">{demoMachine.model}</p>
-                <p className="mt-mono mt-1 text-[12px] text-muted-foreground">{demoMachine.id} · {demoMachine.serial}</p>
+                <p className="mt-mono mt-1 text-[12px] text-muted-foreground">
+                  {demoMachine.id} · {demoMachine.serial}
+                </p>
               </div>
               <div className="grid grid-cols-2 gap-px bg-border">
                 <div className="bg-background px-5 py-4">
@@ -79,7 +84,11 @@ export function Issuance() {
               </div>
 
               <div className="mt-7">
-                <CheckSequence checks={checks.length ? checks : placeholder} revealed={revealed} state={state} />
+                <CheckSequence
+                  checks={checks.length ? checks : placeholder}
+                  revealed={revealed}
+                  state={state}
+                />
               </div>
 
               <AnimatePresence>
@@ -91,8 +100,12 @@ export function Issuance() {
                     transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                     className="mt-6 border border-primary/50 bg-primary/10 px-4 py-4"
                   >
-                    <p className="mt-mono text-[11px] uppercase tracking-[0.18em] text-primary">Machine asset issued</p>
-                    <p className="mt-mono mt-2 text-[12px] text-muted-foreground">{txRef} · simulated settlement</p>
+                    <p className="mt-mono text-[11px] uppercase tracking-[0.18em] text-primary">
+                      Machine asset issued
+                    </p>
+                    <p className="mt-mono mt-2 text-[12px] text-muted-foreground">
+                      {txRef} · simulated settlement
+                    </p>
                   </motion.div>
                 ) : null}
               </AnimatePresence>
@@ -117,6 +130,11 @@ export function Issuance() {
 const placeholder: CheckResult[] = [
   { id: "identity", label: "Identity check", detail: "CVI — issuer credential", status: "pass" },
   { id: "asset", label: "Asset check", detail: "CVA — machine passport attested", status: "pass" },
-  { id: "compliance", label: "Compliance policy", detail: "Issuance policy MT-ISS-01", status: "pass" },
+  {
+    id: "compliance",
+    label: "Compliance policy",
+    detail: "Issuance policy MT-ISS-01",
+    status: "pass",
+  },
   { id: "settlement", label: "Monad", detail: "Execution of approved issuance", status: "pass" },
 ];

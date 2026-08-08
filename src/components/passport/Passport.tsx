@@ -1,7 +1,22 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Section, Shell, Eyebrow, Heading, Lede, Reveal, StatusDot, DemoTag } from "@/components/primitives";
-import { demoMachine, ownershipHistory, maintenanceLog, machineParts, type MachinePart } from "@/data/demoMachine";
+import {
+  Section,
+  Shell,
+  Eyebrow,
+  Heading,
+  Lede,
+  Reveal,
+  StatusDot,
+  DemoTag,
+} from "@/components/primitives";
+import {
+  demoMachine,
+  ownershipHistory,
+  maintenanceLog,
+  machineParts,
+  type MachinePart,
+} from "@/data/demoMachine";
 import { cn } from "@/lib/utils";
 
 const tabs = ["Overview", "Ownership", "Maintenance", "Parts", "Provenance", "Compliance"] as const;
@@ -18,7 +33,14 @@ function Row({ k, v, accent }: { k: string; v: string; accent?: boolean }) {
   return (
     <div className="flex items-baseline justify-between gap-6 border-b border-border py-3.5">
       <span className="mt-label">{k}</span>
-      <span className={cn("mt-mono text-right text-[12px]", accent ? "text-primary" : "text-foreground")}>{v}</span>
+      <span
+        className={cn(
+          "mt-mono text-right text-[12px]",
+          accent ? "text-primary" : "text-foreground",
+        )}
+      >
+        {v}
+      </span>
     </div>
   );
 }
@@ -35,8 +57,8 @@ export function Passport() {
             <Eyebrow index="02">Machine Passport</Eyebrow>
             <Heading>One machine. One persistent identity.</Heading>
             <Lede>
-              The passport is the machine&apos;s canonical record: what it is, who owns it, how it has been
-              serviced, which parts it carries, and every event that changed its state.
+              The passport is the machine&apos;s canonical record: what it is, who owns it, how it
+              has been serviced, which parts it carries, and every event that changed its state.
             </Lede>
             <div className="mt-8 space-y-0">
               <Row k="Machine ID" v={demoMachine.id} accent />
@@ -51,7 +73,9 @@ export function Passport() {
           <Reveal delay={0.12}>
             <div className="border border-border bg-surface/50">
               <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-3">
-                <p className="mt-mono text-[11px] tracking-[0.16em] text-foreground">{demoMachine.model}</p>
+                <p className="mt-mono text-[11px] tracking-[0.16em] text-foreground">
+                  {demoMachine.model}
+                </p>
                 <span className="mt-mono flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-success">
                   <StatusDot tone="ok" /> Verified
                 </span>
@@ -90,7 +114,13 @@ export function Passport() {
 
               <div className="min-h-[380px] p-5 sm:p-6">
                 <AnimatePresence mode="wait">
-                  <motion.div key={tab} role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`} {...panel}>
+                  <motion.div
+                    key={tab}
+                    role="tabpanel"
+                    id={`panel-${tab}`}
+                    aria-labelledby={`tab-${tab}`}
+                    {...panel}
+                  >
                     {tab === "Overview" ? (
                       <div className="grid gap-px bg-border sm:grid-cols-2">
                         {[
@@ -111,7 +141,10 @@ export function Passport() {
 
                     {tab === "Ownership" ? (
                       <ol className="relative pl-6">
-                        <span className="absolute left-[3px] top-2 bottom-2 w-px bg-border" aria-hidden="true" />
+                        <span
+                          className="absolute left-[3px] top-2 bottom-2 w-px bg-border"
+                          aria-hidden="true"
+                        />
                         {ownershipHistory.map((o, i) => (
                           <motion.li
                             key={o.year + o.entity}
@@ -134,7 +167,9 @@ export function Passport() {
 
                     {tab === "Maintenance" ? (
                       <table className="w-full text-left">
-                        <caption className="mt-label mb-3 text-left">Service record — simulated</caption>
+                        <caption className="mt-label mb-3 text-left">
+                          Service record — simulated
+                        </caption>
                         <tbody>
                           {maintenanceLog.map((m, i) => (
                             <motion.tr
@@ -148,7 +183,9 @@ export function Passport() {
                                 {m.date}
                               </td>
                               <td className="py-3.5 pr-4 text-[13px]">{m.work}</td>
-                              <td className="py-3.5 pr-4 text-[12px] text-muted-foreground">{m.tech}</td>
+                              <td className="py-3.5 pr-4 text-[12px] text-muted-foreground">
+                                {m.tech}
+                              </td>
                               <td className="mt-mono py-3.5 text-right text-[11px] tracking-[0.16em] text-success">
                                 {m.result}
                               </td>
@@ -217,8 +254,9 @@ export function Passport() {
                         <Row k="Eligible counterparties" v="CVI-verified only" />
                         <Row k="Settlement network" v="Monad" />
                         <p className="mt-5 text-[12px] leading-relaxed text-muted-foreground">
-                          Compliance state is evaluated through the Cleanverse adapter. In this prototype the
-                          adapter runs in demo mode; production credentials resolve through the same interface.
+                          Compliance state is evaluated through the Cleanverse adapter. In this
+                          prototype the adapter runs in demo mode; production credentials resolve
+                          through the same interface.
                         </p>
                       </div>
                     ) : null}

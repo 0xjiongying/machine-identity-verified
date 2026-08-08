@@ -50,8 +50,12 @@ export function MachinePlate() {
         <div className="relative border border-border bg-surface/60 p-5 shadow-[var(--shadow-lift)] backdrop-blur-sm sm:p-7">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="mt-mono text-[10px] uppercase tracking-[0.22em] text-primary">{demoMachine.index}</p>
-              <p className="mt-2 text-lg font-medium tracking-tight sm:text-xl">{demoMachine.model}</p>
+              <p className="mt-mono text-[10px] uppercase tracking-[0.22em] text-primary">
+                {demoMachine.index}
+              </p>
+              <p className="mt-2 text-lg font-medium tracking-tight sm:text-xl">
+                {demoMachine.model}
+              </p>
               <p className="mt-label mt-1">SERIAL {demoMachine.serial.replace("IRB6700-", "")}</p>
             </div>
             <div className="mt-mono border border-border px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
@@ -60,13 +64,61 @@ export function MachinePlate() {
           </div>
 
           <svg viewBox="0 0 420 190" className="mt-6 w-full text-border" aria-hidden="true">
-            <motion.rect x="10" y="10" width="400" height="170" fill="none" stroke="currentColor" strokeWidth="0.6" {...draw(0.6)} />
-            <motion.path d="M40 150 L40 92 L120 60 L200 92 L200 150" fill="none" stroke="var(--foreground)" strokeWidth="0.9" {...draw(0.9)} />
-            <motion.path d="M120 60 L120 30 M120 30 L300 30 L300 150" fill="none" stroke="currentColor" strokeWidth="0.6" {...draw(1.1)} />
-            <motion.path d="M200 92 L300 60" fill="none" stroke="var(--primary)" strokeWidth="0.9" {...draw(1.3)} />
-            <motion.circle cx="120" cy="60" r="4" fill="none" stroke="var(--primary)" strokeWidth="0.9" {...draw(1.5)} />
-            <motion.circle cx="300" cy="60" r="2.5" fill="var(--primary)" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.7 }} />
-            <motion.path d="M10 150 L410 150" stroke="currentColor" strokeWidth="0.6" {...draw(0.75)} />
+            <motion.rect
+              x="10"
+              y="10"
+              width="400"
+              height="170"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="0.6"
+              {...draw(0.6)}
+            />
+            <motion.path
+              d="M40 150 L40 92 L120 60 L200 92 L200 150"
+              fill="none"
+              stroke="var(--foreground)"
+              strokeWidth="0.9"
+              {...draw(0.9)}
+            />
+            <motion.path
+              d="M120 60 L120 30 M120 30 L300 30 L300 150"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="0.6"
+              {...draw(1.1)}
+            />
+            <motion.path
+              d="M200 92 L300 60"
+              fill="none"
+              stroke="var(--primary)"
+              strokeWidth="0.9"
+              {...draw(1.3)}
+            />
+            <motion.circle
+              cx="120"
+              cy="60"
+              r="4"
+              fill="none"
+              stroke="var(--primary)"
+              strokeWidth="0.9"
+              {...draw(1.5)}
+            />
+            <motion.circle
+              cx="300"
+              cy="60"
+              r="2.5"
+              fill="var(--primary)"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.7 }}
+            />
+            <motion.path
+              d="M10 150 L410 150"
+              stroke="currentColor"
+              strokeWidth="0.6"
+              {...draw(0.75)}
+            />
             {[60, 100, 140, 180, 220, 260, 300, 340, 380].map((x, i) => (
               <motion.path
                 key={x}
@@ -95,7 +147,11 @@ export function MachinePlate() {
             {[
               { k: "Status", v: "VERIFIED", tone: "text-success" },
               { k: "Ownership", v: "ACTIVE", tone: "text-foreground" },
-              { k: "Provenance", v: `${demoMachine.provenanceEvents} EVENTS`, tone: "text-foreground" },
+              {
+                k: "Provenance",
+                v: `${demoMachine.provenanceEvents} EVENTS`,
+                tone: "text-foreground",
+              },
             ].map((item, i) => (
               <motion.div
                 key={item.k}
@@ -105,7 +161,9 @@ export function MachinePlate() {
                 className="bg-background/80 px-3 py-3"
               >
                 <dt className="mt-label">{item.k}</dt>
-                <dd className={`mt-mono mt-1.5 text-[11px] tracking-[0.12em] ${item.tone}`}>{item.v}</dd>
+                <dd className={`mt-mono mt-1.5 text-[11px] tracking-[0.12em] ${item.tone}`}>
+                  {item.v}
+                </dd>
               </motion.div>
             ))}
           </dl>

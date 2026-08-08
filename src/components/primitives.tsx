@@ -3,7 +3,11 @@ import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
 export function Shell({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cn("mx-auto w-full max-w-[1280px] px-6 md:px-10 lg:px-16", className)}>{children}</div>;
+  return (
+    <div className={cn("mx-auto w-full max-w-[1280px] px-6 md:px-10 lg:px-16", className)}>
+      {children}
+    </div>
+  );
 }
 
 export function Section({
@@ -18,7 +22,11 @@ export function Section({
   label?: string;
 }) {
   return (
-    <section id={id} aria-label={label} className={cn("relative border-t border-border py-24 md:py-32", className)}>
+    <section
+      id={id}
+      aria-label={label}
+      className={cn("relative border-t border-border py-24 md:py-32", className)}
+    >
       {children}
     </section>
   );
@@ -60,14 +68,28 @@ export function Reveal({
 
 export function Heading({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <h2 className={cn("mt-6 max-w-[20ch] text-[length:var(--text-display)] font-medium leading-[1.02]", className)}>
+    <h2
+      className={cn(
+        "mt-6 max-w-[20ch] text-[length:var(--text-display)] font-medium leading-[1.02]",
+        className,
+      )}
+    >
       {children}
     </h2>
   );
 }
 
 export function Lede({ children, className }: { children: ReactNode; className?: string }) {
-  return <p className={cn("mt-5 max-w-[58ch] text-[15px] leading-relaxed text-muted-foreground", className)}>{children}</p>;
+  return (
+    <p
+      className={cn(
+        "mt-5 max-w-[58ch] text-[15px] leading-relaxed text-muted-foreground",
+        className,
+      )}
+    >
+      {children}
+    </p>
+  );
 }
 
 export function StatusDot({ tone = "neutral" }: { tone?: "neutral" | "ok" | "fail" | "accent" }) {
@@ -77,7 +99,9 @@ export function StatusDot({ tone = "neutral" }: { tone?: "neutral" | "ok" | "fai
     fail: "bg-destructive",
     accent: "bg-primary",
   } as const;
-  return <span className={cn("inline-block size-1.5 rounded-full", map[tone])} aria-hidden="true" />;
+  return (
+    <span className={cn("inline-block size-1.5 rounded-full", map[tone])} aria-hidden="true" />
+  );
 }
 
 export function DemoTag({ className }: { className?: string }) {

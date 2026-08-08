@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Section, Shell, Eyebrow, Heading, Lede, Reveal, StatusDot, DemoTag } from "@/components/primitives";
+import {
+  Section,
+  Shell,
+  Eyebrow,
+  Heading,
+  Lede,
+  Reveal,
+  StatusDot,
+  DemoTag,
+} from "@/components/primitives";
 import { demoMachine } from "@/data/demoMachine";
 import { issuer, recipients } from "@/data/demoParticipants";
 import { cleanverse, type CheckResult, type EvaluationResult } from "@/lib/cleanverse-adapter";
@@ -55,8 +64,8 @@ export function Transfer() {
           <Eyebrow index="05">Compliant transfer</Eyebrow>
           <Heading>Trust is enforced at the point of transfer.</Heading>
           <Lede>
-            A verified machine cannot move to an unverified counterparty. Compliance is not a badge on the
-            page — it decides whether the transaction exists at all.
+            A verified machine cannot move to an unverified counterparty. Compliance is not a badge
+            on the page — it decides whether the transaction exists at all.
           </Lede>
         </Reveal>
 
@@ -100,7 +109,9 @@ export function Transfer() {
                         <span className="min-w-0">
                           <span className="mt-label block">{r.role}</span>
                           <span className="mt-1.5 block truncate text-[14px]">{r.name}</span>
-                          <span className="mt-mono mt-1 block text-[11px] text-muted-foreground">{r.wallet}</span>
+                          <span className="mt-mono mt-1 block text-[11px] text-muted-foreground">
+                            {r.wallet}
+                          </span>
                         </span>
                         <span
                           className={cn(
@@ -109,7 +120,9 @@ export function Transfer() {
                           )}
                         >
                           CVI {r.cvi ? "✓" : "✕"}
-                          <span className="mt-1 block text-muted-foreground">{r.cvi ? "Eligible" : "Ineligible"}</span>
+                          <span className="mt-1 block text-muted-foreground">
+                            {r.cvi ? "Eligible" : "Ineligible"}
+                          </span>
                         </span>
                       </button>
                     </li>
@@ -140,7 +153,11 @@ export function Transfer() {
                 </p>
               ) : (
                 <div className="mt-6">
-                  <CheckSequence checks={checks.length ? checks : preview(recipient.cvi)} revealed={revealed} state={state} />
+                  <CheckSequence
+                    checks={checks.length ? checks : preview(recipient.cvi)}
+                    revealed={revealed}
+                    state={state}
+                  />
 
                   <AnimatePresence mode="wait">
                     {state === "done" && result ? (
@@ -153,10 +170,14 @@ export function Transfer() {
                           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                           className="mt-6 border border-primary/50 bg-primary/10 p-5"
                         >
-                          <p className="mt-mono text-[11px] uppercase tracking-[0.2em] text-primary">Transfer approved</p>
+                          <p className="mt-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                            Transfer approved
+                          </p>
                           <p className="mt-label mt-4">Ownership updated</p>
                           <p className="mt-2 text-[15px]">{issuer.name}</p>
-                          <p className="mt-mono my-1 text-primary" aria-hidden="true">↓</p>
+                          <p className="mt-mono my-1 text-primary" aria-hidden="true">
+                            ↓
+                          </p>
                           <p className="text-[15px]">{recipient.name}</p>
                           <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-primary/30 pt-4">
                             <div>
@@ -185,8 +206,9 @@ export function Transfer() {
                             Transfer blocked
                           </p>
                           <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
-                            The recipient does not hold a Cleanverse identity credential. The transfer policy
-                            rejects the transaction before settlement — ownership is unchanged.
+                            The recipient does not hold a Cleanverse identity credential. The
+                            transfer policy rejects the transaction before settlement — ownership is
+                            unchanged.
                           </p>
                         </motion.div>
                       )
@@ -206,8 +228,23 @@ function preview(recipientVerified: boolean): CheckResult[] {
   return [
     { id: "identity", label: "Issuer", detail: "CVI — sender credential", status: "pass" },
     { id: "asset", label: "Asset", detail: "CVA — asset status ACTIVE", status: "pass" },
-    { id: "compliance", label: "Recipient", detail: "CVI — counterparty credential", status: recipientVerified ? "pass" : "fail" },
-    { id: "policy", label: "Policy", detail: "Transfer policy MT-TRF-02", status: recipientVerified ? "pass" : "fail" },
-    { id: "settlement", label: "Monad", detail: "Settlement of approved transfer", status: recipientVerified ? "pass" : "fail" },
+    {
+      id: "compliance",
+      label: "Recipient",
+      detail: "CVI — counterparty credential",
+      status: recipientVerified ? "pass" : "fail",
+    },
+    {
+      id: "policy",
+      label: "Policy",
+      detail: "Transfer policy MT-TRF-02",
+      status: recipientVerified ? "pass" : "fail",
+    },
+    {
+      id: "settlement",
+      label: "Monad",
+      detail: "Settlement of approved transfer",
+      status: recipientVerified ? "pass" : "fail",
+    },
   ];
 }

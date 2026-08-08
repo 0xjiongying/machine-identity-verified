@@ -2,8 +2,21 @@ import { motion, useScroll, useTransform } from "motion/react";
 import { useRef } from "react";
 import { Section, Shell, Eyebrow, Heading, Lede, Reveal } from "@/components/primitives";
 
-const lifecycle = ["Manufactured", "Deployed", "Maintained", "Part replaced", "Transferred", "Resold"];
-const silos = ["Manufacturer DB", "Maintenance DB", "Ownership docs", "Leasing records", "Compliance system"];
+const lifecycle = [
+  "Manufactured",
+  "Deployed",
+  "Maintained",
+  "Part replaced",
+  "Transferred",
+  "Resold",
+];
+const silos = [
+  "Manufacturer DB",
+  "Maintenance DB",
+  "Ownership docs",
+  "Leasing records",
+  "Compliance system",
+];
 
 export function TrustGap() {
   const ref = useRef<HTMLDivElement>(null);
@@ -21,8 +34,8 @@ export function TrustGap() {
             Most systems don&apos;t share it.
           </Heading>
           <Lede>
-            Every industrial asset accumulates a lifecycle. That lifecycle is scattered across systems
-            that never reconcile — so buyers, lenders and regulators inherit uncertainty.
+            Every industrial asset accumulates a lifecycle. That lifecycle is scattered across
+            systems that never reconcile — so buyers, lenders and regulators inherit uncertainty.
           </Lede>
         </Reveal>
 
@@ -74,9 +87,19 @@ export function TrustGap() {
             </ul>
 
             <Reveal delay={0.2} className="flex items-center justify-center">
-              <svg viewBox="0 0 120 200" className="hidden h-44 w-24 text-border lg:block" aria-hidden="true">
+              <svg
+                viewBox="0 0 120 200"
+                className="hidden h-44 w-24 text-border lg:block"
+                aria-hidden="true"
+              >
                 {[20, 60, 100, 140, 180].map((y) => (
-                  <path key={y} d={`M0 ${y} C60 ${y}, 60 100, 120 100`} fill="none" stroke="currentColor" strokeWidth="0.7" />
+                  <path
+                    key={y}
+                    d={`M0 ${y} C60 ${y}, 60 100, 120 100`}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="0.7"
+                  />
                 ))}
               </svg>
               <span className="mt-label lg:hidden">converges into</span>

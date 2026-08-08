@@ -4,11 +4,36 @@ import { Section, Shell, Eyebrow, Heading, Lede, Reveal } from "@/components/pri
 import { cn } from "@/lib/utils";
 
 const layers = [
-  { key: "physical", label: "Physical world", value: "Industrial machine", note: "The asset exists, works and wears — but carries no shared record." },
-  { key: "mt", label: "MachineTrust", value: "Machine Passport", note: "Persistent identity: provenance, ownership, service and parts." },
-  { key: "cv", label: "Cleanverse", value: "CVI + CVA + Compliance", note: "Who may participate, and whether this transaction may proceed." },
-  { key: "monad", label: "Monad", value: "Execution", note: "Approved transactions settle and ownership state becomes canonical." },
-  { key: "asset", label: "Result", value: "Verified machine asset", note: "A programmable asset with an auditable history." },
+  {
+    key: "physical",
+    label: "Physical world",
+    value: "Industrial machine",
+    note: "The asset exists, works and wears — but carries no shared record.",
+  },
+  {
+    key: "mt",
+    label: "MachineTrust",
+    value: "Machine Passport",
+    note: "Persistent identity: provenance, ownership, service and parts.",
+  },
+  {
+    key: "cv",
+    label: "Cleanverse",
+    value: "CVI + CVA + Compliance",
+    note: "Who may participate, and whether this transaction may proceed.",
+  },
+  {
+    key: "monad",
+    label: "Monad",
+    value: "Execution",
+    note: "Approved transactions settle and ownership state becomes canonical.",
+  },
+  {
+    key: "asset",
+    label: "Result",
+    value: "Verified machine asset",
+    note: "A programmable asset with an auditable history.",
+  },
 ];
 
 export function Architecture() {
@@ -43,7 +68,12 @@ export function Architecture() {
                     on ? "bg-surface" : "hover:bg-surface/60",
                   )}
                 >
-                  <span className={cn("mt-mono text-[11px] tracking-[0.18em]", on ? "text-primary" : "text-muted-foreground")}>
+                  <span
+                    className={cn(
+                      "mt-mono text-[11px] tracking-[0.18em]",
+                      on ? "text-primary" : "text-muted-foreground",
+                    )}
+                  >
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <span className="min-w-0">

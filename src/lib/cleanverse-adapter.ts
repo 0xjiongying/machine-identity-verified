@@ -26,7 +26,10 @@ export type EvaluationResult = {
 
 export interface CleanverseAdapter {
   readonly mode: "demo" | "live";
-  evaluateIssuance(input: { issuerVerified: boolean; assetEligible: boolean }): Promise<EvaluationResult>;
+  evaluateIssuance(input: {
+    issuerVerified: boolean;
+    assetEligible: boolean;
+  }): Promise<EvaluationResult>;
   evaluateTransfer(input: {
     issuerVerified: boolean;
     assetEligible: boolean;
@@ -42,10 +45,30 @@ export const demoCleanverseAdapter: CleanverseAdapter = {
   async evaluateIssuance({ issuerVerified, assetEligible }) {
     await wait(120);
     const checks: CheckResult[] = [
-      { id: "identity", label: "Identity check", detail: "CVI — issuer credential", status: issuerVerified ? "pass" : "fail" },
-      { id: "asset", label: "Asset check", detail: "CVA — machine passport attested", status: assetEligible ? "pass" : "fail" },
-      { id: "compliance", label: "Compliance policy", detail: "Issuance policy MT-ISS-01", status: issuerVerified && assetEligible ? "pass" : "fail" },
-      { id: "settlement", label: "Monad", detail: "Execution of approved issuance", status: issuerVerified && assetEligible ? "pass" : "fail" },
+      {
+        id: "identity",
+        label: "Identity check",
+        detail: "CVI — issuer credential",
+        status: issuerVerified ? "pass" : "fail",
+      },
+      {
+        id: "asset",
+        label: "Asset check",
+        detail: "CVA — machine passport attested",
+        status: assetEligible ? "pass" : "fail",
+      },
+      {
+        id: "compliance",
+        label: "Compliance policy",
+        detail: "Issuance policy MT-ISS-01",
+        status: issuerVerified && assetEligible ? "pass" : "fail",
+      },
+      {
+        id: "settlement",
+        label: "Monad",
+        detail: "Execution of approved issuance",
+        status: issuerVerified && assetEligible ? "pass" : "fail",
+      },
     ];
     const blocked = checks.find((c) => c.status === "fail");
     return {
@@ -60,11 +83,36 @@ export const demoCleanverseAdapter: CleanverseAdapter = {
   async evaluateTransfer({ issuerVerified, assetEligible, recipientVerified }) {
     await wait(120);
     const checks: CheckResult[] = [
-      { id: "identity", label: "Issuer", detail: "CVI — sender credential", status: issuerVerified ? "pass" : "fail" },
-      { id: "asset", label: "Asset", detail: "CVA — asset status ACTIVE", status: assetEligible ? "pass" : "fail" },
-      { id: "compliance", label: "Recipient", detail: "CVI — counterparty credential", status: recipientVerified ? "pass" : "fail" },
-      { id: "policy", label: "Policy", detail: "Transfer policy MT-TRF-02", status: recipientVerified ? "pass" : "fail" },
-      { id: "settlement", label: "Monad", detail: "Settlement of approved transfer", status: recipientVerified && assetEligible ? "pass" : "fail" },
+      {
+        id: "identity",
+        label: "Issuer",
+        detail: "CVI — sender credential",
+        status: issuerVerified ? "pass" : "fail",
+      },
+      {
+        id: "asset",
+        label: "Asset",
+        detail: "CVA — asset status ACTIVE",
+        status: assetEligible ? "pass" : "fail",
+      },
+      {
+        id: "compliance",
+        label: "Recipient",
+        detail: "CVI — counterparty credential",
+        status: recipientVerified ? "pass" : "fail",
+      },
+      {
+        id: "policy",
+        label: "Policy",
+        detail: "Transfer policy MT-TRF-02",
+        status: recipientVerified ? "pass" : "fail",
+      },
+      {
+        id: "settlement",
+        label: "Monad",
+        detail: "Settlement of approved transfer",
+        status: recipientVerified && assetEligible ? "pass" : "fail",
+      },
     ];
     const blocked = checks.find((c) => c.status === "fail");
     return {

@@ -21,7 +21,7 @@ export function MachineCursor() {
       x.set(e.clientX);
       y.set(e.clientY);
       const el = (e.target as HTMLElement | null)?.closest<HTMLElement>("[data-cursor]");
-      setLabel(el?.dataset['cursor'] ?? null);
+      setLabel(el?.dataset["cursor"] ?? null);
     };
     const dn = () => setDown(true);
     const up = () => setDown(false);

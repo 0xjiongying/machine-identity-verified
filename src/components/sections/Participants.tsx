@@ -2,13 +2,25 @@ import { motion } from "motion/react";
 import { Section, Shell, Eyebrow, Heading, Lede, Reveal, StatusDot } from "@/components/primitives";
 import { issuer, recipients, type Participant } from "@/data/demoParticipants";
 
-function Node({ role, name, cvi, note }: { role: string; name: string; cvi: boolean; note: string }) {
+function Node({
+  role,
+  name,
+  cvi,
+  note,
+}: {
+  role: string;
+  name: string;
+  cvi: boolean;
+  note: string;
+}) {
   return (
     <div className="border border-border bg-surface/50 p-5">
       <p className="mt-label">{role}</p>
       <p className="mt-2 text-lg font-medium tracking-tight">{name}</p>
       <p className="mt-2 text-[12px] text-muted-foreground">{note}</p>
-      <p className={`mt-mono mt-4 flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] ${cvi ? "text-success" : "text-destructive"}`}>
+      <p
+        className={`mt-mono mt-4 flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] ${cvi ? "text-success" : "text-destructive"}`}
+      >
         <StatusDot tone={cvi ? "ok" : "fail"} /> CVI {cvi ? "verified" : "not verified"}
       </p>
     </div>
@@ -24,17 +36,24 @@ export function Participants() {
           <Eyebrow index="03">Verified participants</Eyebrow>
           <Heading>The asset is only half the trust equation.</Heading>
           <Lede>
-            Knowing what a machine is does not make a transaction legitimate. Cleanverse answers the other
-            half: who is allowed to participate, and whether this specific transaction may proceed.
+            Knowing what a machine is does not make a transaction legitimate. Cleanverse answers the
+            other half: who is allowed to participate, and whether this specific transaction may
+            proceed.
           </Lede>
         </Reveal>
 
         <div className="mt-14 grid gap-8 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
-          <Reveal><Node role={issuer.role} name={issuer.name} cvi={issuer.cvi} note={issuer.note} /></Reveal>
+          <Reveal>
+            <Node role={issuer.role} name={issuer.name} cvi={issuer.cvi} note={issuer.note} />
+          </Reveal>
 
           <Reveal delay={0.15} className="flex items-center justify-center">
             <div className="relative flex h-24 w-full items-center justify-center lg:h-40 lg:w-24">
-              <motion.svg viewBox="0 0 96 160" className="absolute inset-0 h-full w-full text-border" aria-hidden="true">
+              <motion.svg
+                viewBox="0 0 96 160"
+                className="absolute inset-0 h-full w-full text-border"
+                aria-hidden="true"
+              >
                 <motion.path
                   d="M48 4 L48 156"
                   stroke="currentColor"
@@ -60,7 +79,9 @@ export function Participants() {
             </div>
           </Reveal>
 
-          <Reveal delay={0.25}><Node role={fundB.role} name={fundB.name} cvi={fundB.cvi} note={fundB.note} /></Reveal>
+          <Reveal delay={0.25}>
+            <Node role={fundB.role} name={fundB.name} cvi={fundB.cvi} note={fundB.note} />
+          </Reveal>
         </div>
 
         <Reveal delay={0.3}>

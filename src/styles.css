@@ -80,8 +80,7 @@
   --input: oklch(0.284 0.007 260);
   --ring: oklch(0.638 0.207 288);
 
-  --font-body:
-    "Inter", "Inter Fallback", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-body: "Inter", "Inter Fallback", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-technical: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
   --shadow-lift: 0 24px 80px -40px oklch(0 0 0 / 0.9);
