@@ -103,3 +103,18 @@ export const onChain = {
   address: "0x8F...A42C",
   records: "47 on-chain records",
 } as const;
+
+/** Identity revealed when the trust chip is selected. DEMO DATA. */
+export const machineIdentity = {
+  title: "Machine identity",
+  id: "MT-2048",
+  did: "did:cvi:monad:0x8F41…A42C",
+  fields: [
+    { label: "Serial", value: "IRB6700-2048" },
+    { label: "Key", value: "secp256k1 · sealed" },
+    { label: "Issuer", value: "Cleanverse CVI" },
+    { label: "Bound", value: "2026-02-14" },
+    { label: "Attestations", value: "4 valid" },
+    { label: "Anchor", value: "Monad mainnet" },
+  ],
+} as const;
