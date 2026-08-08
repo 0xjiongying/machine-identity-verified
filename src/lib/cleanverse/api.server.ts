@@ -1,24 +1,32 @@
 /**
  * Cleanverse HTTP client — the ONLY place credentials and endpoints live.
  *
- * Configure with:
- *   CLEANVERSE_API_URL   e.g. https://api.cleanverse.io
- *   CLEANVERSE_API_KEY   project key issued by Cleanverse
- *   CLEANVERSE_ISSUER_DID (optional) issuing entity DID
+ * Configure with (server-side env only, never VITE_ prefixed):
+ *   CLEANVERSE_API_URL           sandbox base URL
+ *   CLEANVERSE_SANDBOX_API_ID    sandbox API ID / client id
+ *   CLEANVERSE_SANDBOX_API_KEY   sandbox API key / secret
+ *   CLEANVERSE_ISSUER_DID        (optional) issuing entity DID
  *
  * When these are absent the service layer runs the local CCP engine instead
  * and every surface is labelled DEMO. Nothing here fabricates a response: a
  * failed call is returned as a failure and the transaction fails closed.
  */
 
-export type CleanverseConfig = { baseUrl: string; apiKey: string; issuerDid?: string };
+export type CleanverseConfig = {
+  baseUrl: string;
+  apiId: string;
+  apiKey: string;
+  issuerDid?: string;
+};
 
 export function readConfig(): CleanverseConfig | null {
   const baseUrl = process.env["CLEANVERSE_API_URL"];
-  const apiKey = process.env["CLEANVERSE_API_KEY"];
+  const apiId = process.env["CLEANVERSE_SANDBOX_API_ID"] ?? "";
+  const apiKey = process.env["CLEANVERSE_SANDBOX_API_KEY"] ?? process.env["CLEANVERSE_API_KEY"];
   if (!baseUrl || !apiKey) return null;
   return {
     baseUrl: baseUrl.replace(/\/$/, ""),
+    apiId,
     apiKey,
     ...(process.env["CLEANVERSE_ISSUER_DID"]
       ? { issuerDid: process.env["CLEANVERSE_ISSUER_DID"]! }
@@ -37,8 +45,10 @@ async function call<T>(
     headers: {
       "content-type": "application/json",
       accept: "application/json",
-      authorization: `Bearer ${cfg.apiKey}`,
+      // Sandbox auth: API ID identifies the app, API key authenticates it.
       "x-api-key": cfg.apiKey,
+      ...(cfg.apiId ? { "x-api-id": cfg.apiId } : {}),
+      authorization: `Bearer ${cfg.apiKey}`,
     },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
