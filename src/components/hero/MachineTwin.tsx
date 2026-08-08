@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/
 import { machineParts } from "@/data/demoMachine";
 import { useFinePointer, useHydrated, useReducedMotion } from "@/hooks/useMotionPrefs";
 import { EASE } from "@/lib/motion";
+import { isBootComplete, onBootComplete } from "@/lib/boot-state";
 import { MachinePlate } from "./MachinePlate";
 import type { RegionKey } from "./MachineScene";
 
@@ -33,12 +34,18 @@ export function MachineTwin() {
   const [hovered, setHovered] = useState<RegionKey | null>(null);
   const [selected, setSelected] = useState<RegionKey | null>(null);
   const [phase, setPhase] = useState(0);
+  const [booted, setBooted] = useState(false);
 
   const { scrollYProgress } = useScroll({
     target: wrap,
     offset: ["start start", "end start"],
   });
   useMotionValueEvent(scrollYProgress, "change", (v) => setPhase(Math.min(1, v * 1.4)));
+
+  useEffect(() => {
+    if (isBootComplete()) setBooted(true);
+    return onBootComplete(() => setBooted(true));
+  }, []);
 
   useEffect(() => {
     try {
@@ -54,7 +61,7 @@ export function MachineTwin() {
     return () => mq.removeEventListener("change", set);
   }, []);
 
-  const use3d = hydrated && !reduced && wide && webgl === true;
+  const use3d = hydrated && booted && !reduced && wide && webgl === true;
   const focus = selected ?? hovered;
   const part = focus ? machineParts.find((p) => p.key === focus) : undefined;
 

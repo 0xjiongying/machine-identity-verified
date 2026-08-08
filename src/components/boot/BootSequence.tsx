@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { EASE } from "@/lib/motion";
 import { useReducedMotion } from "@/hooks/useMotionPrefs";
+import { markBootComplete } from "@/lib/boot-state";
 
 const STAGES = [
   "Loading asset system",
@@ -27,7 +28,10 @@ export function BootSequence() {
     if (typeof window === "undefined") return;
     const seen = window.localStorage.getItem(KEY) === "1";
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (seen || mq) return;
+    if (seen || mq) {
+      markBootComplete();
+      return;
+    }
     setActive(true);
     document.documentElement.style.overflow = "hidden";
   }, []);
@@ -56,6 +60,7 @@ export function BootSequence() {
     window.localStorage.setItem(KEY, "1");
     document.documentElement.style.overflow = "";
     setActive(false);
+    markBootComplete();
   }
 
   if (reduced) return null;
