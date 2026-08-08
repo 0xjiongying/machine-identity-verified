@@ -5,7 +5,7 @@ import { Section, Shell, Eyebrow, Heading, Reveal, DemoTag } from "@/components/
 import { moduleParts, type ModuleKey } from "@/data/trustModule";
 import { demoMachine } from "@/data/demoMachine";
 import { usePerf } from "@/lib/perf";
-import { useHydrated, useReducedMotion } from "@/hooks/useMotionPrefs";
+import { useFinePointer, useHydrated, useReducedMotion } from "@/hooks/useMotionPrefs";
 import { play } from "@/lib/sound";
 
 const TrustModuleScene = lazy(() => import("@/components/trust/TrustModuleScene"));
@@ -16,6 +16,7 @@ export function Inspection() {
   const { tier } = usePerf();
   const hydrated = useHydrated();
   const reduced = useReducedMotion();
+  const fine = useFinePointer();
   const controls = useRef<OrbitControlsImpl | null>(null);
 
   const [hovered, setHovered] = useState<ModuleKey | null>(null);
