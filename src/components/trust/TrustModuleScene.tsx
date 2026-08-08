@@ -30,6 +30,12 @@ export type TrustSceneProps = {
   hideHotspots?: boolean;
   autoRotate?: boolean;
   zoomEnabled?: boolean;
+  /** Touch/coarse pointer device — tunes controls and disables cursor parallax. */
+  coarse?: boolean;
+  /** Honour prefers-reduced-motion: static pose, no idle drift, no auto frames. */
+  reducedMotion?: boolean;
+  /** Stop rendering entirely when the scene is off-screen. */
+  paused?: boolean;
   controlsRef?: React.MutableRefObject<OrbitControlsImpl | null>;
   scale?: number;
   offsetX?: number;
