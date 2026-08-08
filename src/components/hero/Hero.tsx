@@ -80,18 +80,23 @@ export function Hero() {
           {/* headline choreography: one line replaces the other in the same slot */}
           <div className="relative w-full" style={{ maxWidth: "min(560px, 90vw)" }}>
             <div style={{ opacity: 1 - introOut }}>
-              <motion.div {...rise(0.15)} className="mb-8 flex flex-wrap items-center gap-3">
-                <span className="text-[13px] font-medium tracking-[-0.01em] text-foreground">
-                  Machine Trust
-                </span>
+              <motion.div {...rise(0.15)} className="mb-6 flex flex-wrap items-center gap-3">
                 <span className="mt-mono border border-border px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  Track 1 RWA
+                  Track 1 RWA · Cleanverse
                 </span>
                 <DemoTag />
               </motion.div>
             </div>
 
-            <div className="relative grid max-w-[9ch] text-[length:var(--text-hero)] font-medium leading-[0.95] tracking-[-0.04em] [&>*]:col-start-1 [&>*]:row-start-1">
+            <motion.p
+              {...rise(0.2)}
+              className="mb-3 text-[clamp(1.75rem,4vw,2.75rem)] font-medium leading-none tracking-[-0.03em]"
+              style={{ opacity: 1 - introOut * 0.85 }}
+            >
+              Machine Trust
+            </motion.p>
+
+            <div className="relative grid max-w-[14ch] text-[length:var(--text-hero)] font-medium leading-[0.95] tracking-[-0.04em] [&>*]:col-start-1 [&>*]:row-start-1">
               <motion.span
                 className="block"
                 style={{
@@ -129,8 +134,14 @@ export function Hero() {
               </motion.p>
 
               <motion.div {...rise(0.68)} className="mt-7 flex flex-wrap items-center gap-3">
-                <MagneticButton href="#passport" cursor="open">
-                  Explore Machine
+                <MagneticButton
+                  cursor="open"
+                  onClick={() => {
+                    window.history.replaceState({}, "", `${window.location.pathname}?demo=1`);
+                    window.dispatchEvent(new CustomEvent("mt:open-demo"));
+                  }}
+                >
+                  Start guided demo
                   <span
                     aria-hidden="true"
                     className="transition-transform group-hover:translate-x-1"
@@ -138,8 +149,8 @@ export function Hero() {
                     →
                   </span>
                 </MagneticButton>
-                <MagneticButton href="#architecture" variant="outline">
-                  View Architecture
+                <MagneticButton href="#inspect" variant="outline">
+                  Explore Machine
                 </MagneticButton>
               </motion.div>
             </div>

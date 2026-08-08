@@ -96,7 +96,7 @@ function CviCard({ credential, onToggle }: { credential: CviCredential; onToggle
           data-cursor="select"
           className="mt-5 w-full border border-border px-4 py-2.5 text-[12px] transition-colors hover:border-foreground"
         >
-          {active ? "Revoke this CVI in Cleanverse" : "Restore this CVI"}
+          {active ? "Simulate revoke (DEMO preview only)" : "Restore fixture (DEMO preview only)"}
         </button>
       ) : null}
     </div>
@@ -129,24 +129,36 @@ export function Credentials() {
           <Eyebrow index="07">Cleanverse credentials</Eyebrow>
           <Heading>CVI verifies the party. CVA verifies the asset.</Heading>
           <Lede>
-            These are the exact objects the policy engine reads. Change one and re-run the transfer:
-            the decision changes, because the decision was never hardcoded.
+            Issuer and buyer wallets map to Cleanverse A-Pass checks. In{" "}
+            <strong className="font-medium text-foreground">SANDBOX</strong> mode, live{" "}
+            <code>query_apass</code> / <code>verify_apass</code> decide — local toggles only affect
+            DEMO preview grading.
           </Lede>
           <p className="mt-mono mt-4 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            Adapter mode: {mode} · local fixture toggles for demo policy experiments · live sandbox
-            decisions still come from Cleanverse when credentials are present
+            Adapter mode: {mode === "live" ? "SANDBOX" : "DEMO"} · issuer wallet shown below is the
+            issuance CVI subject
           </p>
         </Reveal>
 
         <div className="mt-12 grid gap-6 lg:grid-cols-3">
           <Reveal>
+            <div className="mb-2">
+              <p className="mt-mono text-[10px] uppercase tracking-[0.18em] text-primary">
+                Issuer · CVI gate for issuance
+              </p>
+            </div>
             <CviCard credential={issuer} />
           </Reveal>
           {counterparties.map((c, i) => (
             <Reveal key={c.id} delay={0.08 * (i + 1)}>
+              <div className="mb-2">
+                <p className="mt-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Buyer · transfer counterparty
+                </p>
+              </div>
               <CviCard
                 credential={c}
-                {...(c.status === "absent"
+                {...(c.status === "absent" || mode === "live"
                   ? {}
                   : {
                       onToggle: () =>
@@ -167,14 +179,22 @@ export function Credentials() {
                   {asset.subject.assetClass}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setAssetStatus(asset.status === "active" ? "suspended" : "active")}
-                data-cursor="select"
-                className="mt-mono border border-border px-4 py-2 text-[11px] uppercase tracking-[0.16em] transition-colors hover:border-foreground"
-              >
-                {asset.status === "active" ? "Suspend asset" : "Reinstate asset"}
-              </button>
+              {mode === "demo" ? (
+                <button
+                  type="button"
+                  onClick={() => setAssetStatus(asset.status === "active" ? "suspended" : "active")}
+                  data-cursor="select"
+                  className="mt-mono border border-border px-4 py-2 text-[11px] uppercase tracking-[0.16em] transition-colors hover:border-foreground"
+                >
+                  {asset.status === "active"
+                    ? "Simulate suspend (DEMO)"
+                    : "Reinstate fixture (DEMO)"}
+                </button>
+              ) : (
+                <p className="mt-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                  SANDBOX · CVA from Cleanverse bind
+                </p>
+              )}
             </div>
 
             <ul className="mt-6 grid gap-px bg-border sm:grid-cols-3">
@@ -192,14 +212,16 @@ export function Credentials() {
                     >
                       <StatusDot tone={valid ? "ok" : "fail"} /> {a.status} · {a.validUntil}
                     </p>
-                    <button
-                      type="button"
-                      onClick={() => setAttestationStatus(a.code, valid ? "expired" : "valid")}
-                      data-cursor="select"
-                      className="mt-3 w-full border border-border px-3 py-2 text-[11px] transition-colors hover:border-foreground"
-                    >
-                      {valid ? "Expire attestation" : "Renew attestation"}
-                    </button>
+                    {mode === "demo" ? (
+                      <button
+                        type="button"
+                        onClick={() => setAttestationStatus(a.code, valid ? "expired" : "valid")}
+                        data-cursor="select"
+                        className="mt-3 w-full border border-border px-3 py-2 text-[11px] transition-colors hover:border-foreground"
+                      >
+                        {valid ? "Expire (DEMO preview)" : "Renew (DEMO preview)"}
+                      </button>
+                    ) : null}
                   </li>
                 );
               })}
@@ -228,8 +250,9 @@ export function Credentials() {
 
             {fund ? (
               <p className="mt-5 text-[13px] leading-relaxed text-muted-foreground">
-                Try it: revoke {fund.holder.name}'s CVI or expire the safety attestation, then run
-                the transfer below. The blocked rule and its reason change accordingly.
+                {mode === "demo"
+                  ? `DEMO: toggle ${fund.holder.name}'s fixture, then run transfer — local CCP preview changes.`
+                  : `SANDBOX: transfer uses live verify_apass on wallet ${fund.holder.wallet.slice(0, 10)}… — fixture toggles are disabled.`}
               </p>
             ) : null}
           </div>
