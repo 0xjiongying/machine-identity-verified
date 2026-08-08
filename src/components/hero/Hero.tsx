@@ -20,7 +20,7 @@ export function Hero() {
       />
       <Shell>
         <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_1fr] lg:gap-20">
-          <div className="order-2 lg:order-1">
+          <div className="order-1 lg:order-1">
             <motion.div {...rise(0.15)} className="flex flex-wrap items-center gap-3">
               <span className="mt-mono border border-border px-2 py-1 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                 RWA · Machine infrastructure
@@ -81,7 +81,7 @@ export function Hero() {
             </motion.dl>
           </div>
 
-          <div className="order-1 lg:order-2">
+          <div className="order-2 lg:order-2">
             <MachinePlate />
           </div>
         </div>
