@@ -3,14 +3,15 @@ import { motion, useScroll } from "motion/react";
 import { cn } from "@/lib/utils";
 
 const CHAPTERS = [
-  { id: "hero", n: "01", label: "Machine" },
-  { id: "inspect", n: "02", label: "Inspect" },
-  { id: "passport", n: "03", label: "Passport" },
-  { id: "lifecycle", n: "04", label: "History" },
-  { id: "participants", n: "05", label: "Verify" },
-  { id: "issuance", n: "06", label: "Issue" },
-  { id: "transfer", n: "07", label: "Transfer" },
-  { id: "audit", n: "08", label: "Trace" },
+  { id: "hero", n: "00", label: "Machine" },
+  { id: "overview", n: "01", label: "What it is" },
+  { id: "inspect", n: "03", label: "Inspect" },
+  { id: "passport", n: "04", label: "Passport" },
+  { id: "participants", n: "06", label: "Parties" },
+  { id: "credentials", n: "07", label: "CVI / CVA" },
+  { id: "issuance", n: "08", label: "Issue" },
+  { id: "transfer", n: "09", label: "Transfer" },
+  { id: "audit", n: "10", label: "Trace" },
 ];
 
 /** Narrative progress rail — replaces the scrollbar with the story index. */

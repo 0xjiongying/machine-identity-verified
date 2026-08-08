@@ -43,7 +43,7 @@ export function Architecture() {
     <Section id="architecture" label="Architecture" className="scroll-mt-16">
       <Shell>
         <Reveal>
-          <Eyebrow index="09">Architecture</Eyebrow>
+          <Eyebrow index="11">Architecture</Eyebrow>
           <Heading>Three layers, one transaction path.</Heading>
           <Lede>
             Each layer answers exactly one question. Keeping them separate is what makes the system

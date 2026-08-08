@@ -1,19 +1,22 @@
 import { motion } from "motion/react";
-import type { CheckResult } from "@/lib/cleanverse-adapter";
+import type { RuleResult } from "@/lib/cleanverse-adapter";
 import { cn } from "@/lib/utils";
 
 export type SequenceState = "idle" | "running" | "done";
 
-export function useSequenceLabels(checks: CheckResult[], revealed: number) {
-  return checks.slice(0, revealed);
-}
+const SOURCE_TONE: Record<RuleResult["source"], string> = {
+  CVI: "text-primary",
+  CVA: "text-primary",
+  POLICY: "text-foreground",
+  MONAD: "text-muted-foreground",
+};
 
 export function CheckSequence({
   checks,
   revealed,
   state,
 }: {
-  checks: CheckResult[];
+  checks: RuleResult[];
   revealed: number;
   state: SequenceState;
 }) {
@@ -33,25 +36,55 @@ export function CheckSequence({
         {checks.map((c, i) => {
           const shown = i < revealed;
           const failed = shown && c.status === "fail";
+          const skipped = shown && c.status === "skipped";
           return (
             <li
-              key={c.id}
+              key={c.code}
               className={cn(
-                "flex items-center justify-between gap-4 border-b border-border py-3 transition-opacity duration-300",
+                "flex items-start justify-between gap-4 border-b border-border py-3 transition-opacity duration-300",
                 shown ? "opacity-100" : "opacity-30",
               )}
             >
               <div className="min-w-0">
-                <p className="mt-mono text-[11px] uppercase tracking-[0.16em]">{c.label}</p>
-                <p className="mt-1 truncate text-[12px] text-muted-foreground">{c.detail}</p>
+                <p className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={cn(
+                      "mt-mono border border-border px-1.5 py-0.5 text-[9px] uppercase tracking-[0.18em]",
+                      SOURCE_TONE[c.source],
+                    )}
+                  >
+                    {c.source}
+                  </span>
+                  <span className="mt-mono text-[11px] uppercase tracking-[0.16em]">{c.label}</span>
+                </p>
+                <p className="mt-1.5 text-[12px] leading-relaxed text-muted-foreground">
+                  {shown ? c.reason : c.requirement}
+                </p>
+                <p className="mt-mono mt-1 text-[10px] text-muted-foreground/70">
+                  {c.code} · observed: {c.observed}
+                </p>
               </div>
               <span
                 className={cn(
                   "mt-mono shrink-0 text-[12px]",
-                  !shown ? "text-muted-foreground" : failed ? "text-destructive" : "text-success",
+                  !shown
+                    ? "text-muted-foreground"
+                    : failed
+                      ? "text-destructive"
+                      : skipped
+                        ? "text-muted-foreground"
+                        : "text-success",
                 )}
               >
-                {!shown ? (state === "running" ? "…" : "—") : failed ? "✕" : "✓"}
+                {!shown
+                  ? state === "running"
+                    ? "…"
+                    : "—"
+                  : failed
+                    ? "✕"
+                    : skipped
+                      ? "∅"
+                      : "✓"}
               </span>
             </li>
           );

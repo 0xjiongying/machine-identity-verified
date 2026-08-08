@@ -19,6 +19,7 @@ import { PageTransition } from "../components/motion/PageTransition";
 import { SystemControls } from "../components/system/SystemControls";
 import { PerfProvider } from "../lib/perf";
 import { AssetStateProvider } from "../lib/asset-state";
+import { CleanverseProvider } from "../lib/cleanverse-state";
 
 function NotFoundComponent() {
   return (
@@ -137,15 +138,17 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <PerfProvider>
         <AssetStateProvider>
-          <SmoothScroll />
-          <MachineCursor />
-          <AmbientField />
-          <BootSequence />
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <SystemControls />
-          <PageTransition>
-            <Outlet />
-          </PageTransition>
+          <CleanverseProvider>
+            <SmoothScroll />
+            <MachineCursor />
+            <AmbientField />
+            <BootSequence />
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <SystemControls />
+            <PageTransition>
+              <Outlet />
+            </PageTransition>
+          </CleanverseProvider>
         </AssetStateProvider>
       </PerfProvider>
     </QueryClientProvider>

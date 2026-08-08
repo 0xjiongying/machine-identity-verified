@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   Section,
@@ -11,8 +11,13 @@ import {
   DemoTag,
 } from "@/components/primitives";
 import { demoMachine } from "@/data/demoMachine";
-import { issuer, recipients } from "@/data/demoParticipants";
-import { cleanverse, type CheckResult, type EvaluationResult } from "@/lib/cleanverse-adapter";
+import {
+  previewEvaluation,
+  requestEvaluation,
+  type Evaluation,
+  type RuleResult,
+} from "@/lib/cleanverse-adapter";
+import { useCleanverse } from "@/lib/cleanverse-state";
 import { CheckSequence, type SequenceState } from "@/components/compliance/CheckSequence";
 import { MagneticButton } from "@/components/motion/MagneticButton";
 import { HashReveal } from "@/components/motion/HashReveal";
@@ -23,13 +28,22 @@ import { play } from "@/lib/sound";
 
 export function Transfer() {
   const { owner, settleTransfer } = useAssetState();
+  const { issuer: senderCredential, counterparties, asset, mode, recordDecision } = useCleanverse();
   const [selected, setSelected] = useState<string | null>(null);
   const [state, setState] = useState<SequenceState>("idle");
-  const [checks, setChecks] = useState<CheckResult[]>([]);
+  const [checks, setChecks] = useState<RuleResult[]>([]);
   const [revealed, setRevealed] = useState(0);
-  const [result, setResult] = useState<EvaluationResult | null>(null);
+  const [result, setResult] = useState<Evaluation | null>(null);
 
-  const recipient = recipients.find((r) => r.key === selected) ?? null;
+  const recipient = counterparties.find((r) => r.id === selected) ?? null;
+  const preview: RuleResult[] = recipient
+    ? previewEvaluation({
+        kind: "transfer",
+        sender: senderCredential,
+        recipient,
+        asset,
+      }).rules
+    : [];
 
   function reset() {
     setState("idle");
@@ -43,37 +57,63 @@ export function Transfer() {
     setState("running");
     setRevealed(0);
     setResult(null);
-    const evaluation = await cleanverse.evaluateTransfer({
-      issuerVerified: issuer.cvi,
-      assetEligible: true,
-      recipientVerified: recipient.cvi,
+    const evaluation = await requestEvaluation({
+      kind: "transfer",
+      sender: senderCredential,
+      recipient,
+      asset,
     });
-    setChecks(evaluation.checks);
-    for (let i = 1; i <= evaluation.checks.length; i++) {
-      await new Promise((r) => setTimeout(r, 340));
+    setChecks(evaluation.rules);
+    for (let i = 1; i <= evaluation.rules.length; i++) {
+      await new Promise((r) => setTimeout(r, 260));
       setRevealed(i);
-      if (evaluation.checks[i - 1]?.status === "fail") break;
+      if (evaluation.rules[i - 1]?.status === "fail") {
+        setRevealed(evaluation.rules.length);
+        break;
+      }
     }
     setResult(evaluation);
+    recordDecision(evaluation);
     setState("done");
     play(evaluation.approved ? "approve" : "reject");
     if (evaluation.approved) {
-      settleTransfer({ name: recipient.name, wallet: recipient.wallet }, evaluation.txRef ?? "0x");
+      settleTransfer(
+        { name: recipient.holder.name, wallet: recipient.holder.wallet },
+        evaluation.settlement?.txRef ?? "0x",
+      );
       setTimeout(() => {
         document.getElementById("audit")?.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 1100);
     }
   }
 
+  // The guided demo runner drives this section without touching its internals.
+  useEffect(() => {
+    function onDemo(e: Event) {
+      const detail = (e as CustomEvent<{ action: string; counterparty?: string }>).detail;
+      if (detail.action === "select" && detail.counterparty) {
+        const match = counterparties.find((c) => c.holder.name.includes(detail.counterparty!));
+        if (match) {
+          setSelected(match.id);
+          reset();
+        }
+      }
+      if (detail.action === "run") void run();
+    }
+    window.addEventListener("mt:transfer", onDemo as EventListener);
+    return () => window.removeEventListener("mt:transfer", onDemo as EventListener);
+  });
+
   return (
     <Section id="transfer" label="Compliant transfer" className="scroll-mt-16">
       <Shell>
         <Reveal>
-          <Eyebrow index="07">Compliant transfer</Eyebrow>
+          <Eyebrow index="09">Restricted transfer</Eyebrow>
           <Heading>Trust is enforced at the point of transfer.</Heading>
           <Lede>
-            A verified machine cannot move to an unverified counterparty. Compliance is not a badge
-            on the page — it decides whether the transaction exists at all.
+            The transfer is graded server-side against the asset's CVA restrictions and the
+            counterparty's CVI credential. Compliance is not a badge on the page — it decides
+            whether the transaction exists at all.
           </Lede>
         </Reveal>
 
@@ -84,57 +124,67 @@ export function Transfer() {
                 <p className="mt-label">From</p>
                 <p className="mt-2 text-[15px]">{owner}</p>
                 <p className="mt-mono mt-1 flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-success">
-                  <StatusDot tone="ok" /> CVI verified
+                  <StatusDot tone="ok" /> CVI {senderCredential.id}
                 </p>
               </div>
               <div className="border-b border-border px-5 py-4">
                 <p className="mt-label">Asset</p>
                 <p className="mt-2 text-[15px]">{demoMachine.model}</p>
-                <p className="mt-mono mt-1 flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-success">
-                  <StatusDot tone="ok" /> CVA · asset status active
+                <p
+                  className={cn(
+                    "mt-mono mt-1 flex items-center gap-2 text-[11px] uppercase tracking-[0.16em]",
+                    asset.status === "active" ? "text-success" : "text-destructive",
+                  )}
+                >
+                  <StatusDot tone={asset.status === "active" ? "ok" : "fail"} /> CVA ·{" "}
+                  {asset.status} · {asset.attestations.filter((a) => a.status === "valid").length}/
+                  {asset.attestations.length} attestations valid
                 </p>
               </div>
               <div className="px-5 py-4">
                 <p className="mt-label">Select recipient</p>
                 <ul className="mt-3 grid gap-2">
-                  {recipients.map((r) => (
-                    <li key={r.key}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelected(r.key);
-                          reset();
-                        }}
-                        data-cursor="select"
-                        aria-pressed={selected === r.key}
-                        className={cn(
-                          "flex w-full items-center justify-between gap-4 border px-4 py-3.5 text-left transition-colors",
-                          selected === r.key
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-foreground",
-                        )}
-                      >
-                        <span className="min-w-0">
-                          <span className="mt-label block">{r.role}</span>
-                          <span className="mt-1.5 block truncate text-[14px]">{r.name}</span>
-                          <span className="mt-mono mt-1 block text-[11px] text-muted-foreground">
-                            {r.wallet}
-                          </span>
-                        </span>
-                        <span
+                  {counterparties.map((r) => {
+                    const verified = r.status === "active";
+                    return (
+                      <li key={r.id}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelected(r.id);
+                            reset();
+                          }}
+                          data-cursor="select"
+                          aria-pressed={selected === r.id}
                           className={cn(
-                            "mt-mono shrink-0 text-right text-[10px] uppercase tracking-[0.16em]",
-                            r.cvi ? "text-success" : "text-destructive",
+                            "flex w-full items-center justify-between gap-4 border px-4 py-3.5 text-left transition-colors",
+                            selected === r.id
+                              ? "border-primary bg-primary/10"
+                              : "border-border hover:border-foreground",
                           )}
                         >
-                          CVI {r.cvi ? "✓" : "✕"}
-                          <span className="mt-1 block text-muted-foreground">
-                            {r.cvi ? "Eligible" : "Ineligible"}
+                          <span className="min-w-0">
+                            <span className="mt-label block">{r.holder.role}</span>
+                            <span className="mt-1.5 block truncate text-[14px]">
+                              {r.holder.name}
+                            </span>
+                            <span className="mt-mono mt-1 block text-[11px] text-muted-foreground">
+                              {r.holder.wallet} · {r.jurisdiction} · tier {r.kycTier}
+                            </span>
                           </span>
-                        </span>
-                      </button>
-                    </li>
-                  ))}
+                          <span
+                            className={cn(
+                              "mt-mono shrink-0 text-right text-[10px] uppercase tracking-[0.16em]",
+                              verified ? "text-success" : "text-destructive",
+                            )}
+                          >
+                            CVI {verified ? "✓" : "✕"}
+                            <span className="mt-1 block text-muted-foreground">{r.status}</span>
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
                 </ul>
 
                 <MagneticButton
@@ -157,7 +207,10 @@ export function Transfer() {
                     "Transfer Asset"
                   )}
                 </MagneticButton>
-                <DemoTag className="mt-4" />
+                <p className="mt-mono mt-3 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Policy MT-POLICY-TRANSFER-v1 · evaluated server-side · mode {mode}
+                </p>
+                <DemoTag className="mt-3" />
               </div>
             </div>
           </Reveal>
@@ -191,7 +244,7 @@ export function Transfer() {
               ) : (
                 <div className="mt-6">
                   <CheckSequence
-                    checks={checks.length ? checks : preview(recipient.cvi)}
+                    checks={checks.length ? checks : preview}
                     revealed={revealed}
                     state={state}
                   />
@@ -211,11 +264,11 @@ export function Transfer() {
                             Transfer approved
                           </p>
                           <p className="mt-label mt-4">Ownership updated</p>
-                          <p className="mt-2 text-[15px]">{issuer.name}</p>
+                          <p className="mt-2 text-[15px]">{senderCredential.holder.name}</p>
                           <p className="mt-mono my-1 text-primary" aria-hidden="true">
                             ↓
                           </p>
-                          <p className="text-[15px]">{recipient.name}</p>
+                          <p className="text-[15px]">{recipient.holder.name}</p>
                           <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-primary/30 pt-4">
                             <div>
                               <dt className="mt-label">Network</dt>
@@ -227,8 +280,11 @@ export function Transfer() {
                             </div>
                           </dl>
                           <p className="mt-mono mt-4 text-[11px] text-muted-foreground">
-                            <HashReveal value={result.txRef ?? ""} className="text-primary" /> ·
-                            simulated settlement reference
+                            <HashReveal
+                              value={result.settlement?.txRef ?? ""}
+                              className="text-primary"
+                            />{" "}
+                            · simulated settlement reference · {result.decisionId}
                           </p>
                         </motion.div>
                       ) : (
@@ -243,10 +299,15 @@ export function Transfer() {
                           <p className="mt-mono text-[11px] uppercase tracking-[0.2em] text-destructive">
                             Transfer blocked
                           </p>
+                          <p className="mt-mono mt-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                            Rule {result.blockedBy}
+                          </p>
                           <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
-                            The recipient does not hold a Cleanverse identity credential. The
-                            transfer policy rejects the transaction before settlement — ownership is
-                            unchanged.
+                            {result.rules.find((r) => r.code === result.blockedBy)?.reason}
+                          </p>
+                          <p className="mt-3 border-t border-destructive/30 pt-3 text-[13px] leading-relaxed text-muted-foreground">
+                            Nothing was submitted to Monad. Ownership is unchanged and the decision
+                            is recorded as {result.decisionId}.
                           </p>
                         </motion.div>
                       )
@@ -260,29 +321,4 @@ export function Transfer() {
       </Shell>
     </Section>
   );
-}
-
-function preview(recipientVerified: boolean): CheckResult[] {
-  return [
-    { id: "identity", label: "Issuer", detail: "CVI — sender credential", status: "pass" },
-    { id: "asset", label: "Asset", detail: "CVA — asset status ACTIVE", status: "pass" },
-    {
-      id: "compliance",
-      label: "Recipient",
-      detail: "CVI — counterparty credential",
-      status: recipientVerified ? "pass" : "fail",
-    },
-    {
-      id: "policy",
-      label: "Policy",
-      detail: "Transfer policy MT-TRF-02",
-      status: recipientVerified ? "pass" : "fail",
-    },
-    {
-      id: "settlement",
-      label: "Monad",
-      detail: "Settlement of approved transfer",
-      status: recipientVerified ? "pass" : "fail",
-    },
-  ];
 }
