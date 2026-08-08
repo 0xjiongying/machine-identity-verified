@@ -78,6 +78,9 @@ export function MachineTwin({ phase = 0, explode = 0, bare = false }: TwinProps)
             <TrustModuleScene
               progress={phase}
               step={step}
+              hideCards
+              scale={0.5}
+              offsetX={1.5}
               explode={explode}
               tier={tier}
               hovered={hovered}

@@ -29,6 +29,9 @@ export type TrustSceneProps = {
   autoRotate?: boolean;
   zoomEnabled?: boolean;
   controlsRef?: React.MutableRefObject<OrbitControlsImpl | null>;
+  /** Stage framing: overall size and horizontal offset of the module. */
+  scale?: number;
+  offsetX?: number;
 };
 
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
@@ -433,7 +436,7 @@ function Module(props: TrustSceneProps) {
         };
 
   return (
-    <group ref={root} scale={0.62}>
+    <group ref={root} scale={props.scale ?? 0.62} position={[props.offsetX ?? 0, 0, 0]}>
       {/* verification board + chip */}
       <Part id="board" {...shared}>
         <mesh position={[0, 0, 0]} receiveShadow castShadow>
