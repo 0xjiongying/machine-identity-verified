@@ -12,6 +12,8 @@ export type ModulePart = {
   partId: string;
   summary: string;
   specs: { label: string; value: string }[];
+  /** Which passport surface this part backs. */
+  passport: string;
 };
 
 export const moduleParts: ModulePart[] = [
@@ -26,6 +28,7 @@ export const moduleParts: ModulePart[] = [
       { label: "Attested", value: "Cleanverse CVI" },
       { label: "Anchor", value: "Monad mainnet" },
     ],
+    passport: "Identity root",
   },
   {
     key: "enclosure",
@@ -38,6 +41,7 @@ export const moduleParts: ModulePart[] = [
       { label: "Events", value: "0 breaches" },
       { label: "Rating", value: "IP67 / IK08" },
     ],
+    passport: "Tamper log",
   },
   {
     key: "board",
@@ -50,6 +54,7 @@ export const moduleParts: ModulePart[] = [
       { label: "Throughput", value: "1.2k sig/s" },
       { label: "Records", value: "47 anchored" },
     ],
+    passport: "Record anchoring",
   },
   {
     key: "mechanics",
@@ -62,6 +67,7 @@ export const moduleParts: ModulePart[] = [
       { label: "Interlocks", value: "2 × mechanical" },
       { label: "Torque log", value: "Signed" },
     ],
+    passport: "Asset binding",
   },
 ];
 
