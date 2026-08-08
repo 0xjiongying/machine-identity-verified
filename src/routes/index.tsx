@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteNav } from "@/components/navigation/SiteNav";
+import { ProgressRail } from "@/components/navigation/ProgressRail";
 import { Hero } from "@/components/hero/Hero";
 import { TrustGap } from "@/components/sections/TrustGap";
 import { Passport } from "@/components/passport/Passport";
@@ -34,6 +35,7 @@ function Home() {
   return (
     <>
       <SiteNav />
+      <ProgressRail />
       <main id="main">
         <h1 className="sr-only">
           MachineTrust — compliance infrastructure for programmable machine assets

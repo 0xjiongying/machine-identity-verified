@@ -30,7 +30,7 @@ function Node({
 export function Participants() {
   const fundB = recipients[1] as Participant;
   return (
-    <Section label="Verified participants">
+    <Section id="participants" label="Verified participants" className="scroll-mt-16">
       <Shell>
         <Reveal>
           <Eyebrow index="03">Verified participants</Eyebrow>
