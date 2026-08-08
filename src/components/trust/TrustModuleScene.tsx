@@ -44,6 +44,14 @@ const CARD_POS: Record<string, [number, number, number]> = {
   parts: [2.6, -1.2, 0.65],
 };
 
+/** Laser lock points for each selectable sub-assembly. */
+const PART_POS: Record<ModuleKey, [number, number, number]> = {
+  chip: [0, 0.24, 0],
+  board: [0.9, 0.1, 0.55],
+  enclosure: [0, 1.02, 0],
+  mechanics: [-1.5, -0.05, 1.0],
+};
+
 function Metal({ tone = "#4b5262", rough = 0.3 }: { tone?: string; rough?: number }) {
   return (
     <meshStandardMaterial
@@ -203,13 +211,14 @@ function Traces() {
 }
 
 /** The central cryptographic identity chip. */
-function TrustChip({ active, step }: { active: boolean; step: number }) {
+function TrustChip({ active, selected, step }: { active: boolean; selected?: boolean; step: number }) {
   const halo = useRef<THREE.Mesh>(null);
   const core = useRef<THREE.MeshStandardMaterial>(null);
+  const ring = useRef<THREE.Mesh>(null);
   const pins = useMemo(() => [-0.3, -0.18, -0.06, 0.06, 0.18, 0.3], []);
 
   useFrame((s, dt) => {
-    const hot = active || step >= 1 ? 1 : 0.35;
+    const hot = selected ? 1.9 : active || step >= 1 ? 1 : 0.35;
     if (core.current)
       core.current.emissiveIntensity = damp(
         core.current.emissiveIntensity,
@@ -219,13 +228,27 @@ function TrustChip({ active, step }: { active: boolean; step: number }) {
       );
     if (halo.current) {
       const mat = halo.current.material as THREE.MeshBasicMaterial;
-      mat.opacity = damp(mat.opacity, active ? 0.5 : 0.16, 6, dt);
-      halo.current.rotation.z += dt * 0.5;
+      mat.opacity = damp(mat.opacity, selected ? 0.85 : active ? 0.5 : 0.16, 6, dt);
+      halo.current.rotation.z += dt * (selected ? 1.5 : 0.5);
+      const sc = damp(halo.current.scale.x, selected ? 1.22 : 1, 6, dt);
+      halo.current.scale.setScalar(sc);
+    }
+    if (ring.current) {
+      const mat = ring.current.material as THREE.MeshBasicMaterial;
+      mat.opacity = damp(mat.opacity, selected ? 0.55 : 0, 5, dt);
+      const t = s.clock.elapsedTime;
+      ring.current.scale.setScalar(1 + ((t * 0.6) % 1) * 1.6);
+      ring.current.rotation.z -= dt * 0.3;
     }
   });
 
   return (
     <group position={[0, 0.09, 0]}>
+      {/* selection scan ring */}
+      <mesh ref={ring} position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.7, 0.74, 64]} />
+        <meshBasicMaterial color={ACCENT} transparent opacity={0} side={THREE.DoubleSide} depthWrite={false} />
+      </mesh>
       {/* chip package */}
       <mesh castShadow>
         <boxGeometry args={[0.82, 0.13, 0.82]} />
@@ -274,7 +297,15 @@ function TrustChip({ active, step }: { active: boolean; step: number }) {
 }
 
 /** Thin purple verification laser that locks onto a target point. */
-function Laser({ step, progress }: { step: number; progress: number }) {
+function Laser({
+  step,
+  progress,
+  lock,
+}: {
+  step: number;
+  progress: number;
+  lock?: ModuleKey | null;
+}) {
   const beam = useRef<THREE.Mesh>(null);
   const dot = useRef<THREE.Mesh>(null);
   const target = useRef(new THREE.Vector3(0, 0.2, 0));
@@ -283,8 +314,11 @@ function Laser({ step, progress }: { step: number; progress: number }) {
   useFrame((s, dt) => {
     const t = s.clock.elapsedTime;
     const stepTarget = new THREE.Vector3();
-    const key = ["module", "id", "provenance", "parts", "maintenance", "module"][step] ?? "module";
-    if (key === "module") {
+    const key = lock ? "part" : (["module", "id", "provenance", "parts", "maintenance", "module"][step] ?? "module");
+    if (key === "part") {
+      const p = PART_POS[lock!];
+      stepTarget.set(p[0], p[1], p[2]);
+    } else if (key === "module") {
       // idle: slow sweep across the module surface
       const sweep = step >= 5 ? 0 : Math.sin(t * 0.55) * 1.1;
       stepTarget.set(sweep, 0.16, Math.cos(t * 0.34) * 0.6);
@@ -292,7 +326,7 @@ function Laser({ step, progress }: { step: number; progress: number }) {
       const p = CARD_POS[key]!;
       stepTarget.set(p[0] * 0.92, p[1], p[2]);
     }
-    target.current.lerp(stepTarget, 1 - Math.exp(-(step === 0 ? 4 : 9) * dt));
+    target.current.lerp(stepTarget, 1 - Math.exp(-(lock ? 11 : step === 0 ? 4 : 9) * dt));
 
     const dir = new THREE.Vector3().subVectors(target.current, origin);
     const len = dir.length();
@@ -301,12 +335,12 @@ function Laser({ step, progress }: { step: number; progress: number }) {
       beam.current.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
       beam.current.scale.set(1, len, 1);
       const mat = beam.current.material as THREE.MeshBasicMaterial;
-      const on = step >= 1 && step <= 4 ? 0.85 : 0.3 + Math.sin(t * 1.6) * 0.08;
-      mat.opacity = damp(mat.opacity, clamp01(on) * (0.4 + progress * 0.6), 7, dt);
+      const on = lock ? 1 : step >= 1 && step <= 4 ? 0.85 : 0.3 + Math.sin(t * 1.6) * 0.08;
+      mat.opacity = damp(mat.opacity, clamp01(on) * (lock ? 1 : 0.4 + progress * 0.6), 7, dt);
     }
     if (dot.current) {
       dot.current.position.copy(target.current);
-      dot.current.scale.setScalar(1 + Math.sin(t * 9) * 0.18);
+      dot.current.scale.setScalar((lock ? 1.5 : 1) * (1 + Math.sin(t * 9) * 0.18));
     }
   });
 
@@ -463,7 +497,11 @@ function Module(props: TrustSceneProps) {
       </Part>
 
       <Part id="chip" {...shared}>
-        <TrustChip active={hovered === "chip" || selected === "chip" || props.step === 1} step={props.step} />
+        <TrustChip
+          active={hovered === "chip" || selected === "chip" || props.step === 1}
+          selected={selected === "chip"}
+          step={props.step}
+        />
       </Part>
 
       {/* metallic frame + mounts */}
@@ -538,7 +576,7 @@ function Module(props: TrustSceneProps) {
           />
         ))}
 
-      <Laser step={props.step} progress={props.progress} />
+      <Laser step={props.step} progress={props.progress} lock={selected} />
       <Motes count={tier === "reduced" ? 60 : 220} />
     </group>
   );
