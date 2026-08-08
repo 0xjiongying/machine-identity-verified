@@ -20,10 +20,10 @@ const TrustModuleScene = lazy(() => import("./TrustModuleScene"));
 const STEP_AT = [0, 0.16, 0.34, 0.5, 0.66, 0.82];
 
 const CARD_SIDE: Record<string, "left" | "right"> = {
-  id: "left",
-  provenance: "right",
-  maintenance: "left",
-  parts: "right",
+  passport: "left",
+  cva: "left",
+  cvi: "right",
+  ccp: "right",
 };
 
 /**
@@ -77,6 +77,7 @@ export function MachineTrustModule() {
           {use3d ? (
             <Suspense fallback={null}>
               <TrustModuleScene
+                hideCards
                 progress={reduced ? 0.85 : p}
                 step={reduced ? 5 : step}
                 tier={tier}
@@ -109,7 +110,7 @@ export function MachineTrustModule() {
               <p className="mt-mono text-[10px] leading-[1.5] tracking-[0.24em] text-muted-foreground uppercase">
                 Interactive
                 <br />
-                Machine Trust
+                Machine asset core
               </p>
               <p className="mt-mono mt-3 flex items-center gap-2 text-[10px] tracking-[0.24em] text-primary uppercase">
                 <span className="size-1.5 rounded-full bg-primary" />
@@ -126,6 +127,9 @@ export function MachineTrustModule() {
                 {verifySteps[step]?.label}
                 {verified ? " ✓" : "…"}
               </p>
+              <p className="mt-mono mt-1 text-[9px] tracking-[0.2em] text-muted-foreground uppercase">
+                {verifySteps[step]?.owner}
+              </p>
             </div>
           </div>
 
@@ -137,7 +141,7 @@ export function MachineTrustModule() {
                   {dataCards
                     .filter((c) => CARD_SIDE[c.key] === side)
                     .map((c) => {
-                      const on = activeTarget === c.key || verified;
+                      const on = activeTarget === c.key || (verified && step >= c.at);
                       return (
                         <motion.div
                           key={c.key}
@@ -154,9 +158,15 @@ export function MachineTrustModule() {
                           <p className="mt-mono text-[8px] tracking-[0.22em] text-muted-foreground uppercase">
                             {c.label}
                           </p>
-                          <p className="mt-1 text-[15px] text-foreground">{c.value}</p>
-                          <p className="mt-mono mt-1 text-[8px] tracking-[0.2em] text-primary uppercase">
-                            {c.state}
+                          <p className="mt-1 text-[15px] text-foreground">
+                            {step >= c.at ? c.live.value : c.pending.value}
+                          </p>
+                          <p
+                            className={`mt-mono mt-1 text-[8px] tracking-[0.2em] uppercase ${
+                              step >= c.at ? "text-primary" : "text-muted-foreground"
+                            }`}
+                          >
+                            {step >= c.at ? c.live.state : c.pending.state}
                           </p>
                         </motion.div>
                       );
@@ -204,7 +214,7 @@ export function MachineTrustModule() {
                     exit={{ opacity: 0 }}
                     className="mt-mono max-w-[320px] text-[9px] leading-[1.8] tracking-[0.2em] text-muted-foreground uppercase"
                   >
-                    Trust chip · enclosure · verification board · mounts — select a component
+                    Motor · controller · arm · safety system — select a module to lock the scanner
                   </motion.p>
                 )}
               </AnimatePresence>
@@ -212,12 +222,15 @@ export function MachineTrustModule() {
               <div className="w-[min(420px,60vw)]">
                 <div className="flex items-center justify-between">
                   <span className="mt-mono text-[9px] tracking-[0.24em] text-muted-foreground uppercase">
-                    Verification
+                    RWA lifecycle
                   </span>
                   <span className="mt-mono text-[9px] tabular-nums text-muted-foreground">
                     {String(Math.round(p * 100)).padStart(3, "0")}%
                   </span>
                 </div>
+                <p className="mt-mono mt-2 max-w-[46ch] text-[9px] leading-[1.7] tracking-[0.16em] text-muted-foreground uppercase">
+                  {verifySteps[step]?.detail}
+                </p>
                 <div className="mt-2 flex gap-1.5">
                   {verifySteps.map((s, i) => (
                     <div key={s.id} className="h-px flex-1 bg-border">
@@ -235,7 +248,7 @@ export function MachineTrustModule() {
 
             {/* on-chain infrastructure readout */}
             <AnimatePresence>
-              {selected === "chip" ? (
+              {selected === "controller" ? (
                 <motion.div
                   key="identity"
                   initial={{ opacity: 0, y: 18, clipPath: "inset(0 0 100% 0)", filter: "blur(6px)" }}
