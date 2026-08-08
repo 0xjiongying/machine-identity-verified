@@ -223,7 +223,7 @@ function Machine({ phase, hovered, selected, onHover, onSelect }: Props) {
         </mesh>
       </group>
 
-      {/* <ScanPlane phase={phase} /> */}
+      <ScanPlane phase={phase} />
       <DataPoints phase={phase} />
     </group>
   );
@@ -236,7 +236,7 @@ function ScanPlane({ phase }: { phase: number }) {
     const m = ref.current;
     if (!m) return;
     const t = (state.clock.elapsedTime * 0.35) % 1;
-    m.position.y = t * 3.4;
+    m.position.y = t * 3.2;
     const mat = m.material as THREE.MeshBasicMaterial;
     mat.opacity = (0.35 + phase * 0.35) * Math.sin(t * Math.PI);
   });
