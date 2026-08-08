@@ -153,16 +153,14 @@ export function queryApass(cfg: CleanverseConfig, address: string) {
 /* ── CVA (A-Token registry) ───────────────────────────────────────────── */
 
 export type AtokenListing = {
-  symbol?: string;
-  atoken?: string;
-  atoken_address?: string;
+  origin_token?: { address?: string; symbol?: string; name?: string };
+  atoken?: { address?: string; symbol?: string; name?: string };
   accesscore_address?: string;
   apass_address?: string;
-  chain?: string;
 };
 
 export function queryDepositAtokenList(cfg: CleanverseConfig, symbol?: string | null) {
-  return post<AtokenListing[] | { list?: AtokenListing[] }>(cfg, "/query_deposit_atoken_list", {
+  return post<{ chain?: string; tokens?: AtokenListing[] }>(cfg, "/query_deposit_atoken_list", {
     chain: cfg.chain,
     ...(symbol ? { symbol } : {}),
   });
