@@ -235,8 +235,52 @@ export function MachineTrustModule() {
 
             {/* on-chain infrastructure readout */}
             <AnimatePresence>
-              {verified ? (
+              {selected === "chip" ? (
                 <motion.div
+                  key="identity"
+                  initial={{ opacity: 0, y: 18, clipPath: "inset(0 0 100% 0)", filter: "blur(6px)" }}
+                  animate={{ opacity: 1, y: 0, clipPath: "inset(0 0 0% 0)", filter: "blur(0px)" }}
+                  exit={{ opacity: 0, y: 12, clipPath: "inset(0 0 100% 0)", filter: "blur(6px)" }}
+                  transition={{ duration: 0.6, ease: EASE.expoOut }}
+                  className="pointer-events-auto hidden w-[300px] border border-primary/60 bg-primary/[0.06] p-4 backdrop-blur-md md:block"
+                >
+                  <p className="mt-mono flex items-center gap-2 text-[9px] tracking-[0.24em] text-primary uppercase">
+                    <span className="size-1.5 animate-pulse rounded-full bg-primary" />
+                    {machineIdentity.title}
+                  </p>
+                  <p className="mt-2 text-[22px] leading-none tracking-tight text-foreground">
+                    {machineIdentity.id}
+                  </p>
+                  <p className="mt-mono mt-1 text-[9px] break-all text-primary/80">
+                    {machineIdentity.did}
+                  </p>
+                  <dl className="mt-3 divide-y divide-border border-t border-border">
+                    {machineIdentity.fields.map((f, i) => (
+                      <motion.div
+                        key={f.label}
+                        initial={{ opacity: 0, x: 10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.12 + i * 0.05, duration: 0.4, ease: EASE.expoOut }}
+                        className="flex justify-between gap-4 py-1.5"
+                      >
+                        <dt className="mt-mono text-[9px] tracking-[0.18em] text-muted-foreground uppercase">
+                          {f.label}
+                        </dt>
+                        <dd className="mt-mono text-[10px] text-foreground">{f.value}</dd>
+                      </motion.div>
+                    ))}
+                  </dl>
+                  <button
+                    type="button"
+                    onClick={() => setSelected(null)}
+                    className="mt-mono mt-3 text-[9px] tracking-[0.22em] text-muted-foreground uppercase transition-colors hover:text-primary"
+                  >
+                    Release lock ×
+                  </button>
+                </motion.div>
+              ) : verified ? (
+                <motion.div
+                  key="onchain"
                   initial={{ opacity: 0, y: 18, clipPath: "inset(100% 0 0 0)" }}
                   animate={{ opacity: 1, y: 0, clipPath: "inset(0% 0 0 0)" }}
                   exit={{ opacity: 0, y: 12 }}
