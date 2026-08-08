@@ -552,17 +552,17 @@ export default function TrustModuleScene(props: TrustSceneProps) {
       onPointerMissed={() => props.onSelect(null)}
       onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
     >
-      <ambientLight intensity={0.28} />
-      <Environment preset="city" environmentIntensity={0.35} />
+      <ambientLight intensity={0.5} />
+      <Environment preset="city" environmentIntensity={0.55} />
       <directionalLight
         position={[5, 8, 4]}
-        intensity={1.7}
+        intensity={2.6}
         color="#c9d4ea"
         castShadow={!reduced}
         shadow-mapSize={[1024, 1024]}
       />
       <directionalLight position={[-6, 2, -4]} intensity={0.9} color={ACCENT} />
-      <hemisphereLight args={["#8fa0c4", "#0a0b0e", 0.3]} />
+      <hemisphereLight args={["#8fa0c4", "#0a0b0e", 0.5]} />
       <Suspense fallback={null}>
         <Module {...props} />
         {reduced ? null : (
