@@ -83,6 +83,8 @@ export function MachineTwin({ phase = 0, explode = 0, bare = false }: TwinProps)
               offsetX={0.15}
               explode={explode}
               tier={tier}
+              coarse={!fine}
+              reducedMotion={reduced}
               hovered={hovered}
               selected={selected}
               onHover={(k) => {
