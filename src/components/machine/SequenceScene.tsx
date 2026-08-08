@@ -43,7 +43,7 @@ function pose(p: number, time: number) {
   return { shoulder, elbow, wrist, yaw, lift, open, run, live };
 }
 
-function Steel({ tone = "#4a4e59", rough = 0.32 }: { tone?: string; rough?: number }) {
+function Steel({ tone = "#6b7080", rough = 0.28 }: { tone?: string; rough?: number }) {
   return (
     <meshStandardMaterial
       color={tone}
@@ -214,7 +214,7 @@ function Machine(props: SequenceProps) {
       >
         <mesh position={[0, 0.12, 0]} castShadow receiveShadow>
           <cylinderGeometry args={[1.05, 1.3, 0.24, 48]} />
-          <Steel tone="#3f434d" />
+          <Steel tone="#5c6170" />
         </mesh>
         <mesh position={[0, 0.6, 0]} castShadow>
           <cylinderGeometry args={[0.6, 0.74, 0.78, 40]} />
@@ -234,11 +234,11 @@ function Machine(props: SequenceProps) {
         >
           <mesh position={[0, 1.12, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
             <cylinderGeometry args={[0.42, 0.42, 1.02, 36]} />
-            <Steel tone="#565b67" rough={0.26} />
+            <Steel tone="#787e8c" rough={0.26} />
           </mesh>
           <mesh position={[0, 1.12, 0]} rotation={[0, 0, Math.PI / 2]}>
             <torusGeometry args={[0.44, 0.03, 10, 48]} />
-            <Steel tone="#6a7080" />
+            <Steel tone="#878e9e" />
           </mesh>
         </Region>
 
@@ -260,7 +260,7 @@ function Machine(props: SequenceProps) {
               <group position={[0, 1.7, 0]}>
                 <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
                   <cylinderGeometry args={[0.26, 0.26, 0.56, 28]} />
-                  <Steel tone="#5c6270" rough={0.24} />
+                  <Steel tone="#7b8290" rough={0.24} />
                 </mesh>
                 <group ref={elbowG}>
                   <mesh position={[0, 0.75, 0]} castShadow>
@@ -270,11 +270,11 @@ function Machine(props: SequenceProps) {
                   <group ref={wristG} position={[0, 1.5, 0]}>
                     <mesh rotation={[Math.PI / 2, 0, 0]} castShadow>
                       <cylinderGeometry args={[0.2, 0.2, 0.42, 24]} />
-                      <Steel tone="#6a7080" rough={0.2} />
+                      <Steel tone="#878e9e" rough={0.2} />
                     </mesh>
                     <mesh position={[0, 0.3, 0]} castShadow>
                       <boxGeometry args={[0.18, 0.4, 0.18]} />
-                      <Steel tone="#7a8090" />
+                      <Steel tone="#98a0b0" />
                     </mesh>
                   </group>
                   <group position={[0, 0.75, 0]}>
@@ -301,11 +301,11 @@ function Machine(props: SequenceProps) {
       >
         <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <torusGeometry args={[1.9, 0.028, 10, 128]} />
-          <Steel tone="#3a3d45" rough={0.5} />
+          <Steel tone="#565b66" rough={0.5} />
         </mesh>
         <mesh position={[0, 0.55, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <torusGeometry args={[1.9, 0.02, 10, 128]} />
-          <Steel tone="#3a3d45" rough={0.5} />
+          <Steel tone="#565b66" rough={0.5} />
         </mesh>
       </Region>
 
@@ -327,16 +327,17 @@ export default function SequenceScene(props: SequenceProps) {
       onPointerMissed={() => props.onSelect(null)}
       onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
     >
-      <ambientLight intensity={0.7} />
+      <ambientLight intensity={1.35} />
       <directionalLight
         position={[5, 9, 5]}
-        intensity={3.6}
+        intensity={5.2}
         color="#e6eaf2"
         castShadow={!reduced}
         shadow-mapSize={[1024, 1024]}
       />
-      <directionalLight position={[-6, 3, -4]} intensity={0.7} color={ACCENT} />
-      <directionalLight position={[0, 2, 8]} intensity={1.3} color="#cfd6e6" />
+      <directionalLight position={[-6, 3, -4]} intensity={1.6} color={ACCENT} />
+      <directionalLight position={[0, 2, 8]} intensity={2.4} color="#cfd6e6" />
+      <hemisphereLight args={["#9fb0cc", "#12141a", 1.1]} />
       <Suspense fallback={null}>
         <Machine {...props} />
         {reduced ? null : (

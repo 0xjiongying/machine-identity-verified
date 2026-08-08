@@ -97,7 +97,7 @@ export function MachineSequence() {
         <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-background to-transparent" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent" />
 
-        <Shell className="pointer-events-none relative flex h-full flex-col justify-between py-10">
+        <Shell className="pointer-events-none relative flex h-full flex-col justify-between pt-28 pb-12">
           <div className="flex items-start justify-between gap-6">
             <div>
               <p className="mt-mono text-[10px] tracking-[0.24em] text-muted-foreground uppercase">
