@@ -38,13 +38,13 @@ const layers = [
     key: "monad",
     label: "Monad",
     value: "Execution",
-    note: "After CCP approval, settlement is recorded and ownership state becomes canonical.",
+    note: "After CCP approval, Machine Trust records a Monad settlement reference (UAT demo). Custody contract write is roadmap.",
   },
   {
     key: "asset",
     label: "Result",
     value: "Programmable machine RWA",
-    note: "A verified asset with an auditable history — only after real gates succeed.",
+    note: "A verified asset with an auditable history — only after real Cleanverse gates succeed.",
   },
 ];
 

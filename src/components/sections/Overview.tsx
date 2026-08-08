@@ -14,7 +14,7 @@ const LAYERS = [
   {
     k: "Monad",
     q: "What executes?",
-    v: "Issuance and ownership transfer, only after Cleanverse has approved the request.",
+    v: "Settlement after CCP approval. In Sandbox UAT this is a labelled settlement reference until a custody contract is deployed.",
   },
 ];
 

@@ -116,7 +116,30 @@ export function DemoTag({ className }: { className?: string }) {
         className,
       )}
     >
-      <StatusDot tone="accent" /> Demo data
+      <StatusDot tone="accent" /> DEMO metadata
+    </span>
+  );
+}
+
+/** Explicit REAL / SANDBOX / DEMO label for Cleanverse-backed surfaces. */
+export function IntegrationModeTag({
+  mode,
+  className,
+}: {
+  mode: "demo" | "live" | "sandbox";
+  className?: string;
+}) {
+  const label =
+    mode === "live" || mode === "sandbox" ? "SANDBOX · live Cleanverse API" : "DEMO · local CCP";
+  const tone = mode === "demo" ? "accent" : "ok";
+  return (
+    <span
+      className={cn(
+        "mt-mono inline-flex items-center gap-1.5 border border-border px-2 py-1 text-[10px] uppercase tracking-[0.18em] text-muted-foreground",
+        className,
+      )}
+    >
+      <StatusDot tone={tone} /> {label}
     </span>
   );
 }

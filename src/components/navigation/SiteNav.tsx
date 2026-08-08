@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils";
 const links = [
   { label: "Machines", href: "#machines" },
   { label: "Passport", href: "#passport" },
-  { label: "Transfers", href: "#transfer" },
-  { label: "Network", href: "#architecture" },
+  { label: "Issue", href: "#issuance" },
+  { label: "Transfer", href: "#transfer" },
 ];
 
 export function SiteNav() {
@@ -62,13 +62,13 @@ export function SiteNav() {
           >
             Explorer
           </Link>
-          <button
-            type="button"
-            data-cursor="connect"
+          <a
+            href="#issuance"
+            data-cursor="issue"
             className="mt-mono border border-border px-3 py-1.5 text-[11px] uppercase tracking-[0.14em] text-foreground transition-colors hover:border-primary hover:text-primary"
           >
-            Connect
-          </button>
+            Issue RWA
+          </a>
         </div>
       </nav>
     </motion.header>

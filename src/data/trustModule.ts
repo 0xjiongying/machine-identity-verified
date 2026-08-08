@@ -168,7 +168,8 @@ export const verifySteps: Stage[] = [
     id: "ready",
     label: "Machine RWA ready",
     owner: "Monad",
-    detail: "State change executed on Monad. The physical machine is now a tradable RWA.",
+    detail:
+      "Demo sequence: settlement reference recorded after CCP. Not a fabricated explorer hash.",
     target: "core",
   },
 ];

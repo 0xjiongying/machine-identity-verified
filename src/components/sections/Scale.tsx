@@ -23,7 +23,10 @@ export function Scale() {
         <Reveal>
           <Eyebrow index="12">Scale</Eyebrow>
           <Heading>Start with robots. Build for machines.</Heading>
-          <Lede>Robotics is the initial wedge, not the market boundary.</Lede>
+          <Lede>
+            Robotics is the initial wedge, not the market boundary. Categories below are expansion
+            opportunities — not live products.
+          </Lede>
         </Reveal>
 
         <ul className="mt-14 grid gap-px bg-border sm:grid-cols-2 lg:grid-cols-3">
@@ -44,7 +47,9 @@ export function Scale() {
                 <path d={c.path} fill="none" stroke="currentColor" strokeWidth="1.1" />
               </svg>
               <div className="min-w-0">
-                <p className="mt-label">{String(i + 1).padStart(2, "0")}</p>
+                <p className="mt-label">
+                  {String(i + 1).padStart(2, "0")} · {i === 0 ? "WEDGE" : "ROADMAP"}
+                </p>
                 <p className="mt-1.5 truncate text-[15px] tracking-tight">{c.name}</p>
               </div>
             </motion.li>
