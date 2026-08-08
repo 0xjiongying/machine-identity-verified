@@ -74,6 +74,8 @@ export function Inspection() {
                   selected={selected}
                   autoRotate={autoRotate && !reduced}
                   zoomEnabled={engaged}
+                  coarse={!fine}
+                  reducedMotion={reduced}
                   tier={tier}
                   onHover={setHovered}
                   onSelect={select}
