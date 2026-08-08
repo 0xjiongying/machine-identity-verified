@@ -47,13 +47,15 @@ export function AuditTrail() {
               <tbody>
                 {[
                   ...auditTrail,
-                  ...extraEvents.map((e) => ({
-                    time: e.timestamp,
-                    entity: "MachineTrust",
-                    action: e.label,
-                    verification: "CVI + POLICY",
-                    tx: e.hash,
-                  })),
+                  ...extraEvents
+                    .filter((e) => !auditTrail.some((a) => a.tx.endsWith(e.hash.slice(-4))))
+                    .map((e) => ({
+                      time: e.timestamp,
+                      entity: "MachineTrust",
+                      action: e.label,
+                      verification: "CVI + POLICY",
+                      tx: e.hash,
+                    })),
                 ].map((e, i) => (
                   <motion.tr
                     key={e.time}
