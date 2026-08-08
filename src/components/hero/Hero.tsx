@@ -17,7 +17,7 @@ const STAGES = [
   { at: 0.0, key: "physical", label: "Physical machine", note: "Serial IRB6700-92831" },
   { at: 0.2, key: "wireframe", label: "Technical scan", note: "Geometry → wireframe" },
   { at: 0.4, key: "metadata", label: "Machine metadata", note: "Identity record forming" },
-  { at: 0.6, key: "components", label: "Component identity", note: "Parts resolved" },
+  { at: 0.6, key: "components", label: "Component identity", note: "Chip · board · enclosure" },
   { at: 0.8, key: "asset", label: "Verified asset", note: "MACHINE 042" },
 ] as const;
 
@@ -26,10 +26,10 @@ const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
 const ramp = (p: number, a: number, b: number) => clamp01((p - a) / (b - a));
 
 const LABELS = [
-  { key: "controller", name: "Controller", id: "IRC5-3HAC-0421", pos: "left-[46%] bottom-[14%]" },
-  { key: "motor", name: "Axis motor", id: "AXS-M2-77140", pos: "left-[38%] top-[22%]" },
-  { key: "arm", name: "Arm assembly", id: "IRB6700-ARM-8802", pos: "left-[60%] top-[10%]" },
-  { key: "safety", name: "Safety envelope", id: "SAF-ENV-1180", pos: "left-[52%] bottom-[32%]" },
+  { key: "chip", name: "Trust chip", id: "MT-SE-2048", pos: "left-[52%] top-[30%]" },
+  { key: "board", name: "Verification board", id: "MT-VB-118", pos: "left-[38%] bottom-[26%]" },
+  { key: "enclosure", name: "Tamper enclosure", id: "MT-ENC-04", pos: "left-[64%] top-[16%]" },
+  { key: "mechanics", name: "Mount & interlocks", id: "MT-MNT-09", pos: "left-[46%] bottom-[12%]" },
 ];
 
 export function Hero() {
@@ -72,7 +72,7 @@ export function Hero() {
           }}
         >
           <div className="h-full w-full max-w-[1600px]" data-cursor="inspect">
-            <MachineTwin phase={phase} explode={explode} beam={beam} bare />
+            <MachineTwin phase={phase} explode={explode * 0.5} beam={beam} bare />
           </div>
         </div>
 
