@@ -2,13 +2,13 @@ import { lazy, Suspense, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { Section, Shell, Eyebrow, Heading, Reveal, DemoTag } from "@/components/primitives";
-import { machineComponents, type ComponentKey } from "@/data/machineComponents";
+import { moduleParts, type ModuleKey } from "@/data/trustModule";
 import { demoMachine } from "@/data/demoMachine";
 import { usePerf } from "@/lib/perf";
 import { useHydrated, useReducedMotion } from "@/hooks/useMotionPrefs";
 import { play } from "@/lib/sound";
 
-const InspectorScene = lazy(() => import("@/components/inspect/InspectorScene"));
+const TrustModuleScene = lazy(() => import("@/components/trust/TrustModuleScene"));
 
 const ease = [0.16, 1, 0.3, 1] as const;
 
@@ -18,16 +18,16 @@ export function Inspection() {
   const reduced = useReducedMotion();
   const controls = useRef<OrbitControlsImpl | null>(null);
 
-  const [hovered, setHovered] = useState<ComponentKey | null>(null);
-  const [selected, setSelected] = useState<ComponentKey | null>(null);
+  const [hovered, setHovered] = useState<ModuleKey | null>(null);
+  const [selected, setSelected] = useState<ModuleKey | null>(null);
   const [explode, setExplode] = useState(0);
   const [wireframe, setWireframe] = useState(false);
   const [autoRotate, setAutoRotate] = useState(true);
   const [engaged, setEngaged] = useState(false);
 
-  const active = machineComponents.find((c) => c.key === (selected ?? hovered)) ?? null;
+  const active = moduleParts.find((c) => c.key === (selected ?? hovered)) ?? null;
 
-  function select(k: ComponentKey | null) {
+  function select(k: ModuleKey | null) {
     setSelected(k);
     if (k) {
       setAutoRotate(false);
@@ -50,8 +50,8 @@ export function Inspection() {
           <Eyebrow index="03">Machine inspection</Eyebrow>
           <Heading>Rotate it. Take it apart. Read its record.</Heading>
           <p className="mt-5 max-w-[52ch] text-[15px] text-muted-foreground">
-            Drag to orbit the machine, separate the assembly and open any component. Every part maps
-            to an entry in the Machine Passport.
+            Drag to orbit the Machine Trust module, separate the assembly and open any component.
+            Every part maps to an entry in the Machine Passport.
           </p>
           <DemoTag className="mt-6" />
         </Reveal>
@@ -64,7 +64,10 @@ export function Inspection() {
           >
             {hydrated ? (
               <Suspense fallback={<ViewportFallback />}>
-                <InspectorScene
+                <TrustModuleScene
+                  progress={1}
+                  step={5}
+                  hideCards
                   explode={explode}
                   wireframe={wireframe}
                   hovered={hovered}
@@ -130,7 +133,7 @@ export function Inspection() {
           {/* data panel */}
           <div className="flex flex-col bg-background">
             <ul className="grid gap-px bg-border">
-              {machineComponents.map((c) => {
+              {moduleParts.map((c) => {
                 const on = selected === c.key || hovered === c.key;
                 return (
                   <li key={c.key} className="bg-background">
@@ -196,7 +199,7 @@ export function Inspection() {
                     exit={{ opacity: 0 }}
                     className="text-[14px] text-muted-foreground"
                   >
-                    Select a component — in the list or directly on the machine — to read its
+                    Select a component — in the list or directly on the module — to read its
                     technical record.
                   </motion.p>
                 )}
@@ -237,7 +240,7 @@ function Control({
 function ViewportFallback() {
   return (
     <div className="absolute inset-0 grid place-items-center">
-      <span className="mt-mono text-[10px] text-muted-foreground">LOADING MACHINE GEOMETRY…</span>
+      <span className="mt-mono text-[10px] text-muted-foreground">LOADING MODULE GEOMETRY…</span>
     </div>
   );
 }
