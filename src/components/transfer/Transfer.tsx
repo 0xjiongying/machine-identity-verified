@@ -23,6 +23,7 @@ import { CheckSequence, type SequenceState } from "@/components/compliance/Check
 import { TraceStrip } from "@/components/compliance/TraceStrip";
 import { PipelineStages } from "@/components/compliance/PipelineStages";
 import { derivePipelineStage } from "@/components/compliance/pipeline";
+import { VerdictBanner } from "@/components/compliance/VerdictBanner";
 import { MagneticButton } from "@/components/motion/MagneticButton";
 import { HashReveal } from "@/components/motion/HashReveal";
 import { EASE } from "@/lib/motion";
@@ -100,10 +101,16 @@ export function Transfer() {
         { name: recipient.holder.name, wallet: recipient.holder.wallet },
         evaluation.settlement?.txRef ?? "0x",
       );
+      // Hold ownership banner on camera for silent demo, then show audit.
       setTimeout(() => {
         document.getElementById("audit")?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 1100);
+      }, 3200);
     }
+    window.dispatchEvent(
+      new CustomEvent("mt:transfer-done", {
+        detail: { approved: evaluation.approved, blockedBy: evaluation.blockedBy },
+      }),
+    );
   }
 
   // The guided demo runner drives this section without touching its internals.
@@ -294,50 +301,28 @@ export function Transfer() {
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0 }}
                           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                          className="mt-6 border border-primary/50 bg-primary/10 p-5"
+                          className="mt-6 space-y-4"
                         >
-                          <p className="mt-mono text-[11px] uppercase tracking-[0.2em] text-primary">
-                            Transfer approved · OWNERSHIP UPDATED
-                          </p>
-                          <p className="mt-label mt-4">Ownership updated</p>
-                          <p className="mt-2 text-[15px]">{settledFrom ?? owner}</p>
-                          <p className="mt-mono my-1 text-primary" aria-hidden="true">
-                            ↓
-                          </p>
-                          <p className="text-[15px]">{recipient.holder.name}</p>
-                          <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-primary/30 pt-4">
-                            <div>
-                              <dt className="mt-label">Layers</dt>
-                              <dd className="mt-mono mt-1 text-[11px]">CVI · CVA · CCP · MONAD</dd>
-                            </div>
-                            <div>
-                              <dt className="mt-label">Status</dt>
-                              <dd className="mt-mono mt-1 text-[12px] text-success">
-                                {result.degraded
-                                  ? "DEGRADED · LOCAL CCP"
-                                  : result.settlement?.kind === "demo-settlement-ref"
-                                    ? `${result.mode.toUpperCase()} · SETTLEMENT REF`
-                                    : `${result.mode.toUpperCase()} · SETTLED`}
-                              </dd>
-                            </div>
-                          </dl>
-                          <p className="mt-mono mt-4 text-[11px] text-muted-foreground">
-                            <HashReveal
-                              value={result.settlement?.txRef ?? ""}
-                              className="text-primary"
-                            />{" "}
-                            ·{" "}
-                            {result.settlement?.kind === "demo-settlement-ref"
-                              ? "Monad settlement ref (demo)"
-                              : "Monad"}{" "}
-                            · {result.decisionId}
-                          </p>
-                          {result.notice ? (
-                            <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-                              {result.notice}
+                          <VerdictBanner result={result} />
+                          <div className="border border-primary/50 bg-primary/10 p-5">
+                            <p className="mt-mono text-[11px] uppercase tracking-[0.2em] text-primary">
+                              OWNERSHIP UPDATED
                             </p>
-                          ) : null}
-                          <TraceStrip result={result} className="mt-5 bg-background" />
+                            <p className="mt-label mt-4">From → To</p>
+                            <p className="mt-2 text-[15px]">{settledFrom ?? owner}</p>
+                            <p className="mt-mono my-1 text-primary" aria-hidden="true">
+                              ↓
+                            </p>
+                            <p className="text-[15px]">{recipient.holder.name}</p>
+                            <p className="mt-mono mt-4 text-[11px] text-muted-foreground">
+                              <HashReveal
+                                value={result.settlement?.txRef ?? ""}
+                                className="text-primary"
+                              />{" "}
+                              · Monad settlement ref (demo) · {result.decisionId}
+                            </p>
+                          </div>
+                          <TraceStrip result={result} className="bg-background" />
                         </motion.div>
                       ) : (
                         <motion.div
@@ -346,22 +331,13 @@ export function Transfer() {
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0 }}
                           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                          className="mt-6 border border-destructive/60 p-5"
+                          className="mt-6 space-y-4"
                         >
-                          <p className="mt-mono text-[11px] uppercase tracking-[0.2em] text-destructive">
-                            Transfer blocked · CCP gate
-                          </p>
-                          <p className="mt-mono mt-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                            Rule {result.blockedBy} · mode {result.mode}
-                          </p>
-                          <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
+                          <VerdictBanner result={result} />
+                          <p className="text-[13px] leading-relaxed text-muted-foreground">
                             {result.rules.find((r) => r.code === result.blockedBy)?.reason}
                           </p>
-                          <p className="mt-3 border-t border-destructive/30 pt-3 text-[13px] leading-relaxed text-muted-foreground">
-                            Nothing was submitted to Monad. Ownership is unchanged and the decision
-                            is recorded as {result.decisionId}.
-                          </p>
-                          <TraceStrip result={result} className="mt-5" />
+                          <TraceStrip result={result} />
                         </motion.div>
                       )
                     ) : null}

@@ -1,35 +1,31 @@
-# Machine Trust — Demo Script (2–4 minutes)
+# Machine Trust — Demo Script (silent-capable, 2–4 minutes)
 
 **Track:** Cleanverse Build Track 1 RWA  
-**Product:** Machine Trust — trust infrastructure for programmable machine assets
+**Record with:** `http://localhost:3000/?demo=1` (captions auto-open)
 
-## Before you record
-
-1. `npm run cleanverse:audit` — confirm Sandbox green
-2. `npm run dev` with `.env.local` credentials
-3. Open Guided demo (bottom-right) or follow manual beats
-4. Confirm mode badge shows **SANDBOX · live Cleanverse API**
+Captions in the Guided demo are designed so the story works **without narration**.
 
 ## Beat sheet
 
-| Time      | Beat         | Say                                                                                    | Show                                               |
-| --------- | ------------ | -------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| 0:00–0:20 | Hook         | “Machine Trust turns physical machines into verified, programmable assets.”            | Hero · Machine Trust brand · 3D twin               |
-| 0:20–0:45 | Passport     | “One machine. One persistent identity.”                                                | Passport tabs · demo metadata labelled             |
-| 0:45–1:10 | Credentials  | “CVI verifies the party. CVA is the asset layer.”                                      | Credentials section                                |
-| 1:10–1:40 | Issuance     | “Issuer A-Pass → bind A-Token → CCP → RWA issued only if gates pass.”                  | Issue Machine Asset · pipeline stages · TraceStrip |
-| 1:40–2:10 | Failure      | “Unknown wallet — no A-Pass — transfer blocked before Monad.”                          | Transfer blocked · red state                       |
-| 2:10–2:45 | Success      | “Equipment Fund B — CVI verified, CCP code 4 — ownership updates.”                     | Approved · audit trail                             |
-| 2:45–3:15 | Architecture | “Machine Trust asks what the machine is. Cleanverse asks who may act. Monad settles.”  | Architecture layers                                |
-| 3:15–3:30 | Close        | “Sandbox-real CVI/CVA/CCP. Honest about ISSUE_FAILED custom mint and settlement refs.” | README honesty matrix                              |
+| Time      | Beat              | On-screen caption                                                    | Action                         |
+| --------- | ----------------- | -------------------------------------------------------------------- | ------------------------------ |
+| 0:00–0:20 | Problem + product | `PROBLEM → fragmented machine records · PRODUCT → Machine Trust RWA` | Hero · brand **Machine Trust** |
+| 0:20–0:50 | 3D + Passport     | `INTERACTIVE 3D MACHINE → MACHINE PASSPORT`                          | Inspect → Passport             |
+| 0:50–1:20 | CVI issuer        | `CVI / A-PASS · ISSUER → must be VERIFIED before issuance`           | Credentials · issuer card      |
+| 1:20–1:50 | CVA + issue       | `ISSUANCE · CVI → CVA (bind aUSDC) → CCP → RWA ISSUED`               | Issue Machine Asset            |
+| 1:50–2:20 | CCP               | Verdict banner `verify_apass · code 4 · APPROVED`                    | Hold on VerdictBanner          |
+| 2:20–2:45 | Blocked           | `BUYER A · UNVERIFIED → verify_apass code 2 → TRANSFER BLOCKED`      | Unknown Wallet                 |
+| 2:45–3:15 | Approved          | `BUYER B · VERIFIED → verify_apass code 4 · APPROVED`                | Equipment Fund B               |
+| 3:15–3:35 | Monad + ownership | `MONAD SETTLEMENT REF → OWNERSHIP UPDATED`                           | Ownership panel → Audit        |
+| 3:35–4:00 | Architecture      | `ARCHITECTURE · Passport \| CVI · CVA · CCP \| Monad`                | Architecture + scale (roadmap) |
 
-## Do not say
+## Do not say / show as fact
 
-- That custom A-Token launch succeeded on Monad UAT
-- That HTTP 200 alone means compliance approved
-- That Monad settlement refs are mainnet explorer hashes
-- Fake TVL, users, or partnerships
+- Custom A-Token `/atoken/launch` succeeded (Sandbox: bind registered aUSDC only)
+- HTTP 200 alone means compliance approved
+- Settlement refs are mainnet explorer hashes
+- Local credential toggles change live Sandbox decisions
 
-## Video upload
+## Upload
 
-Add the final URL to `README.md` and `docs/ONE_PAGE_SUMMARY.md` placeholders.
+Paste the final video URL into `README.md` and `docs/ONE_PAGE_SUMMARY.md`.
