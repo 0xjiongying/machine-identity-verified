@@ -1,7 +1,14 @@
 import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
 import { Shell } from "@/components/primitives";
-import { dataCards, moduleParts, onChain, verifySteps, type ModuleKey } from "@/data/trustModule";
+import {
+  dataCards,
+  machineIdentity,
+  moduleParts,
+  onChain,
+  verifySteps,
+  type ModuleKey,
+} from "@/data/trustModule";
 import { useFinePointer, useHydrated, useReducedMotion } from "@/hooks/useMotionPrefs";
 import { EASE } from "@/lib/motion";
 import { usePerf } from "@/lib/perf";
@@ -79,7 +86,10 @@ export function MachineTrustModule() {
                   if (k && k !== hovered) play("inspect");
                   setHovered(k);
                 }}
-                onSelect={setSelected}
+                onSelect={(k) => {
+                  if (k) play("inspect");
+                  setSelected(k);
+                }}
               />
             </Suspense>
           ) : (
