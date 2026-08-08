@@ -76,10 +76,10 @@ export function Participants() {
                 <FlowPulse d="M48 4 L48 156" duration={2.4} />
                 <FlowPulse d="M48 4 L48 156" duration={2.4} delay={1.2} className="text-success" />
               </motion.svg>
-              <span className="mt-mono absolute -left-1 top-0 text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
+              <span className="mt-mono absolute left-1/2 top-0 -translate-x-1/2 bg-background px-1 text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
                 CVI
               </span>
-              <span className="mt-mono absolute -right-1 bottom-0 text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
+              <span className="mt-mono absolute bottom-0 left-1/2 -translate-x-1/2 bg-background px-1 text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
                 CVA
               </span>
               <span className="mt-mono relative bg-background px-2 text-[10px] uppercase tracking-[0.2em] text-primary">
