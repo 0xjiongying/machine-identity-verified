@@ -152,7 +152,7 @@ function Model(props: InspectorProps) {
     machineComponents.find((c) => c.key === k)!.offset as [number, number, number];
 
   return (
-    <group position={[0, -1.55, 0]} scale={1.0}>
+    <group position={[0, -1.35, 0]} scale={0.95}>
       <Part
         id="controller"
         offset={off("controller")}
@@ -283,7 +283,7 @@ export default function InspectorScene(props: InspectorProps) {
         maxPolarAngle={Math.PI / 2.02}
         dampingFactor={0.08}
         enableDamping
-        target={[0, 0.85, 0]}
+        target={[0, 0.35, 0]}
       />
     </Canvas>
   );
