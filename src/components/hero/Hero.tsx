@@ -78,7 +78,7 @@ export function Hero() {
 
         <Shell className="relative flex h-full flex-col justify-center">
           {/* headline choreography: one line replaces the other in the same slot */}
-          <div className="relative max-w-[9ch] sm:max-w-[12ch] lg:max-w-[13ch]">
+          <div className="relative max-w-[min(560px,90vw)]">
             <motion.div
               {...rise(0.15)}
               className="mb-8 flex flex-wrap items-center gap-3"
@@ -90,7 +90,7 @@ export function Hero() {
               <DemoTag />
             </motion.div>
 
-            <div className="relative grid text-[length:var(--text-hero)] font-medium leading-[0.95] tracking-[-0.04em] [&>*]:col-start-1 [&>*]:row-start-1">
+            <div className="relative grid max-w-[9ch] text-[length:var(--text-hero)] font-medium leading-[0.95] tracking-[-0.04em] [&>*]:col-start-1 [&>*]:row-start-1">
               <motion.span
                 className="block"
                 style={{
@@ -120,7 +120,7 @@ export function Hero() {
 
             <motion.p
               {...rise(0.56)}
-              className="mt-7 max-w-[46ch] text-[15px] leading-relaxed text-muted-foreground"
+              className="mt-6 max-w-[42ch] text-[15px] leading-relaxed text-muted-foreground"
               style={{ opacity: 1 - introOut }}
             >
               MachineTrust connects physical machine identity, provenance and ownership with
@@ -129,7 +129,7 @@ export function Hero() {
 
             <motion.div
               {...rise(0.68)}
-              className="mt-9 flex flex-wrap items-center gap-3"
+              className="mt-7 flex flex-wrap items-center gap-3"
               style={{ opacity: 1 - introOut, pointerEvents: introOut > 0.6 ? "none" : "auto" }}
             >
               <MagneticButton href="#passport" cursor="open">
