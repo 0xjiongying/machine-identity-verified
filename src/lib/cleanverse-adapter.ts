@@ -24,7 +24,16 @@ export { atokenIdFor, unissuedToken };
 
 export async function requestEvaluation(input: PolicyInput): Promise<Evaluation> {
   try {
-    return (await evaluateCompliance({ data: input })) as Evaluation;
+    // Never let a stalled transport freeze the demo: fall back after 2.5s.
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("cleanverse: transport timeout")), 2500),
+    );
+    const evaluation = (await Promise.race([
+      evaluateCompliance({ data: input }),
+      timeout,
+    ])) as Evaluation;
+    if (!evaluation?.rules?.length) throw new Error("cleanverse: empty evaluation");
+    return evaluation;
   } catch {
     // Transport failure: run the same deterministic CCP engine the server runs,
     // still clearly marked as demo mode.
