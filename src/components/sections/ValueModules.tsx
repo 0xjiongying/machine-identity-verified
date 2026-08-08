@@ -12,7 +12,7 @@ export function ValueModules() {
     <Section label="Product value">
       <Shell>
         <Reveal>
-          <Eyebrow index="09">Product value</Eyebrow>
+          <Eyebrow index="10">Product value</Eyebrow>
         </Reveal>
         <div className="mt-12 grid gap-px bg-border md:grid-cols-2 lg:grid-cols-4">
           {modules.map((m, i) => (

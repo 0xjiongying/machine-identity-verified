@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { FlowPulse, TiltCard } from "@/components/motion/Kinetic";
 import { Section, Shell, Eyebrow, Heading, Lede, Reveal, StatusDot } from "@/components/primitives";
 import { issuer, recipients, type Participant } from "@/data/demoParticipants";
 
@@ -14,7 +15,7 @@ function Node({
   note: string;
 }) {
   return (
-    <div className="border border-border bg-surface/50 p-5">
+    <TiltCard className="border border-border bg-surface/50 p-5" strength={5}>
       <p className="mt-label">{role}</p>
       <p className="mt-2 text-lg font-medium tracking-tight">{name}</p>
       <p className="mt-2 text-[12px] text-muted-foreground">{note}</p>
@@ -23,7 +24,7 @@ function Node({
       >
         <StatusDot tone={cvi ? "ok" : "fail"} /> CVI {cvi ? "verified" : "not verified"}
       </p>
-    </div>
+    </TiltCard>
   );
 }
 
@@ -33,7 +34,7 @@ export function Participants() {
     <Section id="participants" label="Verified participants" className="scroll-mt-16">
       <Shell>
         <Reveal>
-          <Eyebrow index="03">Verified participants</Eyebrow>
+          <Eyebrow index="04">Verified participants</Eyebrow>
           <Heading>The asset is only half the trust equation.</Heading>
           <Lede>
             Knowing what a machine is does not make a transaction legitimate. Cleanverse answers the
@@ -72,7 +73,15 @@ export function Participants() {
                   viewport={{ once: true }}
                   transition={{ duration: 1.8, delay: 0.6, repeat: Infinity, repeatDelay: 1.4 }}
                 />
+                <FlowPulse d="M48 4 L48 156" duration={2.4} />
+                <FlowPulse d="M48 4 L48 156" duration={2.4} delay={1.2} className="text-success" />
               </motion.svg>
+              <span className="mt-mono absolute left-1/2 top-0 -translate-x-1/2 bg-background px-1 text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
+                CVI
+              </span>
+              <span className="mt-mono absolute bottom-0 left-1/2 -translate-x-1/2 bg-background px-1 text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
+                CVA
+              </span>
               <span className="mt-mono relative bg-background px-2 text-[10px] uppercase tracking-[0.2em] text-primary">
                 Cleanverse
               </span>

@@ -7,7 +7,7 @@ export function Roadmap() {
     <Section label="Roadmap">
       <Shell>
         <Reveal>
-          <Eyebrow index="10">Roadmap — not built yet</Eyebrow>
+          <Eyebrow index="11">Roadmap — not built yet</Eyebrow>
           <Heading>What a verified machine asset makes possible.</Heading>
         </Reveal>
 

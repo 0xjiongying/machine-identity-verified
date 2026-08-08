@@ -22,11 +22,15 @@ export function Section({
   label?: string;
 }) {
   return (
-    <section
-      id={id}
-      aria-label={label}
-      className={cn("relative border-t border-border py-24 md:py-32", className)}
-    >
+    <section id={id} aria-label={label} className={cn("relative py-24 md:py-32", className)}>
+      <motion.span
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 h-px origin-left bg-border"
+        initial={{ scaleX: 0, opacity: 0 }}
+        whileInView={{ scaleX: 1, opacity: 1 }}
+        viewport={{ once: true, margin: "-5% 0px" }}
+        transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+      />
       {children}
     </section>
   );
