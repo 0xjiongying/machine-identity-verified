@@ -34,9 +34,9 @@ function pose(p: number, time: number) {
 
   // coiled → extended joint targets, plus the working cycle once activated.
   const cycle = time * 0.55;
-  const shoulder = -2.2 + open * 2.05 + run * Math.sin(cycle) * 0.34;
-  const elbow = 2.6 - open * 1.85 + run * Math.sin(cycle * 1.6 + 0.9) * 0.4;
-  const wrist = -0.6 + open * 0.6 + run * Math.sin(cycle * 2.1) * 0.5;
+  const shoulder = -2.2 + open * 1.72 + run * Math.sin(cycle) * 0.34;
+  const elbow = 2.6 - open * 1.5 + run * Math.sin(cycle * 1.6 + 0.9) * 0.4;
+  const wrist = -0.6 + open * 0.15 + run * Math.sin(cycle * 2.1) * 0.5;
   const yaw = run * Math.sin(cycle * 0.7) * 0.95;
   const lift = open * 0.18;
 
@@ -336,7 +336,7 @@ export default function SequenceScene(props: SequenceProps) {
         castShadow={!reduced}
         shadow-mapSize={[1024, 1024]}
       />
-      <directionalLight position={[-6, 3, -4]} intensity={0.45} color={ACCENT} />
+      <directionalLight position={[-6, 3, -4]} intensity={0.18} color={ACCENT} />
       <directionalLight position={[0, 2, 8]} intensity={2.4} color="#cfd6e6" />
       <hemisphereLight args={["#c8d2e4", "#14161c", 0.6]} />
       <Suspense fallback={null}>
