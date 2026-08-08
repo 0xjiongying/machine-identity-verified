@@ -137,7 +137,7 @@ export function DemoPath() {
       label: "Architecture",
       target: "architecture",
       say: "Machine Trust · Cleanverse · Monad.",
-      caption: "ARCHITECTURE · Passport | CVI · CVA · CCP | Monad execution",
+      caption: "FLOW · Passport → CVI+CVA → CCP → BLOCK|APPROVE → Monad → Ownership → Audit",
       holdMs: 4000,
     },
     {

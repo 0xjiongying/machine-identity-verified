@@ -46,8 +46,31 @@ Machine Trust creates a **Machine Passport** for a physical machine and connects
 ## CORE FLOW
 
 ```
-Machine → Passport → CVI → CVA → Compliance → RWA
-→ Verified Buyer → Compliance → Monad → Ownership → Audit
+MACHINE TRUST
+       │
+       ▼
+MACHINE PASSPORT
+       │
+┌──────┴──────┐
+▼             ▼
+CVI / A-PASS  CVA / A-TOKEN
+│             │
+└──────┬──────┘
+       ▼
+CCP / COMPLIANCE
+       │
+ ┌─────┴─────┐
+ ▼           ▼
+BLOCK      APPROVE
+               │
+               ▼
+            MONAD
+               │
+               ▼
+      OWNERSHIP UPDATE
+               │
+               ▼
+          AUDIT TRAIL
 ```
 
 ## DEMO (≤ 2 min)

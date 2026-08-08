@@ -25,15 +25,31 @@ Industrial machines accumulate identity, service history and ownership across si
 ## Solution
 
 ```
-Physical Machine
-  → Machine Passport          (Machine Trust)
-  → CVI / A-Pass              (Cleanverse)
-  → CVA / A-Token             (Cleanverse)
-  → CCP / verify_apass        (Cleanverse)
-  → RWA ISSUED
-  → Verified buyer + CCP
-  → Monad settlement
-  → Ownership + audit trail
+MACHINE TRUST
+       │
+       ▼
+MACHINE PASSPORT
+       │
+┌──────┴──────┐
+▼             ▼
+CVI / A-PASS  CVA / A-TOKEN
+│             │
+└──────┬──────┘
+       ▼
+CCP / COMPLIANCE
+       │
+ ┌─────┴─────┐
+ ▼           ▼
+BLOCK      APPROVE
+               │
+               ▼
+            MONAD
+               │
+               ▼
+      OWNERSHIP UPDATE
+               │
+               ▼
+          AUDIT TRAIL
 ```
 
 **Machine Trust** answers: _What is the machine?_  
