@@ -31,11 +31,11 @@ const panel = {
 
 function Row({ k, v, accent }: { k: string; v: string; accent?: boolean }) {
   return (
-    <div className="flex items-baseline justify-between gap-6 border-b border-border py-3.5">
-      <span className="mt-label">{k}</span>
+    <div className="flex items-baseline justify-between gap-4 border-b border-border py-3.5">
+      <span className="mt-label min-w-0 shrink">{k}</span>
       <span
         className={cn(
-          "mt-mono text-right text-[12px]",
+          "mt-mono min-w-0 break-words text-right text-[12px]",
           accent ? "text-primary" : "text-foreground",
         )}
       >
