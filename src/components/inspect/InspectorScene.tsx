@@ -152,7 +152,7 @@ function Model(props: InspectorProps) {
     machineComponents.find((c) => c.key === k)!.offset as [number, number, number];
 
   return (
-    <group position={[0, -1.35, 0]} scale={0.95}>
+    <group position={[0, -0.15, 0]} scale={0.95}>
       <Part
         id="controller"
         offset={off("controller")}
