@@ -24,7 +24,7 @@ function Word({
     <span className="inline-block overflow-hidden pb-[0.08em] align-bottom">
       <motion.span
         className="inline-block will-change-transform"
-        style={reduced ? undefined : { y, opacity }}
+        {...(reduced ? {} : { style: { y, opacity } })}
       >
         {word}
         {"\u00A0"}
