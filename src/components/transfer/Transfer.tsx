@@ -244,7 +244,7 @@ export function Transfer() {
               ) : (
                 <div className="mt-6">
                   <CheckSequence
-                    checks={checks.length ? checks : preview(recipient.cvi)}
+                    checks={checks.length ? checks : preview}
                     revealed={revealed}
                     state={state}
                   />
@@ -264,11 +264,11 @@ export function Transfer() {
                             Transfer approved
                           </p>
                           <p className="mt-label mt-4">Ownership updated</p>
-                          <p className="mt-2 text-[15px]">{issuer.name}</p>
+                          <p className="mt-2 text-[15px]">{senderCredential.holder.name}</p>
                           <p className="mt-mono my-1 text-primary" aria-hidden="true">
                             ↓
                           </p>
-                          <p className="text-[15px]">{recipient.name}</p>
+                          <p className="text-[15px]">{recipient.holder.name}</p>
                           <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-primary/30 pt-4">
                             <div>
                               <dt className="mt-label">Network</dt>
@@ -280,8 +280,11 @@ export function Transfer() {
                             </div>
                           </dl>
                           <p className="mt-mono mt-4 text-[11px] text-muted-foreground">
-                            <HashReveal value={result.txRef ?? ""} className="text-primary" /> ·
-                            simulated settlement reference
+                            <HashReveal
+                              value={result.settlement?.txRef ?? ""}
+                              className="text-primary"
+                            />{" "}
+                            · simulated settlement reference · {result.decisionId}
                           </p>
                         </motion.div>
                       ) : (
@@ -296,10 +299,15 @@ export function Transfer() {
                           <p className="mt-mono text-[11px] uppercase tracking-[0.2em] text-destructive">
                             Transfer blocked
                           </p>
+                          <p className="mt-mono mt-2 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                            Rule {result.blockedBy}
+                          </p>
                           <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
-                            The recipient does not hold a Cleanverse identity credential. The
-                            transfer policy rejects the transaction before settlement — ownership is
-                            unchanged.
+                            {result.rules.find((r) => r.code === result.blockedBy)?.reason}
+                          </p>
+                          <p className="mt-3 border-t border-destructive/30 pt-3 text-[13px] leading-relaxed text-muted-foreground">
+                            Nothing was submitted to Monad. Ownership is unchanged and the decision
+                            is recorded as {result.decisionId}.
                           </p>
                         </motion.div>
                       )
