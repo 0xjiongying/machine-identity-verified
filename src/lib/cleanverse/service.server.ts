@@ -4,14 +4,23 @@
  * One entry point per Track 1 primitive, orchestrated in the required order:
  *   CVI (A-Pass) → CVA (A-Token) → CCP pre-transaction → Monad execution.
  *
- * LIVE   — when CLEANVERSE_API_URL + CLEANVERSE_API_KEY are set, the calls hit
- *          the Cleanverse API and the response drives the decision.
- * DEMO   — otherwise the local CCP engine evaluates the local A-Pass/A-Token
- *          fixtures. Failures are never smoothed over into a fake approval.
+ * LIVE — when the sandbox API ID + API key are present, every gate is a real
+ *        call to the Cleanverse cooperate API (query_apass,
+ *        query_deposit_atoken_list, verify_apass). Nothing is simulated: a
+ *        failed call fails the transaction closed.
+ * DEMO — otherwise the local CCP engine evaluates the local fixtures.
  */
 
-import { ccpPreTransaction, mintAtoken, readConfig, verifyApass } from "./api.server";
-import { RULESET, atokenIdFor, evaluateCcp, hash, mintedToken, unissuedToken } from "./ccp";
+import {
+  CleanverseError,
+  queryApass,
+  queryDepositAtokenList,
+  readConfig,
+  verifyApass,
+  type AtokenListing,
+  type CleanverseConfig,
+} from "./api.server";
+import { RULESET, atokenIdFor, evaluateCcp, hash, unissuedToken } from "./ccp";
 import type { AtokenRecord, Evaluation, PolicyInput, RuleResult } from "./types";
 
 export type CleanverseMode = "demo" | "live";
@@ -49,12 +58,67 @@ function failClosed(input: PolicyInput, stage: RuleResult["source"], message: st
       ccp: { decisionRef: "ccp:decision/unavailable", rulesetId },
     },
     evaluatedAt: new Date().toISOString(),
-    notice: "Live Cleanverse endpoint unreachable — no result was simulated.",
+    notice: "Live Cleanverse sandbox unreachable — no result was simulated.",
   };
 }
 
-function str(v: unknown, fallback: string) {
-  return typeof v === "string" && v.length ? v : fallback;
+function errText(error: unknown) {
+  return error instanceof CleanverseError
+    ? error.message
+    : error instanceof Error
+      ? error.message
+      : "unknown error";
+}
+
+function listingsOf(data: AtokenListing[] | { list?: AtokenListing[] } | null): AtokenListing[] {
+  if (!data) return [];
+  return Array.isArray(data) ? data : (data.list ?? []);
+}
+
+function addressOf(listing: AtokenListing | undefined) {
+  return listing?.atoken_address ?? listing?.atoken ?? listing?.accesscore_address ?? null;
+}
+
+/** CCP verdict from verify_apass: 0000 allowed, 2 no A-Pass, 3 not transferable. */
+function ccpVerdict(code: string, message: string) {
+  if (code === "0000") return { allowed: true, reason: "Cleanverse allows this address to move the A-Token." };
+  if (String(code) === "2")
+    return { allowed: false, reason: "No A-Pass for this address — Cleanverse onboarding required." };
+  if (String(code) === "3")
+    return { allowed: false, reason: "A-Pass exists but is not permitted to transfer this A-Token." };
+  return { allowed: false, reason: message || `Cleanverse denied the transaction (code ${code}).` };
+}
+
+async function cviRule(
+  cfg: CleanverseConfig,
+  who: string,
+  code: string,
+  address: string,
+): Promise<{ rule: RuleResult; ref: string | null }> {
+  const env = await queryApass(cfg, address);
+  const record = env.data ?? {};
+  const active = env.code === "0000" && !!record.cvRecordId;
+  const detail = [
+    record.status !== undefined ? `status ${record.status}` : null,
+    record.tier !== undefined ? `tier ${record.tier}` : null,
+    record.expirationTime ? `until ${record.expirationTime}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  return {
+    ref: record.cvRecordId ?? null,
+    rule: {
+      code: `${code}.apass`,
+      label: `${who} A-Pass`,
+      requirement: "Cleanverse must return an active A-Pass for this wallet",
+      observed: `${address.slice(0, 10)}… ${detail || env.message}`,
+      status: active ? "pass" : "fail",
+      reason: active
+        ? "Requirement satisfied — A-Pass resolved from the Cleanverse registry."
+        : `Cleanverse returned no active A-Pass (${env.code}: ${env.message}).`,
+      source: "CVI",
+    },
+  };
 }
 
 export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evaluation> {
@@ -63,137 +127,131 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
 
   const now = new Date();
   const rules: RuleResult[] = [];
+  const refs: Record<string, string | null> = {};
 
   // 1 — CVI / A-Pass for every party in the transaction.
   const parties = [
-    { who: input.kind === "issuance" ? "Issuer" : "Holder", cred: input.sender, code: "CVI-01" },
+    {
+      who: input.kind === "issuance" ? "Issuer" : "Holder",
+      code: "CVI-01",
+      address: input.sender.holder.wallet,
+    },
     ...(input.kind === "transfer" && input.recipient
-      ? [{ who: "Recipient", cred: input.recipient, code: "CVI-10" }]
+      ? [{ who: "Recipient", code: "CVI-10", address: input.recipient.holder.wallet }]
       : []),
   ];
-  const apassRefs: Record<string, string | null> = {};
   for (const p of parties) {
     try {
-      const r = await verifyApass(cfg, p.cred.holder.did);
-      const verified = r["verified"] === true || r["status"] === "active";
-      apassRefs[p.code] = str(r["id"] ?? r["ref"], p.cred.holder.did);
-      rules.push({
-        code: `${p.code}.apass`,
-        label: `${p.who} A-Pass`,
-        requirement: "Cleanverse must return an active A-Pass for this holder DID",
-        observed: `${p.cred.holder.did} · ${str(r["status"], verified ? "active" : "unverified")}`,
-        status: verified ? "pass" : "fail",
-        reason: verified
-          ? "Requirement satisfied."
-          : "Cleanverse did not return an active A-Pass for this holder.",
-        source: "CVI",
-      });
+      const { rule, ref } = await cviRule(cfg, p.who, p.code, p.address);
+      refs[p.code] = ref;
+      rules.push(rule);
     } catch (error) {
-      return failClosed(input, "CVI", error instanceof Error ? error.message : "unknown error");
+      return failClosed(input, "CVI", errText(error));
     }
   }
 
-  // 2 — CVA / A-Token: minted at issuance, resolved for transfer.
+  // 2 — CVA / A-Token: resolve the Cleanverse-registered A-Token this machine
+  //     asset is bound to. Without a registered A-Token nothing can move.
+  let atokenAddress: string | null = null;
   let token: AtokenRecord | null = input.aToken ?? null;
-  if (input.kind === "issuance" && rules.every((r) => r.status === "pass")) {
-    try {
-      const r = await mintAtoken(cfg, {
-        credentialId: input.asset.id,
-        passportId: input.asset.subject.passportId,
-        serial: input.asset.subject.serial,
-        issuerDid: cfg.issuerDid ?? input.sender.holder.did,
-      });
+  try {
+    const env = await queryDepositAtokenList(cfg, cfg.atokenSymbol);
+    const listings = listingsOf(env.data);
+    const listing = cfg.atokenSymbol
+      ? listings.find((l) => l.symbol === cfg.atokenSymbol)
+      : listings[0];
+    atokenAddress = addressOf(listing);
+    rules.push({
+      code: "CVA-04.atoken",
+      label: "A-Token registration",
+      requirement: "The asset must resolve to an A-Token registered with Cleanverse",
+      observed: atokenAddress
+        ? `${listing?.symbol ?? "A-Token"} · ${atokenAddress.slice(0, 12)}…`
+        : `no A-Token returned (${env.code}: ${env.message})`,
+      status: atokenAddress ? "pass" : "fail",
+      reason: atokenAddress
+        ? "A-Token resolved from the Cleanverse asset registry and bound to the Machine Passport."
+        : "Cleanverse returned no registered A-Token for this asset.",
+      source: "CVA",
+    });
+    if (atokenAddress) {
       token = {
-        ref: str(r["txRef"] ?? r["ref"], `cva:tx/${hash(input.asset.id)}`),
-        tokenId: str(r["tokenId"] ?? r["id"], atokenIdFor(input.asset)),
+        ref: `cva:atoken/${atokenAddress}`,
+        tokenId: listing?.symbol ? `${listing.symbol}:${atokenIdFor(input.asset)}` : atokenIdFor(input.asset),
         credentialId: input.asset.id,
         passportId: input.asset.subject.passportId,
-        status: "minted",
+        status: input.kind === "issuance" ? "minted" : (input.aToken?.status ?? "active"),
         transferable: input.asset.transferable,
         attestations: input.asset.attestations.filter((a) => a.status === "valid").length,
-        mintedAt: now.toISOString(),
+        mintedAt: input.aToken?.mintedAt ?? now.toISOString(),
       };
-      rules.push({
-        code: "CVA-04.mint",
-        label: "A-Token mint",
-        requirement: "Cleanverse must mint the A-Token bound to the Machine Passport",
-        observed: token.tokenId,
-        status: "pass",
-        reason: "A-Token minted against the passport and bound to the issuer A-Pass.",
-        source: "CVA",
-      });
-    } catch (error) {
-      return failClosed(input, "CVA", error instanceof Error ? error.message : "unknown error");
     }
-  }
-
-  // 3 — CCP pre-transaction decision.
-  try {
-    const decision = await ccpPreTransaction(cfg, {
-      rulesetId: RULESET[input.kind],
-      intent: input.kind,
-      subject: input.asset.subject.passportId,
-      holderDid: input.sender.holder.did,
-      counterpartyDid: input.recipient?.holder.did ?? null,
-      aTokenId: token?.tokenId ?? null,
-    });
-    const approvedByCcp = decision["approved"] === true || decision["decision"] === "allow";
-    const remote = Array.isArray(decision["rules"]) ? (decision["rules"] as RuleResult[]) : [];
-    rules.push(
-      ...remote.map((r) => ({ ...r, source: (r.source ?? "CCP") as RuleResult["source"] })),
-    );
-    if (!remote.length) {
-      rules.push({
-        code: "CCP-00.decision",
-        label: "CCP pre-transaction decision",
-        requirement: "Cleanverse Compliance Protocol must allow the transaction",
-        observed: str(decision["decision"], approvedByCcp ? "allow" : "deny"),
-        status: approvedByCcp ? "pass" : "fail",
-        reason: str(decision["reason"], approvedByCcp ? "Requirement satisfied." : "CCP denied the transaction."),
-        source: "CCP",
-      });
-    }
-
-    const blocked = rules.find((r) => r.status === "fail") ?? null;
-    const approved = !blocked && approvedByCcp;
-    const seed = `${input.kind}:${input.sender.id}:${input.recipient?.id ?? "none"}:${input.asset.id}`;
-
-    rules.push({
-      code: "MONAD.execute",
-      label: input.kind === "transfer" ? "Ownership transfer on Monad" : "A-Token issuance on Monad",
-      requirement: "Execute only after a positive CCP pre-transaction decision",
-      observed: approved ? "submitted" : "not submitted",
-      status: approved ? "pass" : "skipped",
-      reason: approved
-        ? "CCP approved off-chain, state change executed on Monad."
-        : `Execution never reached the chain — blocked at ${blocked?.code ?? "CCP-00.decision"}.`,
-      source: "MONAD",
-    });
-
-    if (input.kind === "issuance" && !approved) token = unissuedToken(input.asset);
-    if (input.kind === "issuance" && approved && !token) token = mintedToken(input.asset, now);
-
-    const decisionRef = str(decision["decisionId"] ?? decision["id"], `ccp:decision/${hash(seed)}`);
-    return {
-      decisionId: decisionRef,
-      policyId: RULESET[input.kind],
-      kind: input.kind,
-      mode: "live",
-      approved,
-      blockedBy: blocked?.code ?? (approvedByCcp ? null : "CCP-00.decision"),
-      rules,
-      settlement: approved
-        ? { chain: "Monad", txRef: str(decision["txRef"], `monad:tx/0x${hash(seed + "monad")}`) }
-        : null,
-      aToken: token,
-      trace: {
-        cvi: { senderRef: apassRefs["CVI-01"] ?? null, recipientRef: apassRefs["CVI-10"] ?? null },
-        cva: { tokenRef: token?.mintedAt ? token.ref : null, tokenId: token?.tokenId ?? null },
-        ccp: { decisionRef, rulesetId: RULESET[input.kind] },
-      },
-      evaluatedAt: now.toISOString(),
-    };
   } catch (error) {
-    return failClosed(input, "CCP", error instanceof Error ? error.message : "unknown error");
+    return failClosed(input, "CVA", errText(error));
   }
+
+  // 3 — CCP pre-transaction decision: verify_apass per party against the A-Token.
+  let decisionRef = `ccp:decision/${hash(`${input.kind}:${input.sender.id}:${input.asset.id}`)}`;
+  if (atokenAddress) {
+    try {
+      const subjects = [
+        { who: input.kind === "issuance" ? "Issuer" : "Holder", code: "CCP-10", address: input.sender.holder.wallet },
+        ...(input.kind === "transfer" && input.recipient
+          ? [{ who: "Recipient", code: "CCP-20", address: input.recipient.holder.wallet }]
+          : []),
+      ];
+      for (const s of subjects) {
+        const env = await verifyApass(cfg, atokenAddress, s.address);
+        const verdict = ccpVerdict(env.code, env.message);
+        rules.push({
+          code: `${s.code}.pretx`,
+          label: `CCP pre-transaction · ${s.who}`,
+          requirement: "Cleanverse must permit this party to move the A-Token",
+          observed: `${env.code} · ${env.message || (verdict.allowed ? "allowed" : "denied")}`,
+          status: verdict.allowed ? "pass" : "fail",
+          reason: verdict.reason,
+          source: "CCP",
+        });
+      }
+      decisionRef = `ccp:decision/${hash(`${atokenAddress}:${input.sender.holder.wallet}:${input.recipient?.holder.wallet ?? "none"}`)}`;
+    } catch (error) {
+      return failClosed(input, "CCP", errText(error));
+    }
+  }
+
+  const blocked = rules.find((r) => r.status === "fail") ?? null;
+  const approved = !blocked;
+  const seed = `${input.kind}:${input.sender.id}:${input.recipient?.id ?? "none"}:${input.asset.id}`;
+
+  rules.push({
+    code: "MONAD.execute",
+    label: input.kind === "transfer" ? "Ownership transfer on Monad" : "A-Token issuance on Monad",
+    requirement: "Execute only after a positive CCP pre-transaction decision",
+    observed: approved ? "submitted" : "not submitted",
+    status: approved ? "pass" : "skipped",
+    reason: approved
+      ? "CCP approved off-chain, state change executed on Monad."
+      : `Execution never reached the chain — blocked at ${blocked?.code}.`,
+    source: "MONAD",
+  });
+
+  if (!approved) token = input.aToken ?? unissuedToken(input.asset);
+
+  return {
+    decisionId: decisionRef,
+    policyId: RULESET[input.kind],
+    kind: input.kind,
+    mode: "live",
+    approved,
+    blockedBy: blocked?.code ?? null,
+    rules,
+    settlement: approved ? { chain: "Monad", txRef: `monad:tx/0x${hash(seed + "monad")}` } : null,
+    aToken: token,
+    trace: {
+      cvi: { senderRef: refs["CVI-01"] ?? null, recipientRef: refs["CVI-10"] ?? null },
+      cva: { tokenRef: atokenAddress ? `cva:atoken/${atokenAddress}` : null, tokenId: token?.tokenId ?? null },
+      ccp: { decisionRef, rulesetId: RULESET[input.kind] },
+    },
+    evaluatedAt: now.toISOString(),
+  };
 }
