@@ -129,7 +129,12 @@ function Machine({
     const targetX = -pointer.current.y * 0.22;
     g.rotation.y = damp(g.rotation.y, targetY, 2.6, dt);
     g.rotation.x = damp(g.rotation.x, targetX, 2.6, dt);
-    g.position.y = damp(g.position.y, -1.35 + Math.sin(state.clock.elapsedTime * 0.6) * 0.02, 4, dt);
+    g.position.y = damp(
+      g.position.y,
+      -1.35 + Math.sin(state.clock.elapsedTime * 0.6) * 0.02,
+      4,
+      dt,
+    );
 
     // Scroll pushes the camera back; selecting a part pulls it in.
     const dist = selected ? 5.2 : 7.6 - phase * 1.1 + Math.sin(phase * Math.PI) * 0.9;
@@ -271,7 +276,12 @@ function ScanPlane({ phase, beam }: { phase: number; beam: number | null }) {
     m.position.y = damp(m.position.y, t * 3.4, beam === null ? 40 : 9, dt);
     const mat = m.material as THREE.MeshBasicMaterial;
     const strength = beam === null ? 0.3 + phase * 0.3 : 0.85;
-    mat.opacity = damp(mat.opacity, strength * Math.sin(Math.min(1, Math.max(0, t)) * Math.PI), 8, dt);
+    mat.opacity = damp(
+      mat.opacity,
+      strength * Math.sin(Math.min(1, Math.max(0, t)) * Math.PI),
+      8,
+      dt,
+    );
     m.scale.setScalar(damp(m.scale.x, 1 + (beam === null ? 0 : 0.35), 6, dt));
   });
   return (

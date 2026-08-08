@@ -69,7 +69,7 @@ export function Transfer() {
     <Section id="transfer" label="Compliant transfer" className="scroll-mt-16">
       <Shell>
         <Reveal>
-          <Eyebrow index="06">Compliant transfer</Eyebrow>
+          <Eyebrow index="07">Compliant transfer</Eyebrow>
           <Heading>Trust is enforced at the point of transfer.</Heading>
           <Lede>
             A verified machine cannot move to an unverified counterparty. Compliance is not a badge

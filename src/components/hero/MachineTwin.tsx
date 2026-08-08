@@ -80,13 +80,15 @@ export function MachineTwin({ phase = 0, explode = 0, beam = null, bare = false 
         }
       >
         {/* corner registration marks */}
-        {(bare ? [] : ["left-0 top-0", "right-0 top-0", "left-0 bottom-0", "right-0 bottom-0"]).map((pos) => (
-          <span
-            key={pos}
-            aria-hidden="true"
-            className={`absolute ${pos} size-3 border-primary/60 [border-left-width:1px] [border-top-width:1px]`}
-          />
-        ))}
+        {(bare ? [] : ["left-0 top-0", "right-0 top-0", "left-0 bottom-0", "right-0 bottom-0"]).map(
+          (pos) => (
+            <span
+              key={pos}
+              aria-hidden="true"
+              className={`absolute ${pos} size-3 border-primary/60 [border-left-width:1px] [border-top-width:1px]`}
+            />
+          ),
+        )}
 
         {use3d ? (
           <Suspense fallback={null}>
@@ -111,7 +113,10 @@ export function MachineTwin({ phase = 0, explode = 0, beam = null, bare = false 
         )}
 
         {/* live telemetry HUD */}
-        <div hidden={bare} className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-4">
+        <div
+          hidden={bare}
+          className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-4"
+        >
           <span className="mt-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground">
             ABB IRB 6700 · digital twin
           </span>
@@ -125,7 +130,10 @@ export function MachineTwin({ phase = 0, explode = 0, beam = null, bare = false 
           </span>
         </div>
 
-        <div hidden={bare} className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4">
+        <div
+          hidden={bare}
+          className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4"
+        >
           <AnimatePresence mode="wait">
             {part ? (
               <motion.div
@@ -168,12 +176,12 @@ export function MachineTwin({ phase = 0, explode = 0, beam = null, bare = false 
       </div>
 
       {bare ? null : (
-      <div className="mt-3 h-px w-full bg-border" aria-hidden="true">
-        <div
-          className="h-px bg-primary transition-[width] duration-200"
-          style={{ width: `${Math.round(phase * 100)}%` }}
-        />
-      </div>
+        <div className="mt-3 h-px w-full bg-border" aria-hidden="true">
+          <div
+            className="h-px bg-primary transition-[width] duration-200"
+            style={{ width: `${Math.round(phase * 100)}%` }}
+          />
+        </div>
       )}
     </div>
   );

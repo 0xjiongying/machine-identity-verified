@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteNav } from "@/components/navigation/SiteNav";
 import { Shell, Eyebrow, Reveal, DemoTag, StatusDot } from "@/components/primitives";
 import { demoMachine, auditTrail } from "@/data/demoMachine";
+import { Inspection } from "@/components/sections/Inspection";
 
 const title = "Explorer — Machine Trust machine asset MT-000042";
 const description =
@@ -82,6 +83,7 @@ function Explorer() {
           </Reveal>
         </Shell>
       </main>
+      <Inspection />
     </>
   );
 }

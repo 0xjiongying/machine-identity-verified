@@ -4,12 +4,13 @@ import { cn } from "@/lib/utils";
 
 const CHAPTERS = [
   { id: "hero", n: "01", label: "Machine" },
-  { id: "passport", n: "02", label: "Passport" },
-  { id: "lifecycle", n: "03", label: "History" },
-  { id: "participants", n: "04", label: "Verify" },
-  { id: "issuance", n: "05", label: "Issue" },
-  { id: "transfer", n: "06", label: "Transfer" },
-  { id: "audit", n: "07", label: "Trace" },
+  { id: "inspect", n: "02", label: "Inspect" },
+  { id: "passport", n: "03", label: "Passport" },
+  { id: "lifecycle", n: "04", label: "History" },
+  { id: "participants", n: "05", label: "Verify" },
+  { id: "issuance", n: "06", label: "Issue" },
+  { id: "transfer", n: "07", label: "Transfer" },
+  { id: "audit", n: "08", label: "Trace" },
 ];
 
 /** Narrative progress rail — replaces the scrollbar with the story index. */
