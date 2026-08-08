@@ -8,7 +8,8 @@ Built for the **Cleanverse Build: Trusted Assets Hackathon — Track 1 RWA**.
 
 |                     |                                                                     |
 | ------------------- | ------------------------------------------------------------------- |
-| **Live demo**       | _Add deployed URL (Lovable / Vercel / Cloudflare Workers)_          |
+| **Live demo**       | https://machine-trust.onrender.com                                  |
+| **Health**          | https://machine-trust.onrender.com/health                           |
 | **Demo video**      | _Add 2–4 min walkthrough — [DEMO_SCRIPT.md](./docs/DEMO_SCRIPT.md)_ |
 | **One-pager**       | [docs/ONE_PAGE_SUMMARY.md](./docs/ONE_PAGE_SUMMARY.md)              |
 | **Integration map** | [docs/INTEGRATION_MAP.md](./docs/INTEGRATION_MAP.md)                |

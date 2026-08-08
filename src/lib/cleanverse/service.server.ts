@@ -16,7 +16,12 @@
 import { maybeWriteRegistry } from "../monad/registry.server";
 import { CleanverseError, readConfig } from "./api.server";
 import { RULESET, atokenIdFor, evaluateCcp, hash, unissuedToken } from "./ccp";
-import { APassService, ATokenService, ComplianceService } from "./services/index.server";
+import {
+  APassService,
+  ATokenService,
+  CommonQueryService,
+  ComplianceService,
+} from "./services/index.server";
 import type { AtokenRecord, Evaluation, PolicyInput, RuleResult } from "./types";
 
 export type CleanverseMode = "demo" | "live";
@@ -105,13 +110,39 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
         observed: `${p.address.slice(0, 10)}… ${detail || lookup.envelope.message}`,
         status: lookup.active ? "pass" : "fail",
         reason: lookup.active
-          ? "Requirement satisfied — A-Pass resolved from the live Cleanverse registry."
+          ? `Requirement satisfied — A-Pass resolved (CVI). Country tags from query_apass: ${
+              lookup.countries.length ? lookup.countries.join(",") : "none"
+            }.`
           : `Cleanverse returned no active A-Pass (${lookup.envelope.code}: ${lookup.envelope.message}).`,
         source: "CVI",
       });
+      if (lookup.active && lookup.countries.length) {
+        rules.push({
+          code: `${p.code}.countries`,
+          label: `${p.who} A-Pass country tags`,
+          requirement:
+            "A-Pass country tags (ISO 3166-1 alpha-2) from Cleanverse for compliance context",
+          observed: lookup.countries.join(","),
+          status: "pass",
+          reason:
+            "Country tags returned by POST /query_apass. CCP may enforce A-Token country rules when configured by the issuer.",
+          source: "CVI",
+        });
+      }
     } catch (error) {
       return failClosed(input, "CVI", errText(error));
     }
+  }
+
+  // CommonQuery surface — same deposit list used for CVA bind (docs Common Queries).
+  try {
+    const supported = await CommonQueryService.supportedAtokens(cfg);
+    const count = supported.data?.tokens?.length ?? 0;
+    notices.push(
+      `CommonQuery query_deposit_atoken_list: ${count} registered A-Token(s) on ${cfg.chain}.`,
+    );
+  } catch {
+    /* non-blocking — bindRegistered below is authoritative for CVA */
   }
 
   // 2 — CVA / A-Token: bind registered A-Token for CCP

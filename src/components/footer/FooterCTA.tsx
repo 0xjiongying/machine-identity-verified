@@ -32,7 +32,16 @@ export function FooterCTA() {
             </a>
           </div>
           <p className="mt-mono mt-8 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            Live demo · add URL · Demo video · add link · Repo must be public for submission
+            Live demo ·{" "}
+            <a
+              href="https://machine-trust.onrender.com"
+              className="text-foreground underline-offset-2 hover:underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              machine-trust.onrender.com
+            </a>{" "}
+            · Demo video · add link · Repo must be public for submission
           </p>
         </Reveal>
       </Shell>

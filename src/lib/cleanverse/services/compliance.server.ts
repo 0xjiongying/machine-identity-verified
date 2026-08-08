@@ -41,11 +41,17 @@ export const ComplianceService = {
   ): Promise<CcpVerdict> {
     const envelope = await verifyApass(cfg, atoken, address, chain);
     if (envelope.code !== "0000") {
+      const msg = envelope.message || `Cleanverse deny (envelope ${envelope.code}).`;
+      // Envelope 0002 with ComplianceFailed is a Sandbox/chain validation failure — not approval.
+      const sandboxInfra =
+        /ComplianceFailed|failed to validate atoken|failed to check apass/i.test(msg);
       return {
         allowed: false,
         code: envelope.code,
-        reason: envelope.message || `Cleanverse deny (envelope ${envelope.code}).`,
-        magickLink: null,
+        reason: sandboxInfra
+          ? `Sandbox CCP unavailable for this A-Token right now (${msg}). Fail-closed — not approved.`
+          : msg,
+        magickLink: envelope.data?.magickLink ?? null,
         envelope,
       };
     }

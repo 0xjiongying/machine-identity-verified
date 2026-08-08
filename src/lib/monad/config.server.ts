@@ -23,7 +23,8 @@ export function readMonadConfig(): MonadConfig {
   const registryAddress = trim(process.env["MACHINETRUST_REGISTRY_ADDRESS"]);
   const operatorKey = trim(process.env["MONAD_TESTNET_PRIVATE_KEY"] ?? process.env["MONAD_PRIVATE_KEY"]);
   const chainIdRaw = trim(process.env["MONAD_CHAIN_ID"]);
-  const chainId = chainIdRaw ? Number(chainIdRaw) : rpcUrl ? 10143 : null; // common Monad testnet id; override via env
+  // Official Monad Testnet chain id per docs.monad.xyz/developer-essentials/testnet
+  const chainId = chainIdRaw ? Number(chainIdRaw) : rpcUrl ? 10143 : null;
 
   const hasOperatorKey = Boolean(operatorKey);
   const canWrite = Boolean(rpcUrl && registryAddress && hasOperatorKey);

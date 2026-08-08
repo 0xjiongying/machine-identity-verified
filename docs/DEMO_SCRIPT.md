@@ -1,7 +1,10 @@
 # Machine Trust — Demo Script (silent-capable, 2–4 minutes)
 
 **Track:** Cleanverse Build Track 1 RWA  
-**Record with:** `http://localhost:3000/?demo=1` (captions auto-open)
+**Live demo:** https://machine-trust.onrender.com/?demo=1  
+**Local record:** `http://localhost:3000/?demo=1` (captions auto-open)
+
+If Render has Cleanverse secrets and UAT `verify_apass` returns `data.code` 4, record the live SANDBOX path. If UAT returns `ComplianceFailed`, show fail-closed honesty — then optionally demo local DEMO mode for the approve path with clear labels.
 
 Captions in the Guided demo are designed so the story works **without narration**.
 

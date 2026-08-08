@@ -327,7 +327,11 @@ export function Transfer() {
                                 value={result.settlement?.txRef ?? ""}
                                 className="text-primary"
                               />{" "}
-                              · Monad settlement ref (demo) · {result.decisionId}
+                              ·{" "}
+                              {result.settlement?.kind === "on-chain"
+                                ? "Monad Testnet tx"
+                                : "Monad settlement ref (DEMO)"}{" "}
+                              · {result.decisionId}
                             </p>
                           </div>
                           <TraceStrip result={result} className="bg-background" />

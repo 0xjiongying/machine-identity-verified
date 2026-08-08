@@ -91,8 +91,10 @@ Open `/?demo=1` — see `docs/DEMO_SCRIPT.md`.
 | --- | --- | --- | --- |
 | CVI/CVA/CCP API calls with credentials | UAT Cooperate API v5.6 | Passport/maintenance metadata; Monad settlement ref | Custom A-Token ISSUED; validator pool CCP; registry deploy |
 
-**Live demo:** _add deployed URL_  
-**Demo video:** _add 2–4 min link_  
+**Live demo:** https://machine-trust.onrender.com  
+**Health:** https://machine-trust.onrender.com/health  
+**Demo video:** _add 2–4 min link — see docs/DEMO_SCRIPT.md_  
 **Repo:** https://github.com/0xjiongying/machine-identity-verified
 
-> **Submission blocker:** GitHub currently reports the repository as **private**. Hackathon rules require a **public** repo.
+> **Submission blockers (owner):** (1) make GitHub **public**, (2) set Cleanverse secrets on Render (`CLEANVERSE_SANDBOX_API_*`), (3) upload demo video.  
+> **Sandbox note:** Live UAT may return `ComplianceFailed` on `verify_apass` for the current aUSDC listing — Machine Trust **fails closed** and never fabricates `data.code` 4.

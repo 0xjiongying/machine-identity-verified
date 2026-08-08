@@ -7,13 +7,13 @@ import {
   launchAtoken,
   listMyAtokens,
   queryApplyStatus,
-  queryDepositAtokenList,
   type AtokenListing,
   type CleanverseConfig,
   type ComplianceRule,
   type Envelope,
   type LaunchAtokenRequest,
 } from "../api.server";
+import { CommonQueryService } from "./common-query.server";
 
 export type BoundAtoken = {
   address: string;
@@ -33,14 +33,14 @@ function pickListing(listings: AtokenListing[], preferredAtoken: string | null) 
 
 export const ATokenService = {
   listSupported(cfg: CleanverseConfig, opts?: { chain?: string; originSymbol?: string | null }) {
-    return queryDepositAtokenList(cfg, opts);
+    return CommonQueryService.supportedAtokens(cfg, opts);
   },
 
   async bindRegistered(cfg: CleanverseConfig): Promise<{
     envelope: Envelope<{ chain?: string; tokens?: AtokenListing[] }>;
     bound: BoundAtoken | null;
   }> {
-    const envelope = await queryDepositAtokenList(cfg);
+    const envelope = await CommonQueryService.supportedAtokens(cfg);
     const listings = envelope.data?.tokens ?? [];
     const listing = pickListing(listings, cfg.atokenSymbol);
     const address = listing?.atoken?.address ?? null;
