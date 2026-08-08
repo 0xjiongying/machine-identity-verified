@@ -40,7 +40,7 @@ export type TrustSceneProps = {
 /** Seat position of each module on the chassis. */
 const SEAT: Record<ModuleKey, [number, number, number]> = {
   controller: [-1.05, 0.34, 0.62],
-  motor: [-1.05, 0.34, -0.62],
+  motor: [-1.0, 0.36, -0.6],
   arm: [1.15, 0.42, 0.0],
   safety: [0.05, 0.34, 0.78],
 };
@@ -435,8 +435,8 @@ function Spine({ step }: { step: number }) {
 /** Structural wireframe cage that reads as engineering drawing. */
 function Cage({ on }: { on: number }) {
   return (
-    <mesh position={[0, 0.52, 0]}>
-      <boxGeometry args={[3.34, 1.35, 2.16]} />
+    <mesh position={[0, 0.42, 0]}>
+      <boxGeometry args={[3.3, 1.05, 2.12]} />
       <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       <Edges color={ACCENT} scale={1}>
         <lineBasicMaterial color={ACCENT} transparent opacity={0.06 + on * 0.16} />
@@ -626,7 +626,7 @@ function Rig({
   const cycle = clamp01(step / 5);
 
   return (
-    <group ref={root} scale={scale ?? 0.62} position={[offsetX ?? 0, 0, 0]}>
+    <group ref={root} scale={scale ?? 0.56} position={[offsetX ?? 0, 0, 0]}>
       {/* chassis deck */}
       <mesh position={[0, 0, 0]} receiveShadow castShadow>
         <boxGeometry args={[3.2, 0.14, 2.05]} />
@@ -752,7 +752,7 @@ export default function TrustModuleScene(props: TrustSceneProps) {
       className="!absolute inset-0"
       dpr={low ? [1, 1.3] : [1, 1.9]}
       shadows={!low}
-      camera={{ position: [3.3, 2.0, 4.4], fov: 32 }}
+      camera={{ position: [4.0, 2.6, 5.6], fov: 32 }}
       gl={{ antialias: !low, alpha: true }}
     >
       <color attach="background" args={["#07080b"]} />
