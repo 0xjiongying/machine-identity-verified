@@ -71,6 +71,11 @@ export function TraceStrip({ result, className }: { result: Evaluation; classNam
       <p className="mt-mono border-t border-border px-4 py-2.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
         ruleset {result.trace.ccp.rulesetId} · mode {result.mode}
       </p>
+      {result.notice ? (
+        <p className="border-t border-border px-4 py-2.5 text-[11px] leading-relaxed text-muted-foreground">
+          {result.notice}
+        </p>
+      ) : null}
     </div>
   );
 }
