@@ -1,6 +1,6 @@
 /**
  * Central motion system.
- * Every animation in MachineTrust uses these durations and curves so that the
+ * Every animation in Machine Trust uses these durations and curves so that the
  * whole site reads as one continuous mechanical language.
  */
 

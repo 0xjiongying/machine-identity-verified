@@ -3,7 +3,7 @@ import { SiteNav } from "@/components/navigation/SiteNav";
 import { Shell, Eyebrow, Reveal, DemoTag, StatusDot } from "@/components/primitives";
 import { demoMachine, auditTrail } from "@/data/demoMachine";
 
-const title = "Explorer — MachineTrust machine asset MT-000042";
+const title = "Explorer — Machine Trust machine asset MT-000042";
 const description =
   "Inspect the canonical demo machine asset: identity, ownership state and the full compliance-verified event history.";
 
@@ -77,7 +77,7 @@ function Explorer() {
               to="/"
               className="mt-16 inline-flex border border-border px-5 py-3 text-[13px] transition-colors hover:border-foreground"
             >
-              ← Back to MachineTrust
+              ← Back to Machine Trust
             </Link>
           </Reveal>
         </Shell>

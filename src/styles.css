@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * MachineTrust design system.
+ * Machine Trust design system.
  * Machine Black / Industrial White / Graphite / Monad Purple.
  * All color values are oklch tokens. Never hardcode colors in components.
  */

@@ -85,13 +85,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "MachineTrust — Trust the machine. Program the asset." },
+      { title: "Machine Trust — Trust the machine. Program the asset." },
       {
         name: "description",
         content:
           "Compliance infrastructure for programmable machine assets: machine passports, verified participants and compliant transfers.",
       },
-      { name: "author", content: "MachineTrust" },
+      { name: "author", content: "Machine Trust" },
       { name: "theme-color", content: "#08090A" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

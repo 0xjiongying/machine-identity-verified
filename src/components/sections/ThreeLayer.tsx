@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { Section, Shell } from "@/components/primitives";
 
 const statements = [
-  { k: "What", v: "MachineTrust" },
+  { k: "What", v: "Machine Trust" },
   { k: "Who", v: "Cleanverse CVI" },
   { k: "Can", v: "Cleanverse Compliance" },
   { k: "Execute", v: "Monad", accent: true },

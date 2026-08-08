@@ -39,7 +39,7 @@ export function SiteNav() {
       >
         <Link to="/" className="flex min-w-0 shrink-0 items-center gap-2.5" data-cursor="home">
           <LogoMark className="size-5 shrink-0 text-foreground" />
-          <span className="truncate text-[13px] font-medium tracking-[-0.01em]">MachineTrust</span>
+          <span className="truncate text-[13px] font-medium tracking-[-0.01em]">Machine Trust</span>
         </Link>
 
         <ul className="mx-auto hidden items-center gap-7 md:flex">

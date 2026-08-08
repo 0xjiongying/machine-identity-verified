@@ -51,7 +51,7 @@ export function AuditTrail() {
                     .filter((e) => !auditTrail.some((a) => a.tx.endsWith(e.hash.slice(-4))))
                     .map((e) => ({
                       time: e.timestamp,
-                      entity: "MachineTrust",
+                      entity: "Machine Trust",
                       action: e.label,
                       verification: "CVI + POLICY",
                       tx: e.hash,

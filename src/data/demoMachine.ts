@@ -1,5 +1,5 @@
 /**
- * Canonical demo machine for the MachineTrust prototype.
+ * Canonical demo machine for the Machine Trust prototype.
  * DEMO DATA — not sourced from a production system.
  */
 

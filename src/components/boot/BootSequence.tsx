@@ -15,7 +15,7 @@ const STAGES = [
 const KEY = "machineTrustIntroSeen";
 
 /**
- * Cinematic initialization. The MachineTrust mark draws itself as a technical
+ * Cinematic initialization. The Machine Trust mark draws itself as a technical
  * line, fills solid at 100%, then hands off to the hero.
  */
 export function BootSequence() {
@@ -120,7 +120,10 @@ export function BootSequence() {
           </svg>
 
           <p className="mt-mono relative mt-8 text-[11px] uppercase tracking-[0.3em] text-foreground">
-            Initializing MachineTrust
+            Machine Trust
+          </p>
+          <p className="mt-mono relative mt-3 text-[10px] uppercase tracking-[0.28em] text-muted-foreground">
+            Initializing asset system
           </p>
 
           <div className="relative mt-6 h-px w-[220px] bg-border">
