@@ -575,6 +575,7 @@ export default function TrustModuleScene(props: TrustSceneProps) {
         autoRotate={props.autoRotate ?? false}
         autoRotateSpeed={0.6}
         enablePan={false}
+        enableZoom={props.zoomEnabled ?? true}
         minDistance={5}
         maxDistance={11}
         minPolarAngle={0.5}
