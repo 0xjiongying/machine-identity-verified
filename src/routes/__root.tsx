@@ -13,6 +13,9 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SmoothScroll } from "../components/SmoothScroll";
 import { MachineCursor } from "../components/cursor/MachineCursor";
+import { AmbientField } from "../components/background/AmbientField";
+import { BootSequence } from "../components/boot/BootSequence";
+import { PageTransition } from "../components/motion/PageTransition";
 
 function NotFoundComponent() {
   return (
@@ -131,8 +134,12 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <SmoothScroll />
       <MachineCursor />
+      <AmbientField />
+      <BootSequence />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <PageTransition>
+        <Outlet />
+      </PageTransition>
     </QueryClientProvider>
   );
 }

@@ -14,6 +14,9 @@ import { demoMachine } from "@/data/demoMachine";
 import { issuer, recipients } from "@/data/demoParticipants";
 import { cleanverse, type CheckResult, type EvaluationResult } from "@/lib/cleanverse-adapter";
 import { CheckSequence, type SequenceState } from "@/components/compliance/CheckSequence";
+import { MagneticButton } from "@/components/motion/MagneticButton";
+import { HashReveal } from "@/components/motion/HashReveal";
+import { EASE } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 export function Transfer() {
@@ -129,22 +132,51 @@ export function Transfer() {
                   ))}
                 </ul>
 
-                <button
-                  type="button"
+                <MagneticButton
                   onClick={run}
                   disabled={!recipient || state === "running"}
-                  data-cursor="transfer"
-                  className="mt-5 w-full border border-foreground bg-foreground px-5 py-3 text-[13px] font-medium text-background transition-colors hover:border-primary hover:bg-primary disabled:cursor-not-allowed disabled:opacity-40"
+                  cursor="transfer"
+                  className="mt-5 w-full"
                 >
-                  {state === "running" ? "Running compliance check…" : "Transfer Asset"}
-                </button>
+                  {state === "running" ? (
+                    <>
+                      <motion.span
+                        aria-hidden="true"
+                        className="inline-block size-1.5 bg-background"
+                        animate={{ opacity: [1, 0.2, 1] }}
+                        transition={{ duration: 0.9, repeat: Infinity }}
+                      />
+                      Running compliance check…
+                    </>
+                  ) : (
+                    "Transfer Asset"
+                  )}
+                </MagneticButton>
                 <DemoTag className="mt-4" />
               </div>
             </div>
           </Reveal>
 
           <Reveal delay={0.12}>
-            <div className="h-full border border-border bg-surface/50 p-5 sm:p-7">
+            <motion.div
+              animate={
+                state === "done" && result && !result.approved
+                  ? { x: [0, -9, 8, -5, 3, 0] }
+                  : { x: 0 }
+              }
+              transition={{ duration: 0.5, ease: EASE.power3Out }}
+              className="relative h-full overflow-hidden border border-border bg-surface/50 p-5 sm:p-7"
+            >
+              {/* settlement energy sweeping the panel while checks run */}
+              {state === "running" ? (
+                <motion.div
+                  aria-hidden="true"
+                  className="mt-scanline pointer-events-none absolute inset-x-0 h-24"
+                  initial={{ top: "-20%" }}
+                  animate={{ top: ["-20%", "100%"] }}
+                  transition={{ duration: 1.6, repeat: Infinity, ease: "linear" }}
+                />
+              ) : null}
               <p className="mt-mono text-[11px] uppercase tracking-[0.16em]">Compliance check</p>
 
               {!recipient ? (
@@ -190,7 +222,8 @@ export function Transfer() {
                             </div>
                           </dl>
                           <p className="mt-mono mt-4 text-[11px] text-muted-foreground">
-                            {result.txRef} · simulated settlement reference
+                            <HashReveal value={result.txRef ?? ""} className="text-primary" /> · simulated
+                            settlement reference
                           </p>
                         </motion.div>
                       ) : (
@@ -216,7 +249,7 @@ export function Transfer() {
                   </AnimatePresence>
                 </div>
               )}
-            </div>
+            </motion.div>
           </Reveal>
         </div>
       </Shell>

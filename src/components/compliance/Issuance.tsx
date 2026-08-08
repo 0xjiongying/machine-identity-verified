@@ -31,7 +31,7 @@ export function Issuance() {
   }
 
   return (
-    <Section label="RWA issuance">
+    <Section id="issuance" label="RWA issuance" className="scroll-mt-16">
       <Shell>
         <div className="grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
           <Reveal>
