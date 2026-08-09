@@ -1,0 +1,20 @@
+{
+  "network": "Monad Testnet",
+  "chainId": 10143,
+  "rpcUrl": "https://testnet-rpc.monad.xyz",
+  "explorer": "https://testnet.monadvision.com",
+  "contract": "MachineTrustRegistry",
+  "contractAddress": "0x83753166684AfB4912a61713c49Feada6298dF19",
+  "deployTx": "0xa6fbe2a7da222eabda364fce8230e98d18d8add31db6e0c5dc3cb8bcecaf8033",
+  "deployer": "0x9B41e219d533cEe084a4f909C8aC318Fe4C413bA",
+  "operator": "0x9B41e219d533cEe084a4f909C8aC318Fe4C413bA",
+  "deployedAt": "2026-08-09T01:05:00.000Z",
+  "registrationTx": null,
+  "ownershipTransferTx": null,
+  "cleanverseGate": "BLOCKED",
+  "cleanverseNote": "Live UAT verify_apass for issuer/fund returns ComplianceFailed / atoken validation failure — Machine Trust fails closed and does not submit registerMachine or transferOwnership without data.code 4.",
+  "explorers": {
+    "contract": "https://testnet.monadvision.com/address/0x83753166684AfB4912a61713c49Feada6298dF19",
+    "deployTx": "https://testnet.monadvision.com/tx/0xa6fbe2a7da222eabda364fce8230e98d18d8add31db6e0c5dc3cb8bcecaf8033"
+  }
+}

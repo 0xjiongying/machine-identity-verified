@@ -43,9 +43,10 @@ Aligned with the Cleanverse Trust Framework: interlocking **CVI** (verified iden
 | Layer | Status |
 | --- | --- |
 | Cleanverse Sandbox (Monad chain param) | **REAL** API calls |
-| Monad Testnet | Official RPC `https://testnet-rpc.monad.xyz` · chain id **10143** · explorer [testnet.monadvision.com](https://testnet.monadvision.com) |
-| Monad settlement | **On-chain only after CCP `data.code` 4** + configured registry; otherwise labelled DEMO ref |
-| `MachineTrustRegistry` | Foundry-tested · deploy/proof scripts ready · artifact in `contracts/deployments/` after real deploy |
+| Monad Testnet | Official RPC · chain id **10143** · explorer [testnet.monadvision.com](https://testnet.monadvision.com) |
+| `MachineTrustRegistry` | **DEPLOYED** [`0x83753166684AfB4912a61713c49Feada6298dF19`](https://testnet.monadvision.com/address/0x83753166684AfB4912a61713c49Feada6298dF19) |
+| Deploy tx | [`0xa6fbe2a7…af8033`](https://testnet.monadvision.com/tx/0xa6fbe2a7da222eabda364fce8230e98d18d8add31db6e0c5dc3cb8bcecaf8033) · confirmed |
+| Ownership txs | **Not submitted** — live CCP for issuer/fund is ComplianceFailed; gate BLOCKS Monad writes (correct) |
 
 ## CORE FLOW
 

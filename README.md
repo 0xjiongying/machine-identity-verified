@@ -13,7 +13,8 @@ Built for the **Cleanverse Build: Trusted Assets Hackathon — Track 1 RWA**.
 | **Demo video**      | _Add 2–4 min walkthrough — [DEMO_SCRIPT.md](./docs/DEMO_SCRIPT.md)_ |
 | **One-pager**       | [docs/ONE_PAGE_SUMMARY.md](./docs/ONE_PAGE_SUMMARY.md)              |
 | **Integration map** | [docs/INTEGRATION_MAP.md](./docs/INTEGRATION_MAP.md)                |
-| **Contract**        | [contracts/MachineTrustRegistry.sol](./contracts/MachineTrustRegistry.sol) · deploy artifact: [`contracts/deployments/`](./contracts/deployments/) |
+| **Contract**        | [MachineTrustRegistry](https://testnet.monadvision.com/address/0x83753166684AfB4912a61713c49Feada6298dF19) on **Monad Testnet** · [`0x8375…8dF19`](./contracts/deployments/monad-testnet.json) |
+| **Deploy tx**       | [`0xa6fbe2a7…af8033`](https://testnet.monadvision.com/tx/0xa6fbe2a7da222eabda364fce8230e98d18d8add31db6e0c5dc3cb8bcecaf8033) |
 | **Repo**            | https://github.com/0xjiongying/machine-identity-verified            |
 
 > **Submission blockers (owner):** (1) make this GitHub repository **public**, (2) set Cleanverse Sandbox secrets on Render when UAT `verify_apass` returns `data.code` 4 again, (3) upload demo video.
@@ -107,8 +108,8 @@ If the live Sandbox is unreachable, the adapter **fails closed** (no approval, n
 | CVA custom `/atoken/launch` | **UNAVAILABLE** | Not on hot path; UAT `ISSUE_FAILED` — never faked as ISSUED |
 | CCP `verify_apass` | **SANDBOX / REAL** | Unknown → `data.code` 2 (BLOCK). Issuer/Fund currently may return envelope `0002` / atoken validation failure on UAT — app **fails closed** (never fabricates code 4). When UAT recovers, code 4 is the only APPROVE path. |
 | Validator pool `/validator/verify` | **UNAVAILABLE** | Needs owned registered pool |
-| Monad settlement | **DEMO** until registry write confirms | On-chain only after live CCP APPROVE + configured registry; explorer: [testnet.monadvision.com](https://testnet.monadvision.com) |
-| `MachineTrustRegistry` | **TESTNET READY (source + tests)** | Foundry tests pass · deploy via `npm run registry:deploy` · proof via `npm run registry:proof` (CCP-gated) |
+| Monad settlement | **On-chain after CCP only** | Registry **deployed** on Testnet; `registerMachine` / `transferOwnership` refused while UAT CCP returns ComplianceFailed |
+| `MachineTrustRegistry` | **DEPLOYED · Monad Testnet** | `0x83753166684AfB4912a61713c49Feada6298dF19` · deploy tx confirmed on [MonadVision](https://testnet.monadvision.com/tx/0xa6fbe2a7da222eabda364fce8230e98d18d8add31db6e0c5dc3cb8bcecaf8033) |
 | Passport / maintenance / parts | **DEMO** | Labelled demo machine metadata |
 
 ---
@@ -195,8 +196,9 @@ Also see [contracts/README.md](./contracts/README.md). Never claim Mainnet witho
 
 - Custom A-Token launch unavailable on Monad UAT (`ISSUE_FAILED`) — CVA uses registered aUSDC bind
 - On-chain validator pool CCP unavailable without an owned pool
-- `MachineTrustRegistry` not deployed — settlement refs are DEMO
+- Live UAT `verify_apass` for issuer/fund currently returns **ComplianceFailed** — Machine Trust **fails closed** (no fabricated `registerMachine` / `transferOwnership` txs)
 - Passport / maintenance / parts are DEMO fixtures
+- Not Mainnet
 
 ---
 

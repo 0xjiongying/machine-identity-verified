@@ -19,7 +19,7 @@ Captions in the Guided demo are designed so the story works **without narration*
 | 1:50–2:15 | CCP compliance       | Verdict banner `verify_apass · CCP · APPROVED`                       | Hold on VerdictBanner          |
 | 2:15–2:35 | Unverified → BLOCKED | `BUYER A · UNVERIFIED → TRANSFER BLOCKED`                            | Unknown Wallet                 |
 | 2:35–3:05 | Verified → APPROVED  | `BUYER B · VERIFIED → CCP APPROVED`                                  | Equipment Fund B               |
-| 3:05–3:30 | Monad transaction    | `MONAD TESTNET · MachineTrustRegistry · tx Confirmed` (or DEMO ref)  | SettlementProof panel          |
+| 3:05–3:30 | Monad registry       | Show Architecture registry address + deploy tx on MonadVision        | Architecture panel             |
 | 3:30–3:50 | Ownership + Audit    | `OWNERSHIP UPDATED · AUDIT · Machine Registered → Ownership Updated` | Ownership → Audit              |
 | 3:50–4:00 | Architecture         | `Cleanverse essential · Passport \| CVI · CVA · CCP \| Monad`        | Architecture + scale           |
 

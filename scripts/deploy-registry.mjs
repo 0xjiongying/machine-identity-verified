@@ -54,6 +54,8 @@ console.log("Deploying MachineTrustRegistry (explicit, not part of Render build)
 console.log("Network RPC:", rpc);
 console.log("Operator:", operator);
 // Do not print the private key.
+// Note: pass --broadcast/--chain before --constructor-args so Foundry does not
+// mis-count constructor parameters (Foundry 1.7+).
 const result = spawnSync(
   "forge",
   [
@@ -63,11 +65,11 @@ const result = spawnSync(
     rpc,
     "--private-key",
     key,
+    "--broadcast",
+    "--chain",
+    process.env.MONAD_CHAIN_ID || "10143",
     "--constructor-args",
     operator,
-    "--broadcast",
-    "--chain-id",
-    process.env.MONAD_CHAIN_ID || "10143",
   ],
   { encoding: "utf8", stdio: "inherit" },
 );

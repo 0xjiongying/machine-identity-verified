@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { Section, Shell, Eyebrow, Heading, Lede, Reveal } from "@/components/primitives";
 import { CleanverseMark } from "@/components/brand/CleanverseLogo";
+import { MACHINE_TRUST_REGISTRY_DEPLOYMENT } from "@/lib/monad/explorer";
 import { cn } from "@/lib/utils";
 
 type NodeKey =
@@ -15,7 +16,8 @@ const NOTES: Record<NodeKey, string> = {
   ccp: "Programmed Governance via CCP — eligibility on interlocking CVI+CVA before value moves (verify_apass · code 4 only).",
   block: "Invalid participant or failed CCP. Nothing reaches Monad. Ownership unchanged.",
   approve: "CVI + CVA + CCP cleared. Trust established — transaction may execute.",
-  monad: "On-chain execution layer. Sandbox UAT records a labelled settlement reference.",
+  monad:
+    "Monad Testnet execution. MachineTrustRegistry is deployed; register/transfer writes only after CCP data.code 4.",
   ownership: "Canonical owner updates only after an approved path.",
   audit: "Continuously traceable records: issue, block, approve, settle, ownership.",
 };
@@ -187,6 +189,44 @@ export function Architecture() {
               </span>
             </p>
             <FlowDiagram active={active} onFocus={setActive} />
+          </div>
+        </Reveal>
+
+        <Reveal delay={0.14}>
+          <div className="mt-8 border border-border px-4 py-4">
+            <p className="mt-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+              Monad Testnet · MachineTrustRegistry
+            </p>
+            <p className="mt-mono mt-2 break-all text-[12px]">
+              <a
+                className="text-primary underline-offset-2 hover:underline"
+                href={MACHINE_TRUST_REGISTRY_DEPLOYMENT.explorers.contract}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {MACHINE_TRUST_REGISTRY_DEPLOYMENT.contractAddress}
+              </a>
+            </p>
+            <p className="mt-mono mt-2 break-all text-[11px] text-muted-foreground">
+              Deploy tx{" "}
+              <a
+                className="text-primary underline-offset-2 hover:underline"
+                href={MACHINE_TRUST_REGISTRY_DEPLOYMENT.explorers.deployTx}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {MACHINE_TRUST_REGISTRY_DEPLOYMENT.deployTx}
+              </a>
+            </p>
+            <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
+              Cleanverse CVI → CVA → CCP must APPROVE before{" "}
+              <span className="font-mono text-[11px]">registerMachine</span> /{" "}
+              <span className="font-mono text-[11px]">transferOwnership</span>. Current gate:{" "}
+              {MACHINE_TRUST_REGISTRY_DEPLOYMENT.cleanverseGate}
+              {MACHINE_TRUST_REGISTRY_DEPLOYMENT.registrationTx
+                ? ""
+                : " — no ownership txs submitted without data.code 4."}
+            </p>
           </div>
         </Reveal>
 

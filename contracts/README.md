@@ -10,7 +10,15 @@ Minimal Solidity registry for machine ID, passport hash, Cleanverse asset refere
 
 ## Status
 
-See [`deployments/monad-testnet.json`](./deployments/monad-testnet.json) after a real Monad Testnet deploy. Until that file exists with explorer-verifiable hashes, settlement in the UI may remain a labelled **DEMO** reference.
+**DEPLOYED on Monad Testnet** — see [`deployments/monad-testnet.json`](./deployments/monad-testnet.json).
+
+| | |
+| --- | --- |
+| Address | [`0x83753166684AfB4912a61713c49Feada6298dF19`](https://testnet.monadvision.com/address/0x83753166684AfB4912a61713c49Feada6298dF19) |
+| Deploy tx | [`0xa6fbe2a7da222eabda364fce8230e98d18d8add31db6e0c5dc3cb8bcecaf8033`](https://testnet.monadvision.com/tx/0xa6fbe2a7da222eabda364fce8230e98d18d8add31db6e0c5dc3cb8bcecaf8033) |
+| Operator | `0x9B41e219d533cEe084a4f909C8aC318Fe4C413bA` |
+
+Ownership `registerMachine` / `transferOwnership` are submitted **only** after Cleanverse CCP `verify_apass` returns `data.code === 4`. Current UAT issuer/fund checks return ComplianceFailed → **no ownership txs** (fail closed).
 
 **Never claim Monad Mainnet** without an independently verifiable Mainnet tx.
 

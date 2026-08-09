@@ -75,23 +75,25 @@ function encrypt(payload) {
   );
 }
 
-function request(path, body, encrypted = false) {
+function request(method, path, body, encrypted = false) {
   return new Promise((resolve, reject) => {
-    const payload = encrypted ? { data: encrypt(body) } : body;
-    const data = JSON.stringify(payload);
+    const payload = body == null ? null : encrypted ? { data: encrypt(body) } : body;
+    const data = payload == null ? null : JSON.stringify(payload);
     const u = new URL(base + path);
     const req = https.request(
       {
-        method: "POST",
+        method,
         hostname: u.hostname,
-        path: u.pathname,
+        path: u.pathname + u.search,
         headers: {
           Accept: "application/json",
           "User-Agent":
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 MachineTrust/1.0",
           "api-id": apiId,
-          "Content-Type": "application/json",
-          "Content-Length": Buffer.byteLength(data),
+          "X-Request-ID": crypto.randomUUID(),
+          ...(data
+            ? { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(data) }
+            : {}),
         },
       },
       (res) => {
@@ -107,7 +109,7 @@ function request(path, body, encrypted = false) {
       },
     );
     req.on("error", reject);
-    req.write(data);
+    if (data) req.write(data);
     req.end();
   });
 }
@@ -131,7 +133,12 @@ function apassActive(envelope) {
 async function verifySubjects(atoken, addresses) {
   const results = [];
   for (const address of addresses) {
-    const envelope = await request("/verify_apass", { chain: "monad", atoken, address }, true);
+    // Plaintext body — same as scripts/cleanverse-sandbox-audit.mjs / api.server.ts.
+    const envelope = await request("POST", "/verify_apass", {
+      chain: "monad",
+      atoken,
+      address,
+    });
     const code = Number(envelope?.data?.code);
     const allowed = envelope.code === "0000" && code === 4;
     results.push({ address, envelope, allowed, code });
@@ -152,12 +159,9 @@ async function run() {
   console.log("Registry:", registryAddress);
   console.log("Passport:", PASSPORT);
 
-  const issuerApass = await request("/query_apass", {
-    wallet: { address: ISSUER, chain: "monad" },
-  });
-  const fundApass = await request("/query_apass", {
-    wallet: { address: FUND, chain: "monad" },
-  });
+  // Match Cleanverse API v5.6 / audit client shapes (plaintext query_apass).
+  const issuerApass = await request("POST", "/query_apass", { chain: "monad", address: ISSUER });
+  const fundApass = await request("POST", "/query_apass", { chain: "monad", address: FUND });
   const issuerOk = apassActive(issuerApass);
   const fundOk = apassActive(fundApass);
   report("CVI issuer", issuerOk, `env ${issuerApass.code}`);
@@ -167,12 +171,7 @@ async function run() {
     process.exit(2);
   }
 
-  const list = await request("/query_deposit_atoken_list", {
-    chain: "monad",
-    symbol: "usdc",
-    page: 1,
-    pageSize: 20,
-  });
+  const list = await request("POST", "/query_deposit_atoken_list", { chain: "monad" });
   const tokens = list.data?.tokens || [];
   const ausdc = tokens.find((t) => (t.atoken?.symbol || "").toLowerCase() === "ausdc") || tokens[0];
   const atoken = ausdc?.atoken?.address;
@@ -182,6 +181,7 @@ async function run() {
     process.exit(2);
   }
 
+  // verify_apass is NOT an encrypted write endpoint in v5.6 docs set used by this project.
   const issueCcp = await verifySubjects(atoken, [ISSUER]);
   if (!issueCcp.every((r) => r.allowed)) {
     console.error(
