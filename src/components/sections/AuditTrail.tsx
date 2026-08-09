@@ -1,8 +1,23 @@
 import { useRef } from "react";
 import { motion, useScroll, useSpring } from "motion/react";
 import { Section, Shell, Eyebrow, Heading, Lede, Reveal } from "@/components/primitives";
+import { VerifiedMonadProof } from "@/components/compliance/SettlementProof";
 import { auditTrail } from "@/data/demoMachine";
 import { useAssetState } from "@/lib/asset-state";
+import {
+  MACHINE_TRUST_REGISTRY_DEPLOYMENT,
+  isLikelyTxHash,
+  monadTestnetTxUrl,
+} from "@/lib/monad/explorer";
+
+type AuditRow = {
+  time: string;
+  entity: string;
+  action: string;
+  verification: string;
+  tx: string;
+  href?: string;
+};
 
 export function AuditTrail() {
   const { extraEvents, owner } = useAssetState();
@@ -14,18 +29,42 @@ export function AuditTrail() {
   // The provenance line draws itself as the history scrolls past.
   const draw = useSpring(scrollYProgress, { stiffness: 90, damping: 24, mass: 0.4 });
 
-  const rows = [
-    ...auditTrail,
-    ...extraEvents.map((e) => ({
-      time: e.timestamp,
-      entity: e.kind === "transferred" ? owner : "Machine Trust",
-      action: e.label,
-      verification:
-        e.kind === "issued" || e.kind === "transferred" || e.kind === "verified"
-          ? "CVI · CVA · CCP"
-          : "Machine Trust",
-      tx: e.hash,
-    })),
+  const onChainProof: AuditRow[] = [
+    {
+      time: MACHINE_TRUST_REGISTRY_DEPLOYMENT.proofAt,
+      entity: "Issuer → Registry",
+      action: "Machine Registered (Monad Testnet)",
+      verification: "CVI · CVA · CCP → Monad",
+      tx: MACHINE_TRUST_REGISTRY_DEPLOYMENT.registrationTx,
+      href: MACHINE_TRUST_REGISTRY_DEPLOYMENT.explorers.registrationTx,
+    },
+    {
+      time: MACHINE_TRUST_REGISTRY_DEPLOYMENT.proofAt,
+      entity: "Equipment Fund B",
+      action: "Ownership Updated (Monad Testnet)",
+      verification: "CVI · CVA · CCP → Monad",
+      tx: MACHINE_TRUST_REGISTRY_DEPLOYMENT.ownershipTransferTx,
+      href: MACHINE_TRUST_REGISTRY_DEPLOYMENT.explorers.ownershipTransferTx,
+    },
+  ];
+
+  const rows: AuditRow[] = [
+    ...auditTrail.map((e): AuditRow => ({ ...e })),
+    ...onChainProof,
+    ...extraEvents.map((e): AuditRow => {
+      const row: AuditRow = {
+        time: e.timestamp,
+        entity: e.kind === "transferred" ? owner : "Machine Trust",
+        action: e.label,
+        verification:
+          e.kind === "issued" || e.kind === "transferred" || e.kind === "verified"
+            ? "CVI · CVA · CCP"
+            : "Machine Trust",
+        tx: e.hash,
+      };
+      if (isLikelyTxHash(e.hash)) row.href = monadTestnetTxUrl(e.hash);
+      return row;
+    }),
   ];
 
   return (
@@ -79,9 +118,20 @@ export function AuditTrail() {
                     <td className="py-4 pr-6 text-[13px] text-foreground">{e.action}</td>
                     <td className="mt-mono py-4 pr-6 text-[11px] text-success">{e.verification}</td>
                     <td className="mt-mono py-4 text-[11px] text-primary">
-                      <span className="border-b border-transparent transition-colors group-hover:border-primary/60">
-                        {e.tx}
-                      </span>
+                      {e.href ? (
+                        <a
+                          className="border-b border-transparent transition-colors group-hover:border-primary/60 underline-offset-2 hover:underline"
+                          href={e.href}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {e.tx}
+                        </a>
+                      ) : (
+                        <span className="border-b border-transparent transition-colors group-hover:border-primary/60">
+                          {e.tx}
+                        </span>
+                      )}
                     </td>
                   </motion.tr>
                 ))}
@@ -89,9 +139,13 @@ export function AuditTrail() {
             </table>
           </div>
         </div>
+        <div className="mt-8">
+          <VerifiedMonadProof className="border border-border" />
+        </div>
         <p className="mt-6 text-[12px] text-muted-foreground">
-          Passport rows are demo metadata. Cleanverse-gated issuance and transfer rows appear only
-          after a real evaluation succeeds. Monad settlement refs are labelled when demo-only.
+          Passport rows are demo metadata. Cleanverse-gated Monad Testnet register/transfer rows are
+          explorer-confirmed (MonadVision). Settlement refs without explorer hashes are labelled
+          demo-only.
         </p>
       </Shell>
     </Section>

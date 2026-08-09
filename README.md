@@ -15,6 +15,8 @@ Built for the **Cleanverse Build: Trusted Assets Hackathon — Track 1 RWA**.
 | **Integration map** | [docs/INTEGRATION_MAP.md](./docs/INTEGRATION_MAP.md)                |
 | **Contract**        | [MachineTrustRegistry](https://testnet.monadvision.com/address/0x83753166684AfB4912a61713c49Feada6298dF19) on **Monad Testnet** · [`0x8375…8dF19`](./contracts/deployments/monad-testnet.json) |
 | **Deploy tx**       | [`0xa6fbe2a7…af8033`](https://testnet.monadvision.com/tx/0xa6fbe2a7da222eabda364fce8230e98d18d8add31db6e0c5dc3cb8bcecaf8033) |
+| **Register tx**     | [`0xdb70d058…df8fa6`](https://testnet.monadvision.com/tx/0xdb70d0585ef0afb6662f0813c6eec2822510c7233ad894b6eb8df131e0df8fa6) |
+| **Ownership tx**    | [`0x5fa64683…e09513`](https://testnet.monadvision.com/tx/0x5fa6468338d03c1d18f53e08e8e45fa6c9371641763708a6413dd9ab86e09513) |
 | **Repo**            | https://github.com/0xjiongying/machine-identity-verified            |
 
 > **Submission blockers (owner):** (1) make this GitHub repository **public**, (2) set Cleanverse Sandbox secrets on Render when UAT `verify_apass` returns `data.code` 4 again, (3) upload demo video.
@@ -79,11 +81,12 @@ src/
     service.server.ts         # Track 1 orchestration (fail closed)
   lib/cleanverse-adapter.ts   # Browser → server boundary (no secrets)
 contracts/
-  MachineTrustRegistry.sol    # Minimal ownership registry — NOT DEPLOYED
+  MachineTrustRegistry.sol    # Minimal ownership registry — DEPLOYED Monad Testnet
+  deployments/monad-testnet.json
 docs/                         # One-pager, integration map, demo script
 ```
 
-Secrets stay in server env (`CLEANVERSE_SANDBOX_API_*`). Never `VITE_*`. Never in the browser, logs, or UI.
+Secrets stay in server env (`CLEANVERSE_SANDBOX_API_*`, `MONAD_TESTNET_*`, `MACHINETRUST_REGISTRY_ADDRESS`). Never `VITE_*`. Never in the browser, logs, or UI.
 
 ---
 
@@ -106,13 +109,15 @@ If the live Sandbox is unreachable, the adapter **fails closed** (no approval, n
 | CVI `query_apass` | **SANDBOX / REAL** | Live UAT with credentials |
 | CVA registered bind (aUSDC) | **SANDBOX / REAL** | Status `bound` · address from `query_deposit_atoken_list` (UAT can rotate) |
 | CVA custom `/atoken/launch` | **UNAVAILABLE** | Not on hot path; UAT `ISSUE_FAILED` — never faked as ISSUED |
-| CCP `verify_apass` | **SANDBOX / REAL** | Unknown → `data.code` 2 (BLOCK). Issuer/Fund currently may return envelope `0002` / atoken validation failure on UAT — app **fails closed** (never fabricates code 4). When UAT recovers, code 4 is the only APPROVE path. |
+| CCP `verify_apass` | **SANDBOX / REAL** | Unknown → `data.code` 2 (BLOCK). Issuer/Fund → `data.code` 4 (APPROVE) after A-Token rules present. Only code 4 opens Monad writes. |
 | Validator pool `/validator/verify` | **UNAVAILABLE** | Needs owned registered pool |
-| Monad settlement | **ON-CHAIN · Testnet** | CCP-gated `registerMachine` + `transferOwnership` confirmed |
-| `MachineTrustRegistry` | **DEPLOYED · Monad Testnet** | [`0x8375…8dF19`](https://testnet.monadvision.com/address/0x83753166684AfB4912a61713c49Feada6298dF19) |
-| Register tx | **CONFIRMED** | [`0xcb713131…a663a7be`](https://testnet.monadvision.com/tx/0xcb713131d44286761e2a866fbc9e9db0520de77327f83f68d5bde7dba663a7be) |
-| Ownership tx | **CONFIRMED** | [`0x445c62e7…84bb90b5`](https://testnet.monadvision.com/tx/0x445c62e758fff51d623c389421a72885dc9c8976a4b03780f7dc3ce784bb90b5) |
+| Monad settlement | **ON-CHAIN · Testnet** | CCP-gated `registerMachine` + `transferOwnership` confirmed on explorer |
+| `MachineTrustRegistry` | **DEPLOYED · Monad Testnet** | [`0x83753166684AfB4912a61713c49Feada6298dF19`](https://testnet.monadvision.com/address/0x83753166684AfB4912a61713c49Feada6298dF19) · chain id **10143** · RPC `https://testnet-rpc.monad.xyz` ([docs](https://docs.monad.xyz/developer-essentials/testnet)) |
+| Register tx | **CONFIRMED** | [`0xdb70d058…df8fa6`](https://testnet.monadvision.com/tx/0xdb70d0585ef0afb6662f0813c6eec2822510c7233ad894b6eb8df131e0df8fa6) |
+| Ownership tx | **CONFIRMED** | [`0x5fa64683…e09513`](https://testnet.monadvision.com/tx/0x5fa6468338d03c1d18f53e08e8e45fa6c9371641763708a6413dd9ab86e09513) · owner Fund B |
 | Passport / maintenance / parts | **DEMO** | Labelled demo machine metadata |
+
+**What the contract does:** `MachineTrustRegistry` stores machine id → owner after Cleanverse APPROVE. Operator calls `registerMachine` then `transferOwnership`. No Cleanverse bypass.
 
 ---
 

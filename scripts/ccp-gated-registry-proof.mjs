@@ -298,7 +298,15 @@ async function run() {
   console.log("Explorer:", `${explorer}/tx/${xferHash}`);
   console.log("Owner after transfer:", ownerAfterXfer);
 
+  const artifactPath = new URL("../contracts/deployments/monad-testnet.json", import.meta.url);
+  let previous = {};
+  try {
+    previous = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
+  } catch {
+    /* first proof run */
+  }
   const artifact = {
+    ...previous,
     network: "Monad Testnet",
     chainId,
     rpcUrl: rpc,
@@ -311,19 +319,26 @@ async function run() {
     ownershipTransferTx: xferHash,
     ownerAfterRegister: ownerAfterReg,
     ownerAfterTransfer: ownerAfterXfer,
+    cleanverseGate: "PASS",
+    endToEndFlow: "PASS",
     cleanverse: {
+      ...(previous.cleanverse || {}),
       cvi: true,
       cva: atoken,
       ccpIssuance: true,
       ccpTransfer: true,
     },
-    deployedAt: new Date().toISOString(),
+    explorers: {
+      ...(previous.explorers || {}),
+      contract: `${explorer}/address/${registry}`,
+      registrationTx: `${explorer}/tx/${regHash}`,
+      ownershipTransferTx: `${explorer}/tx/${xferHash}`,
+    },
+    proofAt: new Date().toISOString(),
+    deployedAt: previous.deployedAt || new Date().toISOString(),
   };
   fs.mkdirSync(new URL("../contracts/deployments", import.meta.url), { recursive: true });
-  fs.writeFileSync(
-    new URL("../contracts/deployments/monad-testnet.json", import.meta.url),
-    JSON.stringify(artifact, null, 2) + "\n",
-  );
+  fs.writeFileSync(artifactPath, JSON.stringify(artifact, null, 2) + "\n");
   console.log("Wrote contracts/deployments/monad-testnet.json");
   console.log(
     JSON.stringify(
