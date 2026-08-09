@@ -33,7 +33,6 @@ const OPTIONAL = [
   "MONAD_NETWORK_LABEL",
   "FRONTEND_URL",
   "HOST",
-  "NODE_ENV",
   "NITRO_PRESET",
 ];
 
