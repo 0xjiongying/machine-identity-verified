@@ -11,7 +11,8 @@ const CHAPTERS = [
   { id: "credentials", n: "07", label: "CVI / CVA" },
   { id: "issuance", n: "08", label: "Issue" },
   { id: "transfer", n: "09", label: "Transfer" },
-  { id: "audit", n: "10", label: "Trace" },
+  { id: "defi", n: "10", label: "DeFi" },
+  { id: "audit", n: "11", label: "Trace" },
 ];
 
 /** Narrative progress rail — replaces the scrollbar with the story index. */

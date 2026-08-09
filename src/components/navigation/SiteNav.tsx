@@ -9,6 +9,7 @@ const links = [
   { label: "Passport", href: "#passport" },
   { label: "Issue", href: "#issuance" },
   { label: "Transfer", href: "#transfer" },
+  { label: "DeFi", href: "#defi" },
 ];
 
 export function SiteNav() {

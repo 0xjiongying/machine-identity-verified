@@ -12,6 +12,7 @@ import { Participants } from "@/components/sections/Participants";
 import { Credentials } from "@/components/sections/Credentials";
 import { Issuance } from "@/components/compliance/Issuance";
 import { Transfer } from "@/components/transfer/Transfer";
+import { LendingMarket } from "@/components/defi/LendingMarket";
 import { AuditTrail } from "@/components/sections/AuditTrail";
 import { Architecture } from "@/components/architecture/Architecture";
 import { Scale } from "@/components/sections/Scale";
@@ -56,6 +57,7 @@ function Home() {
         <Credentials />
         <Issuance />
         <Transfer />
+        <LendingMarket />
         <AuditTrail />
         <Architecture />
         <Scale />
