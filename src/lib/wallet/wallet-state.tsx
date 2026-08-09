@@ -130,7 +130,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     const provider = getInjectedProvider();
     if (!provider) {
       setHasProvider(false);
-      setStatus("unavailable");
+      setStatus("error");
       setError("No compatible wallet detected. Install MetaMask or another EIP-1193 wallet.");
       return;
     }
