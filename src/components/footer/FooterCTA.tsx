@@ -48,7 +48,7 @@ export function FooterCTA() {
 
       <Shell className="flex flex-wrap items-center justify-between gap-4 border-t border-border py-7">
         <div className="flex items-center gap-2.5">
-          <LogoMark className="size-4 text-muted-foreground" />
+          <LogoMark className="size-5 rounded-[2px]" />
           <span className="mt-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
             Machine Trust
           </span>
