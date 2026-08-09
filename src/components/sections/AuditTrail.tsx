@@ -40,7 +40,7 @@ export function AuditTrail() {
     },
     {
       time: MACHINE_TRUST_REGISTRY_DEPLOYMENT.proofAt,
-      entity: "Equipment Fund B",
+      entity: "Verified Buyer",
       action: "Ownership Updated (Monad Testnet)",
       verification: "CVI · CVA · CCP → Monad",
       tx: MACHINE_TRUST_REGISTRY_DEPLOYMENT.ownershipTransferTx,

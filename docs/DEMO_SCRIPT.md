@@ -21,15 +21,16 @@ Captions in the Guided demo are designed so the story works **without narration*
 | Time      | Beat                 | On-screen caption                                                    | Action                         |
 | --------- | -------------------- | -------------------------------------------------------------------- | ------------------------------ |
 | 0:00–0:20 | Problem + product    | `PROBLEM → fragmented machine records · PRODUCT → Machine Trust RWA` | Hero · brand **Machine Trust** |
-| 0:20–0:50 | 3D + Passport        | `INTERACTIVE 3D MACHINE → MACHINE PASSPORT`                          | Inspect → Passport             |
-| 0:50–1:20 | CVI issuer           | `CVI / A-PASS · ISSUER → must be VERIFIED before issuance`           | Credentials · issuer card      |
-| 1:20–1:50 | CVA asset issuance   | `ISSUANCE · CVI → CVA (bind aUSDC) → CCP → RWA ISSUED`               | Issue Machine Asset            |
-| 1:50–2:15 | CCP compliance       | Verdict banner `verify_apass · CCP · APPROVED`                       | Hold on VerdictBanner          |
-| 2:15–2:35 | Unverified → BLOCKED | `BUYER A · UNVERIFIED → TRANSFER BLOCKED`                            | Unknown Wallet                 |
-| 2:35–3:05 | Verified → APPROVED  | `BUYER B · VERIFIED → CCP APPROVED`                                  | Equipment Fund B               |
-| 3:05–3:30 | Monad registry       | `MONAD TESTNET · MachineTrustRegistry · Confirmed`                   | SettlementProof / Architecture |
-| 3:30–3:50 | Ownership + Audit    | `OWNERSHIP UPDATED · AUDIT · Machine Registered → Ownership Updated` | Ownership → Audit              |
-| 3:50–4:00 | Architecture         | `Cleanverse essential · Passport \| CVI · CVA · CCP \| Monad`        | Architecture + scale           |
+| 0:20–0:50 | Machine Passport     | `MACHINE PASSPORT · interactive 3D → identity record`                | Inspect → Passport             |
+| 0:50–1:20 | CVI                  | `CVI / A-PASS · ISSUER → verified identity gate`                     | Credentials · issuer card      |
+| 1:20–1:50 | 04 ISSUE RWA         | `CVI verified → CVA bound → CCP cleared → RWA issued`                | Issue Machine Asset            |
+| 1:50–2:15 | CCP compliance       | Verdict banner — only claim APPROVED if `data.code` 4 / live pass    | Hold on VerdictBanner          |
+| 2:15–2:35 | 05 TRANSFER BLOCKED  | `CVI missing → CCP rejects → no settlement`                          | Unknown Wallet                 |
+| 2:35–3:05 | 06 TRANSFER APPROVED | `Verified Buyer · CVI verified → CVA eligible → CCP approved`        | Verified Buyer                 |
+| 3:05–3:40 | 07 OWNERSHIP + MONAD | `Compliance passed → Monad Testnet → ownership → audit`              | SettlementProof / Audit        |
+| 3:40–4:00 | Architecture         | `Passport → CVI → CVA → CCP → BLOCK\|APPROVE → Monad → Ownership → Audit` | Architecture + scale      |
+
+**Demo Controller:** compact bottom control — product stays the hero. Mobile shows current beat + Next Beat; full 01–09 list is a collapsible drawer. Desktop keeps the full navigator.
 
 **Say on camera:** Cleanverse is essential — CVI, CVA and CCP decide before Monad runs.
 
