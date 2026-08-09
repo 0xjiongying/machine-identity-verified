@@ -1,7 +1,8 @@
 # Machine Trust — Track 2 Demo Script (CVI-gated DeFi)
 
 **Track:** Cleanverse Build Track 2 DeFi  
-**Live demo:** https://machine-trust.onrender.com/?demo=1#defi  
+**Live demo (after Render deploy of Track 2 branch):** https://machine-trust.onrender.com/?demo=1#defi  
+**Until then:** record against a local/prod build that has Cleanverse + `MACHINE_TRUST_CREDIT_ADDRESS` configured — do not claim live `#defi` while `/health` reports Cleanverse/Monad `unconfigured`.  
 **One-pager:** [CLEANVERSE_TRACK2.md](./CLEANVERSE_TRACK2.md)
 
 ## On-chain evidence (Monad Testnet · chain 10143)

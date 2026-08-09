@@ -63,8 +63,9 @@ Artifacts:
 - Credit: `contracts/deployments/monad-testnet-credit.json`
 - Proof: `contracts/deployments/monad-testnet-credit-proof.json`
 
-Live demo: https://machine-trust.onrender.com/#defi  
-GitHub: https://github.com/0xjiongying/machine-identity-verified
+Live demo: https://machine-trust.onrender.com — `#defi` ships with PR `#4` after Render has Cleanverse + Monad + `MACHINE_TRUST_CREDIT_ADDRESS` (as of audit, production health reported both unconfigured).  
+GitHub: https://github.com/0xjiongying/machine-identity-verified  
+PR: https://github.com/0xjiongying/machine-identity-verified/pull/4
 
 ## Commands
 

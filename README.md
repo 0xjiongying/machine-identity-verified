@@ -8,7 +8,7 @@ Built for the **Cleanverse Build: Trusted Assets Hackathon** — Track 1 RWA and
 
 |                     |                                                                     |
 | ------------------- | ------------------------------------------------------------------- |
-| **Live demo**       | https://machine-trust.onrender.com · [Track 2 DeFi](https://machine-trust.onrender.com/#defi) |
+| **Live demo**       | https://machine-trust.onrender.com · Track 2 `#defi` requires deploy of PR branch + Cleanverse/Monad/`MACHINE_TRUST_CREDIT_ADDRESS` env (health currently reports Cleanverse/Monad **unconfigured**) |
 | **Health**          | https://machine-trust.onrender.com/health                           |
 | **Demo video**      | _Record walkthrough — [Track 2 script](./docs/DEMO_SCRIPT_TRACK2.md) / [Track 1](./docs/DEMO_SCRIPT.md)_ |
 | **Track 2 one-pager** | [docs/CLEANVERSE_TRACK2.md](./docs/CLEANVERSE_TRACK2.md)          |
