@@ -62,10 +62,13 @@ export function InteractiveInstructions() {
     return window.localStorage.getItem(HIDE_KEY) === "1";
   });
   const [machineConfirmed, setMachineConfirmed] = useState(false);
+  /** After COMPLETE, let judges re-walk the UI without inventing chain state. */
+  const [replayGuide, setReplayGuide] = useState(false);
 
   useEffect(() => {
     // Reset machine confirmation when wallet changes / disconnects
     setMachineConfirmed(false);
+    setReplayGuide(false);
   }, [wallet.address]);
 
   useEffect(() => {
@@ -88,8 +91,9 @@ export function InteractiveInstructions() {
         lastExplorerUrl: lending.lastExplorerUrl,
         lastAction: lending.lastAction,
         machineConfirmed,
+        replayGuide,
       }),
-    [wallet, lending, machineConfirmed],
+    [wallet, lending, machineConfirmed, replayGuide],
   );
 
   // Highlight relevant product surface
@@ -221,17 +225,32 @@ export function InteractiveInstructions() {
             </motion.div>
           </AnimatePresence>
 
-          {guide.ctaLabel ? (
-            <button
-              type="button"
-              onClick={() => void runCta()}
-              disabled={lending.acting || wallet.status === "connecting"}
-              data-cursor="connect"
-              className="mt-mono mt-5 border border-primary bg-primary/15 px-4 py-2.5 text-[11px] uppercase tracking-[0.16em] text-primary transition-colors hover:bg-primary/25 disabled:opacity-50"
-            >
-              {guide.ctaLabel}
-            </button>
-          ) : null}
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            {guide.ctaLabel ? (
+              <button
+                type="button"
+                onClick={() => void runCta()}
+                disabled={lending.acting || wallet.status === "connecting"}
+                data-cursor="connect"
+                className="mt-mono border border-primary bg-primary/15 px-4 py-2.5 text-[11px] uppercase tracking-[0.16em] text-primary transition-colors hover:bg-primary/25 disabled:opacity-50"
+              >
+                {guide.ctaLabel}
+              </button>
+            ) : null}
+            {guide.phase === "COMPLETE" ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setReplayGuide(true);
+                  setMachineConfirmed(false);
+                  setCollapsed(false);
+                }}
+                className="mt-mono border border-border px-4 py-2.5 text-[11px] uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+              >
+                Restart Demo
+              </button>
+            ) : null}
+          </div>
         </div>
 
         <aside className="border border-border bg-background/50 px-4 py-4">

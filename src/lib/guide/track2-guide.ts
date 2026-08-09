@@ -64,6 +64,8 @@ export type GuideInputs = {
   lastExplorerUrl: string | null;
   lastAction: string | null;
   machineConfirmed: boolean;
+  /** When true, skip COMPLETE so the user can re-walk steps after an existing position. */
+  replayGuide?: boolean;
 };
 
 function completedMask(upto: number): boolean[] {
@@ -92,7 +94,25 @@ export function deriveTrack2Guide(input: GuideInputs): GuideSnapshot {
   const txDone =
     Boolean(position?.active) || (Boolean(lastTxHash) && lastAction === "openCreditDeposit");
 
-  // Terminal / failure-first
+  // Always start with wallet connection — sandbox positions must not skip Step 1.
+  if (!walletAddress || walletStatus === "disconnected" || walletStatus === "unavailable") {
+    return {
+      phase: "DISCONNECTED",
+      stepIndex: 0,
+      stepId: "wallet",
+      title: "Connect your wallet",
+      body: "Connect a wallet on Monad Testnet to begin the trust flow.",
+      ctaLabel: "Connect Wallet",
+      ctaAction: "connect",
+      highlight: "wallet",
+      completed: completedMask(0),
+      explanation: {
+        term: "Operator wallet",
+        text: "Your connected address is the operator identity checked by Cleanverse CVI and MachineTrustRegistry.",
+      },
+    };
+  }
+
   if (acting) {
     return {
       phase: "TRANSACTION_PENDING",
@@ -108,7 +128,7 @@ export function deriveTrack2Guide(input: GuideInputs): GuideSnapshot {
     };
   }
 
-  if (txDone) {
+  if (txDone && input.usingConnectedWallet && !input.replayGuide) {
     return {
       phase: "COMPLETE",
       stepIndex: 5,
@@ -129,24 +149,6 @@ export function deriveTrack2Guide(input: GuideInputs): GuideSnapshot {
       explanation: {
         term: "Monad proof",
         text: "The credit deposit is a real Monad Testnet transaction, independently verifiable on the explorer.",
-      },
-    };
-  }
-
-  if (!walletAddress || walletStatus === "disconnected" || walletStatus === "unavailable") {
-    return {
-      phase: "DISCONNECTED",
-      stepIndex: 0,
-      stepId: "wallet",
-      title: "Connect your wallet",
-      body: "Connect a wallet on Monad Testnet to begin the trust flow.",
-      ctaLabel: "Connect Wallet",
-      ctaAction: "connect",
-      highlight: "wallet",
-      completed: completedMask(0),
-      explanation: {
-        term: "Operator wallet",
-        text: "Your connected address is the operator identity checked by Cleanverse CVI and MachineTrustRegistry.",
       },
     };
   }
