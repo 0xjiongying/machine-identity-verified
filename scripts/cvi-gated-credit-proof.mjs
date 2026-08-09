@@ -12,7 +12,14 @@
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
-import { createPublicClient, createWalletClient, http, parseAbi, getAddress, parseEther } from "viem";
+import {
+  createPublicClient,
+  createWalletClient,
+  http,
+  parseAbi,
+  getAddress,
+  parseEther,
+} from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
 function loadEnvLocal() {
@@ -34,8 +41,7 @@ const RPC = process.env.MONAD_TESTNET_RPC_URL;
 const KEY = process.env.MONAD_TESTNET_PRIVATE_KEY;
 const CREDIT = process.env.MACHINE_TRUST_CREDIT_ADDRESS;
 const REGISTRY =
-  process.env.MACHINETRUST_REGISTRY_ADDRESS ||
-  "0x83753166684AfB4912a61713c49Feada6298dF19";
+  process.env.MACHINETRUST_REGISTRY_ADDRESS || "0x83753166684AfB4912a61713c49Feada6298dF19";
 
 const FUND_B = "0xC8bA032092cC2499637f4E331E841ab24d1c9964";
 const UNKNOWN = "0xDA45b2481b679B6A2Eacb413FdCf761Ab1637D2e";
@@ -67,10 +73,7 @@ async function queryApass(wallet) {
   const active =
     json?.code === "0000" &&
     Boolean(data.cvRecordId || data.cv_record_id) &&
-    (data.status === 1 ||
-      data.status === "1" ||
-      data.status === undefined ||
-      data.status === null);
+    (data.status === 1 || data.status === "1" || data.status === undefined || data.status === null);
   return {
     envelopeCode: json?.code ?? String(res.status),
     envelopeMessage: json?.message ?? "",
@@ -81,7 +84,9 @@ async function queryApass(wallet) {
 }
 
 function cviRef(wallet, cvRecordId) {
-  return `0x${createHash("sha256").update(`cvi:${wallet}:${cvRecordId ?? "none"}`).digest("hex")}`;
+  return `0x${createHash("sha256")
+    .update(`cvi:${wallet}:${cvRecordId ?? "none"}`)
+    .digest("hex")}`;
 }
 
 const CREDIT_ABI = parseAbi([
@@ -92,13 +97,9 @@ const CREDIT_ABI = parseAbi([
   "function isAuthorized(address wallet, bytes32 machineId) view returns (bool)",
 ]);
 
-const REGISTRY_ABI = parseAbi([
-  "function ownerOf(bytes32 machineId) view returns (address)",
-]);
+const REGISTRY_ABI = parseAbi(["function ownerOf(bytes32 machineId) view returns (address)"]);
 
-const account = privateKeyToAccount(
-  (KEY.startsWith("0x") ? KEY : `0x${KEY}`),
-);
+const account = privateKeyToAccount(KEY.startsWith("0x") ? KEY : `0x${KEY}`);
 const chain = {
   id: 10143,
   name: "monad-testnet",
@@ -240,6 +241,14 @@ if (active) {
   proof.cases.fundB.openCreditDepositTx = tx;
   proof.cases.fundB.receiptStatus = receipt.status;
   console.log("openCreditDeposit tx:", tx, "status:", receipt.status);
+  if (receipt.status !== "success") {
+    console.error("FAIL: openCreditDeposit mined but reverted");
+    writeFileSync(
+      resolve("contracts/deployments/monad-testnet-credit-proof.json"),
+      `${JSON.stringify(proof, null, 2)}\n`,
+    );
+    process.exit(1);
+  }
 }
 
 const authorized = await publicClient.readContract({
@@ -248,10 +257,18 @@ const authorized = await publicClient.readContract({
   functionName: "isAuthorized",
   args: [getAddress(FUND_B), machineId],
 });
+const fundPosition = await publicClient.readContract({
+  address: getAddress(CREDIT),
+  abi: CREDIT_ABI,
+  functionName: "positions",
+  args: [getAddress(FUND_B)],
+});
 proof.cases.fundB.isAuthorized = authorized;
-console.log("isAuthorized(Fund B):", authorized);
+proof.cases.fundB.positionActive = fundPosition[4];
+proof.cases.fundB.depositWei = fundPosition[2].toString();
+console.log("isAuthorized(Fund B):", authorized, "positionActive:", fundPosition[4]);
 
-proof.ok = negativeRejected && fundCvi.active && authorized === true;
+proof.ok = negativeRejected && fundCvi.active && authorized === true && fundPosition[4] === true;
 proof.explorers = {
   credit: `https://testnet.monadvision.com/address/${CREDIT}`,
   setCviEligibleFundB: proof.cases.fundB.setCviEligibleTx

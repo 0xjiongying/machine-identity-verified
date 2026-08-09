@@ -9,11 +9,7 @@ import {
   readCreditPosition,
   type CreditMarketConfig,
 } from "@/lib/lending/credit.server";
-import type {
-  CreditActionResult,
-  CreditPosition,
-  EligibilityDecision,
-} from "@/lib/lending/types";
+import type { CreditActionResult, CreditPosition, EligibilityDecision } from "@/lib/lending/types";
 
 const walletSchema = z.object({
   walletAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/),
@@ -35,18 +31,21 @@ export const authorizeCviOnChain = createServerFn({ method: "POST" })
   .handler(
     async ({
       data,
-    }): Promise<{ ok: boolean; txHash: string | null; notice: string; eligibility: EligibilityDecision }> => {
+    }): Promise<{
+      ok: boolean;
+      txHash: string | null;
+      notice: string;
+      eligibility: EligibilityDecision;
+    }> => {
       const eligibility = await evaluateTrack2Eligibility(data.walletAddress);
       if (eligibility.cvi.status !== "verified" || !eligibility.cvi.active) {
         throw new Error(
-          eligibility.notice ||
-            "CVI not verified — cannot authorize on MachineTrustCredit",
+          eligibility.notice || "CVI not verified — cannot authorize on MachineTrustCredit",
         );
       }
       if (!eligibility.machine.authorized) {
         throw new Error(
-          eligibility.notice ||
-            "MachineTrustRegistry ownership required before CVI authorization",
+          eligibility.notice || "MachineTrustRegistry ownership required before CVI authorization",
         );
       }
       const write = await applyCviEligibilityOnChain(eligibility);
@@ -117,16 +116,17 @@ export const openCreditDeposit = createServerFn({ method: "POST" })
     }
 
     const write = await openCreditDepositOnChain(eligibility, amountWei);
-    return {
+    const result: CreditActionResult = {
       ok: write.ok,
       mode: eligibility.mode,
       eligibility,
       position: write.position,
-      notice: write.ok ? write.reason : write.reason,
-      error: write.ok ? undefined : write.reason,
+      notice: write.reason,
       txHash: write.txHash,
       explorerUrl: write.position?.explorerUrl ?? null,
     };
+    if (!write.ok) result.error = write.reason;
+    return result;
   });
 
 export const getCreditPosition = createServerFn({ method: "GET" })

@@ -17,8 +17,7 @@ import { resolve } from "node:path";
 const rpc = process.env.MONAD_TESTNET_RPC_URL || process.env.MONAD_RPC_URL;
 const key = process.env.MONAD_TESTNET_PRIVATE_KEY || process.env.MONAD_PRIVATE_KEY;
 const registry =
-  process.env.MACHINETRUST_REGISTRY_ADDRESS ||
-  "0x83753166684AfB4912a61713c49Feada6298dF19";
+  process.env.MACHINETRUST_REGISTRY_ADDRESS || "0x83753166684AfB4912a61713c49Feada6298dF19";
 const oracle = process.env.MACHINETRUST_OPERATOR_ADDRESS;
 const contract = resolve("contracts/MachineTrustCredit.sol");
 

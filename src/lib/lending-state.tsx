@@ -41,8 +41,7 @@ type LendingState = {
 const Ctx = createContext<LendingState | null>(null);
 
 export function LendingProvider({ children }: { children: ReactNode }) {
-  const [selectedWalletId, setSelectedWalletId] =
-    useState<LendingWalletId>("verifiedBuyer");
+  const [selectedWalletId, setSelectedWalletId] = useState<LendingWalletId>("verifiedBuyer");
   const [eligibility, setEligibility] = useState<EligibilityDecision | null>(null);
   const [position, setPosition] = useState<CreditPosition | null>(null);
   const [config, setConfig] = useState<CreditMarketConfig | null>(null);

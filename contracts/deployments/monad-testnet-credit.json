@@ -1,0 +1,21 @@
+{
+  "network": "Monad Testnet",
+  "chainId": 10143,
+  "rpcUrl": "https://testnet-rpc.monad.xyz",
+  "explorer": "https://testnet.monadvision.com",
+  "contract": "MachineTrustCredit",
+  "contractAddress": "0x918f4Db6F072b28E2eA379Cb53314892D36122B8",
+  "deployTx": "0x78cf511b134dab8129cffc30d95bf31c9ea3bd1e1a6e3eda04976217e96ead0c",
+  "registryAddress": "0x83753166684AfB4912a61713c49Feada6298dF19",
+  "oracle": "0x9B41e219d533cEe084a4f909C8aC318Fe4C413bA",
+  "deployer": "0x9B41e219d533cEe084a4f909C8aC318Fe4C413bA",
+  "deployedAt": "2026-08-09T02:58:21.386Z",
+  "machineId": "0xe55b60ba6dd97d38033c070569be3a44f696abb69fb25b56160bafe8419f7979",
+  "passportId": "MT-PROOF-1786240028770",
+  "machineOwner": "0xC8bA032092cC2499637f4E331E841ab24d1c9964",
+  "explorers": {
+    "contract": "https://testnet.monadvision.com/address/0x918f4Db6F072b28E2eA379Cb53314892D36122B8",
+    "deployTx": "https://testnet.monadvision.com/tx/0x78cf511b134dab8129cffc30d95bf31c9ea3bd1e1a6e3eda04976217e96ead0c"
+  },
+  "note": "Set MACHINE_TRUST_CREDIT_ADDRESS in env to this contractAddress"
+}

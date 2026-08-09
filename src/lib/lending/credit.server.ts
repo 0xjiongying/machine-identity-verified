@@ -90,8 +90,7 @@ export function getCreditConfig(): CreditMarketConfig {
   }
   return {
     creditAddress: address,
-    registryAddress:
-      cfg.registryAddress ?? MACHINE_TRUST_REGISTRY_DEPLOYMENT.contractAddress,
+    registryAddress: cfg.registryAddress ?? MACHINE_TRUST_REGISTRY_DEPLOYMENT.contractAddress,
     chainId: cfg.chainId ?? 10143,
     explorerBaseUrl: "https://testnet.monadvision.com",
     machineId: proof.machineId,
@@ -102,9 +101,7 @@ export function getCreditConfig(): CreditMarketConfig {
   };
 }
 
-export async function readCreditPosition(
-  wallet: string,
-): Promise<CreditPosition | null> {
+export async function readCreditPosition(wallet: string): Promise<CreditPosition | null> {
   const address = creditAddress();
   const cfg = readMonadConfig();
   if (!address || !cfg.rpcUrl) return null;
@@ -170,9 +167,7 @@ export async function applyCviEligibilityOnChain(
     const { createWalletClient, createPublicClient, http, parseAbi, getAddress } =
       await import("viem");
     const { privateKeyToAccount } = await import("viem/accounts");
-    const account = privateKeyToAccount(
-      (key.startsWith("0x") ? key : `0x${key}`) as `0x${string}`,
-    );
+    const account = privateKeyToAccount((key.startsWith("0x") ? key : `0x${key}`) as `0x${string}`);
     const chain = {
       id: cfg.chainId ?? 10143,
       name: "monad-testnet",
@@ -251,9 +246,7 @@ export async function openCreditDepositOnChain(
     const { createWalletClient, createPublicClient, http, parseAbi, getAddress, formatEther } =
       await import("viem");
     const { privateKeyToAccount } = await import("viem/accounts");
-    const account = privateKeyToAccount(
-      (key.startsWith("0x") ? key : `0x${key}`) as `0x${string}`,
-    );
+    const account = privateKeyToAccount((key.startsWith("0x") ? key : `0x${key}`) as `0x${string}`);
     const chain = {
       id: cfg.chainId ?? 10143,
       name: "monad-testnet",

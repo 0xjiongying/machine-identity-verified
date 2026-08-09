@@ -77,9 +77,8 @@ export function LendingMarket() {
           <Eyebrow index="10">Cleanverse Track 2</Eyebrow>
           <Heading>CVI-gated credit deposit.</Heading>
           <Lede>
-            Cleanverse CVI verifies identity. MachineTrustRegistry authorizes the machine.
-            Only then can a real Monad Testnet credit deposit open. Unverified wallets are
-            rejected on-chain.
+            Cleanverse CVI verifies identity. MachineTrustRegistry authorizes the machine. Only then
+            can a real Monad Testnet credit deposit open. Unverified wallets are rejected on-chain.
           </Lede>
           <p className="mt-mono mt-4 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
             CVI → MachineTrustRegistry → MachineTrustCredit · Monad chain {config?.chainId ?? 10143}
@@ -96,8 +95,8 @@ export function LendingMarket() {
               <div className="border-b border-border px-5 py-4">
                 <p className="mt-label">Operator wallet</p>
                 <p className="mt-2 text-[13px] text-muted-foreground">
-                  Sandbox wallets. CVI is resolved live via Cleanverse{" "}
-                  <code>query_apass</code> — never hardcoded.
+                  Sandbox wallets. CVI is resolved live via Cleanverse <code>query_apass</code> —
+                  never hardcoded.
                 </p>
               </div>
               <ul className="grid gap-2 p-4">
@@ -174,29 +173,17 @@ export function LendingMarket() {
                 />
                 <LayerRow
                   label="Machine"
-                  value={
-                    eligibility
-                      ? eligibility.machine.passportId
-                      : config?.passportId ?? "—"
-                  }
+                  value={eligibility ? eligibility.machine.passportId : (config?.passportId ?? "—")}
                 />
                 <LayerRow
                   label="Machine Trust"
-                  value={
-                    eligibility
-                      ? machineOk
-                        ? "✓ AUTHORIZED"
-                        : "LOCKED"
-                      : "—"
-                  }
+                  value={eligibility ? (machineOk ? "✓ AUTHORIZED" : "LOCKED") : "—"}
                   ok={machineOk}
                   locked={Boolean(eligibility && !machineOk)}
                 />
                 <LayerRow
                   label="DeFi Eligibility"
-                  value={
-                    eligibility ? (defiOk ? "✓ ELIGIBLE" : "LOCKED") : "—"
-                  }
+                  value={eligibility ? (defiOk ? "✓ ELIGIBLE" : "LOCKED") : "—"}
                   ok={defiOk}
                   locked={Boolean(eligibility && !defiOk)}
                 />
@@ -224,8 +211,8 @@ export function LendingMarket() {
               </p>
               <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
                 On-chain gate: <code>cviEligible[borrower]</code> AND{" "}
-                <code>registry.ownerOf(machineId) == borrower</code>. Oracle-only writes so a
-                direct contract call cannot bypass Cleanverse CVI.
+                <code>registry.ownerOf(machineId) == borrower</code>. Oracle-only writes so a direct
+                contract call cannot bypass Cleanverse CVI.
               </p>
 
               <div className="mt-6 grid grid-cols-2 gap-px bg-border">
@@ -233,10 +220,7 @@ export function LendingMarket() {
                   ["Registry", config?.registryAddress ? shortAddr(config.registryAddress) : "—"],
                   ["Credit", config?.creditAddress ? shortAddr(config.creditAddress) : "not set"],
                   ["Machine ID", config?.machineId ? shortAddr(config.machineId) : "—"],
-                  [
-                    "Position",
-                    position?.active ? `${position.depositMon} MON` : "none",
-                  ],
+                  ["Position", position?.active ? `${position.depositMon} MON` : "none"],
                 ].map(([k, v]) => (
                   <div key={k} className="bg-background px-4 py-4">
                     <p className="mt-label">{k}</p>
@@ -351,9 +335,7 @@ export function LendingMarket() {
                     </div>
                     <div>
                       <dt className="mt-label">Contract</dt>
-                      <dd className="mt-mono mt-1 break-all">
-                        {config?.creditAddress ?? "—"}
-                      </dd>
+                      <dd className="mt-mono mt-1 break-all">{config?.creditAddress ?? "—"}</dd>
                     </div>
                     <div>
                       <dt className="mt-label">Status</dt>

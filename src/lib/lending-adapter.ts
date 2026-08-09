@@ -5,23 +5,15 @@ import {
   getTrack2Eligibility,
   openCreditDeposit,
 } from "@/lib/lending.functions";
-import type {
-  CreditActionResult,
-  CreditPosition,
-  EligibilityDecision,
-} from "@/lib/lending/types";
+import type { CreditActionResult, CreditPosition, EligibilityDecision } from "@/lib/lending/types";
 
 export type { CreditMarketConfig } from "@/lib/lending/credit.server";
 
-export async function fetchTrack2Eligibility(
-  walletAddress: string,
-): Promise<EligibilityDecision> {
+export async function fetchTrack2Eligibility(walletAddress: string): Promise<EligibilityDecision> {
   return getTrack2Eligibility({ data: { walletAddress } });
 }
 
-export async function fetchCreditPosition(
-  walletAddress: string,
-): Promise<CreditPosition | null> {
+export async function fetchCreditPosition(walletAddress: string): Promise<CreditPosition | null> {
   return getCreditPosition({ data: { walletAddress } });
 }
 

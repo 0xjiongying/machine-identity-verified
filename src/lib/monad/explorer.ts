@@ -49,6 +49,25 @@ export const MACHINE_TRUST_REGISTRY_DEPLOYMENT = {
   },
 } as const;
 
+/** Track 2 — CVI-gated MachineTrustCredit on Monad Testnet. */
+export const MACHINE_TRUST_CREDIT_DEPLOYMENT = {
+  network: "Monad Testnet",
+  chainId: 10143,
+  contractAddress: "0x918f4Db6F072b28E2eA379Cb53314892D36122B8" as const,
+  deployTx: "0x78cf511b134dab8129cffc30d95bf31c9ea3bd1e1a6e3eda04976217e96ead0c" as const,
+  setCviEligibleTx: "0xe4f627571781d15a05552d8fbcf3b9ce947424dd5de8db14cd8a5b95ebf081d7" as const,
+  openCreditDepositTx:
+    "0xfb7c0476fd3ffc94bab31c50f0e947cbfbe914a0f862eb3fb2fb59ec041acb91" as const,
+  registryAddress: "0x83753166684AfB4912a61713c49Feada6298dF19" as const,
+  explorers: {
+    contract: "https://testnet.monadvision.com/address/0x918f4Db6F072b28E2eA379Cb53314892D36122B8",
+    deployTx:
+      "https://testnet.monadvision.com/tx/0x78cf511b134dab8129cffc30d95bf31c9ea3bd1e1a6e3eda04976217e96ead0c",
+    openCreditDeposit:
+      "https://testnet.monadvision.com/tx/0xfb7c0476fd3ffc94bab31c50f0e947cbfbe914a0f862eb3fb2fb59ec041acb91",
+  },
+} as const;
+
 export function monadTestnetTxUrl(txHash: string): string {
   const hash = txHash.startsWith("0x") ? txHash : `0x${txHash}`;
   return `${MONAD_TESTNET_EXPLORER}/tx/${hash}`;

@@ -48,11 +48,23 @@ Issuer/fund CCP `ComplianceFailed` states are **not** rewritten. Track 2 require
 
 Monad Testnet · chain ID **10143**
 
+| Item | Value |
+| --- | --- |
+| MachineTrustRegistry | `0x83753166684AfB4912a61713c49Feada6298dF19` |
+| MachineTrustCredit | `0x918f4Db6F072b28E2eA379Cb53314892D36122B8` |
+| Credit deploy TX | `0x78cf511b134dab8129cffc30d95bf31c9ea3bd1e1a6e3eda04976217e96ead0c` |
+| setCviEligible (Fund B) | `0xe4f627571781d15a05552d8fbcf3b9ce947424dd5de8db14cd8a5b95ebf081d7` |
+| openCreditDeposit | `0xfb7c0476fd3ffc94bab31c50f0e947cbfbe914a0f862eb3fb2fb59ec041acb91` |
+| Negative path | Unknown wallet `query_apass` code `0002` → `NotCviVerified` |
+
 Artifacts:
 
 - Registry: `contracts/deployments/monad-testnet.json`
-- Credit: `contracts/deployments/monad-testnet-credit.json` (after deploy)
-- Proof: `contracts/deployments/monad-testnet-credit-proof.json` (after proof)
+- Credit: `contracts/deployments/monad-testnet-credit.json`
+- Proof: `contracts/deployments/monad-testnet-credit-proof.json`
+
+Live demo: https://machine-trust.onrender.com/#defi  
+GitHub: https://github.com/0xjiongying/machine-identity-verified
 
 ## Commands
 

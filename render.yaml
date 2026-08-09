@@ -45,4 +45,9 @@ services:
       - key: MONAD_TESTNET_PRIVATE_KEY
         sync: false
       - key: MACHINETRUST_REGISTRY_ADDRESS
+        value: "0x83753166684AfB4912a61713c49Feada6298dF19"
+      - key: MACHINETRUST_OPERATOR_ADDRESS
         sync: false
+      # Track 2 CVI-gated DeFi — MachineTrustCredit on Monad Testnet
+      - key: MACHINE_TRUST_CREDIT_ADDRESS
+        value: "0x918f4Db6F072b28E2eA379Cb53314892D36122B8"
