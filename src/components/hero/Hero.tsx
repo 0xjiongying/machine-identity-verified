@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/
 import { useRef, useState } from "react";
 import { Shell, DemoTag } from "@/components/primitives";
 import { CleanverseMark } from "@/components/brand/CleanverseLogo";
+import { LogoMark } from "@/components/navigation/Logo";
 import { MagneticButton } from "@/components/motion/MagneticButton";
 import { EASE } from "@/lib/motion";
 import { useReducedMotion } from "@/hooks/useMotionPrefs";
@@ -99,9 +100,10 @@ export function Hero() {
 
             <motion.p
               {...rise(0.2)}
-              className="mb-3 text-[clamp(1.75rem,4vw,2.75rem)] font-medium leading-none tracking-[-0.03em]"
+              className="mb-3 flex items-center gap-3 text-[clamp(1.75rem,4vw,2.75rem)] font-medium leading-none tracking-[-0.03em]"
               style={{ opacity: 1 - introOut * 0.85 }}
             >
+              <LogoMark className="size-[clamp(1.75rem,4vw,2.75rem)] rounded-md" />
               Machine Trust
             </motion.p>
 

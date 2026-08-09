@@ -197,6 +197,8 @@ export function Transfer() {
                 <ul className="mt-3 grid gap-2">
                   {counterparties.map((r) => {
                     const verified = r.status === "active";
+                    const displayName =
+                      r.holder.name === "Equipment Fund B" ? "Verified Buyer" : r.holder.name;
                     return (
                       <li key={r.id}>
                         <button
@@ -216,9 +218,7 @@ export function Transfer() {
                         >
                           <span className="min-w-0">
                             <span className="mt-label block">{r.holder.role}</span>
-                            <span className="mt-1.5 block truncate text-[14px]">
-                              {r.holder.name}
-                            </span>
+                            <span className="mt-1.5 block truncate text-[14px]">{displayName}</span>
                             <span className="mt-mono mt-1 block text-[11px] text-muted-foreground">
                               {r.holder.wallet} · {r.jurisdiction} · tier {r.kycTier}
                             </span>
@@ -323,7 +323,11 @@ export function Transfer() {
                             <p className="mt-mono my-1 text-primary" aria-hidden="true">
                               ↓
                             </p>
-                            <p className="text-[15px]">{recipient.holder.name}</p>
+                            <p className="text-[15px]">
+                              {recipient.holder.name === "Equipment Fund B"
+                                ? "Verified Buyer"
+                                : recipient.holder.name}
+                            </p>
                             <p className="mt-mono mt-4 text-[11px] text-muted-foreground">
                               <HashReveal
                                 value={result.settlement?.txRef ?? ""}
@@ -331,8 +335,8 @@ export function Transfer() {
                               />{" "}
                               ·{" "}
                               {result.settlement?.kind === "on-chain"
-                                ? "Monad Testnet tx"
-                                : "Monad settlement ref (DEMO)"}{" "}
+                                ? "MONAD TESTNET · real transaction"
+                                : "DEMO MODE · settlement ref (not an explorer hash)"}{" "}
                               · {result.decisionId}
                             </p>
                             {result.settlement?.kind === "on-chain" &&

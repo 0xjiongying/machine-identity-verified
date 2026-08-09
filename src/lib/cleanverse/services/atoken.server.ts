@@ -4,9 +4,11 @@
  */
 
 import {
+  addAtokenRule,
   launchAtoken,
   listMyAtokens,
   queryApplyStatus,
+  queryAtokenRules,
   type AtokenListing,
   type CleanverseConfig,
   type ComplianceRule,
@@ -86,7 +88,7 @@ export const ATokenService = {
     return listMyAtokens(cfg, query);
   },
 
-  defaultMachineRule(countries: string[]): ComplianceRule {
+  defaultMachineRule(countries: string[] = []): ComplianceRule {
     return {
       allowed_group: "",
       allowed_sub_group: "",
@@ -94,6 +96,61 @@ export const ATokenService = {
       min_sub_tier: 0,
       is_black_list: false,
       countries,
+    };
+  },
+
+  queryRules(cfg: CleanverseConfig, atokenAddress: string, chain = cfg.chain) {
+    return queryAtokenRules(cfg, atokenAddress, chain);
+  },
+
+  /**
+   * Ensure the bound A-Token has at least one compliance rule.
+   *
+   * Evidence (UAT 2026-08-09): `POST /atoken/rules` for Monad aUSDC returned
+   * `rules: []`. `POST /verify_apass` then failed with envelope 0002 and
+   * on-chain error `ComplianceFailed(address)` for wallets that already had
+   * active A-Passes. After `POST /atoken/add_rule` with a permissive rule,
+   * the same wallets returned `data.code === 4`.
+   */
+  async ensureComplianceRule(
+    cfg: CleanverseConfig,
+    atokenAddress: string,
+  ): Promise<{
+    rules: ComplianceRule[];
+    added: boolean;
+    addTxHash: string | null;
+    notice: string;
+  }> {
+    const queried = await queryAtokenRules(cfg, atokenAddress);
+    const existing = queried.data?.rules ?? [];
+    if (queried.code === "0000" && existing.length > 0) {
+      return {
+        rules: existing,
+        added: false,
+        addTxHash: null,
+        notice: `A-Token has ${existing.length} compliance rule(s).`,
+      };
+    }
+
+    const rule = ATokenService.defaultMachineRule([]);
+    const added = await addAtokenRule(cfg, atokenAddress, rule);
+    if (added.code !== "0000") {
+      return {
+        rules: existing,
+        added: false,
+        addTxHash: null,
+        notice: `A-Token has empty compliance rules and add_rule failed (${added.code}: ${added.message}). verify_apass may return ComplianceFailed for A-Pass holders.`,
+      };
+    }
+
+    const refreshed = await queryAtokenRules(cfg, atokenAddress);
+    return {
+      rules: refreshed.data?.rules ?? [rule],
+      added: true,
+      addTxHash: added.data?.tx_hash ?? null,
+      notice: `A-Token had empty compliance rules; added permissive rule via /atoken/add_rule${
+        added.data?.tx_hash ? ` (tx ${added.data.tx_hash.slice(0, 12)}…)` : ""
+      }.`,
     };
   },
 };

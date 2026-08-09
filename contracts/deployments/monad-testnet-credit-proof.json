@@ -1,0 +1,50 @@
+{
+  "network": "Monad Testnet",
+  "chainId": 10143,
+  "registry": "0x83753166684AfB4912a61713c49Feada6298dF19",
+  "credit": "0x918f4Db6F072b28E2eA379Cb53314892D36122B8",
+  "machineId": "0xe55b60ba6dd97d38033c070569be3a44f696abb69fb25b56160bafe8419f7979",
+  "cases": {
+    "unknown": {
+      "cvi": {
+        "envelopeCode": "0002",
+        "envelopeMessage": "[CN_001]get apass err: apass not found for user 0xDA45b2481b679B6A2Eacb413FdCf761Ab1637D2e",
+        "active": false,
+        "cvRecordId": null,
+        "rawHasData": false
+      },
+      "expected": "blocked",
+      "setCviEligibleTx": "0xbb3b95a14c5b57edc1f57dd117909e5b32203fcc6adaa2f5e920963f31997067",
+      "rejectReason": "The contract function \"openCreditDeposit\" reverted with the following signature:\n0x4ef688e4\n\nUnable to decode signature \"0x4ef688e4\" as it was not found on the provided ABI.\nMake sure you are using the correct ABI and that the error exists on it.\nYou can look up the decoded signature here: https://4byte.sourcify.dev/?q=0x4ef688e4.\n \nContract Call:\n  address:   0x918f4Db6F072b28E2eA379Cb53314892D36122B8\n  function:  openCreditDeposit(address borrower, bytes32 machineId, bytes32 cviRef)\n  args:                       (0xDa45B2481B679B6A2eacB413FDcf761AB1637d2E, 0xe55b60ba6dd97d38033c070569be3a44f696abb69fb25b56160bafe8419f7979, 0x6c8245fe7d8c3de847e01b4d07d83e1584044d8b78a62c15c8caca01e101f8b1)\n  sender:    0x9B41e219d533cEe084a4f909C8aC318Fe4C413bA\n\nDocs: https://viem.sh/docs/contract/decodeErrorResult\nDetails: execution reverted\nVersion: viem@2.55.11",
+      "rejected": true,
+      "cviEligibleOnChain": false
+    },
+    "fundB": {
+      "cvi": {
+        "envelopeCode": "0000",
+        "envelopeMessage": "success",
+        "active": true,
+        "cvRecordId": "1914",
+        "rawHasData": true
+      },
+      "expected": "eligible",
+      "setCviEligibleTx": "0xe4f627571781d15a05552d8fbcf3b9ce947424dd5de8db14cd8a5b95ebf081d7",
+      "openCreditDepositTx": "0xfb7c0476fd3ffc94bab31c50f0e947cbfbe914a0f862eb3fb2fb59ec041acb91",
+      "receiptStatus": "success",
+      "isAuthorized": true,
+      "openCreditDepositTxFirstAttemptReverted": "0xf6cc92a61688b43b90206de779810a6a9ef227b863aa2641e88f82b79dab0b64",
+      "depositWei": "10000000000000000",
+      "depositMon": "0.01",
+      "positionActive": true
+    }
+  },
+  "at": "2026-08-09T02:59:04.387Z",
+  "machineOwner": "0xC8bA032092cC2499637f4E331E841ab24d1c9964",
+  "ok": true,
+  "explorers": {
+    "credit": "https://testnet.monadvision.com/address/0x918f4Db6F072b28E2eA379Cb53314892D36122B8",
+    "setCviEligibleFundB": "https://testnet.monadvision.com/tx/0xe4f627571781d15a05552d8fbcf3b9ce947424dd5de8db14cd8a5b95ebf081d7",
+    "openCreditDeposit": "https://testnet.monadvision.com/tx/0xfb7c0476fd3ffc94bab31c50f0e947cbfbe914a0f862eb3fb2fb59ec041acb91",
+    "unknownRejectSet": "https://testnet.monadvision.com/tx/0xbb3b95a14c5b57edc1f57dd117909e5b32203fcc6adaa2f5e920963f31997067"
+  }
+}

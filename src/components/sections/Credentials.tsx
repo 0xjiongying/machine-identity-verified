@@ -60,7 +60,11 @@ function CviCard({ credential, onToggle }: { credential: CviCredential; onToggle
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="mt-label">{credential.holder.role}</p>
-          <p className="mt-1.5 truncate text-[15px]">{credential.holder.name}</p>
+          <p className="mt-1.5 truncate text-[15px]">
+            {credential.holder.name === "Equipment Fund B"
+              ? "Verified Buyer"
+              : credential.holder.name}
+          </p>
         </div>
         <span
           className={cn(
@@ -136,14 +140,14 @@ export function Credentials() {
           <Eyebrow index="07">Cleanverse credentials</Eyebrow>
           <Heading>CVI verifies the party. CVA verifies the asset.</Heading>
           <Lede>
-            Issuer and buyer wallets map to Cleanverse A-Pass checks. In{" "}
-            <strong className="font-medium text-foreground">SANDBOX</strong> mode, live{" "}
-            <code>query_apass</code> / <code>verify_apass</code> decide — local toggles only affect
-            DEMO preview grading.
+            Issuer and Verified Buyer wallets map to Cleanverse A-Pass checks.{" "}
+            <strong className="font-medium text-foreground">LIVE Cleanverse</strong> uses{" "}
+            <code>query_apass</code> / <code>verify_apass</code>. Local fixture toggles only affect{" "}
+            <strong className="font-medium text-foreground">DEMO MODE</strong> preview grading.
           </Lede>
           <p className="mt-mono mt-4 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            Adapter mode: {mode === "live" ? "SANDBOX" : "DEMO"} · issuer wallet shown below is the
-            issuance CVI subject
+            Adapter mode: {mode === "live" ? "LIVE Cleanverse" : "DEMO MODE"} · issuer wallet shown
+            below is the issuance CVI subject
           </p>
         </Reveal>
 
@@ -258,8 +262,8 @@ export function Credentials() {
             {fund ? (
               <p className="mt-5 text-[13px] leading-relaxed text-muted-foreground">
                 {mode === "demo"
-                  ? `DEMO: toggle ${fund.holder.name}'s fixture, then run transfer — local CCP preview changes.`
-                  : `SANDBOX: transfer uses live verify_apass on wallet ${fund.holder.wallet.slice(0, 10)}… — fixture toggles are disabled.`}
+                  ? "DEMO MODE: inspect the credential gate, then run the transfer flow."
+                  : `LIVE Cleanverse: transfer uses verify_apass on Verified Buyer wallet ${fund.holder.wallet.slice(0, 10)}… — fixture toggles are disabled.`}
               </p>
             ) : null}
           </div>

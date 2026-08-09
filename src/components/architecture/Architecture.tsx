@@ -208,7 +208,7 @@ export function Architecture() {
               </a>
             </p>
             <p className="mt-mono mt-2 break-all text-[11px] text-muted-foreground">
-              Deploy tx{" "}
+              Deploy ·{" "}
               <a
                 className="text-primary underline-offset-2 hover:underline"
                 href={MACHINE_TRUST_REGISTRY_DEPLOYMENT.explorers.deployTx}
@@ -218,14 +218,45 @@ export function Architecture() {
                 {MACHINE_TRUST_REGISTRY_DEPLOYMENT.deployTx}
               </a>
             </p>
+            <p className="mt-mono mt-2 break-all text-[11px] text-muted-foreground">
+              Register ·{" "}
+              <a
+                className="text-primary underline-offset-2 hover:underline"
+                href={MACHINE_TRUST_REGISTRY_DEPLOYMENT.explorers.registrationTx}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {MACHINE_TRUST_REGISTRY_DEPLOYMENT.registrationTx}
+              </a>
+            </p>
+            <p className="mt-mono mt-2 break-all text-[11px] text-muted-foreground">
+              Ownership ·{" "}
+              <a
+                className="text-primary underline-offset-2 hover:underline"
+                href={MACHINE_TRUST_REGISTRY_DEPLOYMENT.explorers.ownershipTransferTx}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {MACHINE_TRUST_REGISTRY_DEPLOYMENT.ownershipTransferTx}
+              </a>
+            </p>
+            <p className="mt-mono mt-2 break-all text-[11px] text-muted-foreground">
+              aToken rule ·{" "}
+              <a
+                className="text-primary underline-offset-2 hover:underline"
+                href={MACHINE_TRUST_REGISTRY_DEPLOYMENT.explorers.ruleAddTx}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {MACHINE_TRUST_REGISTRY_DEPLOYMENT.ruleAddTx}
+              </a>
+            </p>
             <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
-              Cleanverse CVI → CVA → CCP must APPROVE before{" "}
-              <span className="font-mono text-[11px]">registerMachine</span> /{" "}
-              <span className="font-mono text-[11px]">transferOwnership</span>. Current gate:{" "}
-              {MACHINE_TRUST_REGISTRY_DEPLOYMENT.cleanverseGate}
-              {MACHINE_TRUST_REGISTRY_DEPLOYMENT.registrationTx
-                ? ""
-                : " — no ownership txs submitted without data.code 4."}
+              Cleanverse CVI → CVA → CCP (`data.code` 4) gated both on-chain writes. Gate:{" "}
+              {MACHINE_TRUST_REGISTRY_DEPLOYMENT.cleanverseGate}. Owner after transfer:{" "}
+              <span className="font-mono text-[11px]">
+                {MACHINE_TRUST_REGISTRY_DEPLOYMENT.ownerAfterTransfer}
+              </span>
             </p>
           </div>
         </Reveal>

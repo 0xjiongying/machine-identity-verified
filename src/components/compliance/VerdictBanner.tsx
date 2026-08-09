@@ -57,6 +57,14 @@ export function VerdictBanner({ result }: { result: Evaluation }) {
           ? "Sandbox unreachable. Fail-closed — nothing submitted to Monad."
           : "Compliance rejected. Nothing submitted to Monad. Ownership unchanged."}
       </p>
+      {(() => {
+        const failed = result.rules.find((r) => r.status === "fail");
+        return failed ? (
+          <p className="mt-2 text-[12px] leading-relaxed text-muted-foreground">
+            {failed.source} · {failed.label}: {failed.reason}
+          </p>
+        ) : null;
+      })()}
       <p className="mt-mono mt-2 text-[11px] text-muted-foreground">
         HTTP 200 ≠ approval · only data.code 4 allows
       </p>

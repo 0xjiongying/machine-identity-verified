@@ -45,8 +45,13 @@ Aligned with the Cleanverse Trust Framework: interlocking **CVI** (verified iden
 | Cleanverse Sandbox (Monad chain param) | **REAL** API calls |
 | Monad Testnet | Official RPC · chain id **10143** · explorer [testnet.monadvision.com](https://testnet.monadvision.com) |
 | `MachineTrustRegistry` | **DEPLOYED** [`0x83753166684AfB4912a61713c49Feada6298dF19`](https://testnet.monadvision.com/address/0x83753166684AfB4912a61713c49Feada6298dF19) |
-| Deploy tx | [`0xa6fbe2a7…af8033`](https://testnet.monadvision.com/tx/0xa6fbe2a7da222eabda364fce8230e98d18d8add31db6e0c5dc3cb8bcecaf8033) · confirmed |
-| Ownership txs | **Not submitted** — live CCP for issuer/fund is ComplianceFailed; gate BLOCKS Monad writes (correct) |
+| Deploy tx | [`0xa6fbe2a7…af8033`](https://testnet.monadvision.com/tx/0xa6fbe2a7da222eabda364fce8230e98d18d8add31db6e0c5dc3cb8bcecaf8033) |
+| Register tx | [`0xdb70d058…df8fa6`](https://testnet.monadvision.com/tx/0xdb70d0585ef0afb6662f0813c6eec2822510c7233ad894b6eb8df131e0df8fa6) · confirmed |
+| Ownership tx | [`0x5fa64683…e09513`](https://testnet.monadvision.com/tx/0x5fa6468338d03c1d18f53e08e8e45fa6c9371641763708a6413dd9ab86e09513) · owner Fund B |
+| Proof time | `2026-08-09T01:47:12Z` (UTC) · CCP-gated · not Mainnet |
+| CCP | Issuer + Fund **`data.code` 4** → only then Monad writes |
+
+**Contract role:** Registers machine ownership and records transfers on Monad Testnet after Cleanverse CVI → CVA → CCP APPROVE.
 
 ## CORE FLOW
 
@@ -91,7 +96,7 @@ Open `/?demo=1` — see `docs/DEMO_SCRIPT.md`.
 
 | REAL | SANDBOX | DEMO ONLY | ROADMAP |
 | --- | --- | --- | --- |
-| CVI/CVA/CCP calls with credentials; fail-closed on UAT CCP infra errors | UAT Cooperate API v5.6 | Passport/maintenance metadata; Monad settlement ref; local CCP when secrets unset | Custom A-Token ISSUED; validator pool CCP; registry deploy |
+| Monad Testnet registry + register/ownership txs (explorer-confirmed) | CVI/CVA/CCP via UAT Cooperate API v5.6 | Passport/maintenance metadata; local CCP when secrets unset | Custom A-Token ISSUED; validator pool CCP; Mainnet |
 
 **Live demo:** https://machine-trust.onrender.com  
 **Health:** https://machine-trust.onrender.com/health  
@@ -99,4 +104,4 @@ Open `/?demo=1` — see `docs/DEMO_SCRIPT.md`.
 **Repo:** https://github.com/0xjiongying/machine-identity-verified
 
 > **Submission blockers (owner):** (1) make GitHub **public**, (2) set Cleanverse secrets on Render (`CLEANVERSE_SANDBOX_API_*`), (3) upload demo video.  
-> **Sandbox note:** Live UAT may return `ComplianceFailed` on `verify_apass` for the current aUSDC listing — Machine Trust **fails closed** and never fabricates `data.code` 4.
+> **CCP note:** Empty A-Token rules caused on-chain `ComplianceFailed` for A-Pass holders. Machine Trust queries `/atoken/rules` and adds a permissive rule via `/atoken/add_rule` when empty, then requires `verify_apass` `data.code` 4 before Monad writes.

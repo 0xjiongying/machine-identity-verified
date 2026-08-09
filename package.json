@@ -21,7 +21,9 @@
     "registry:test": "forge test",
     "registry:deploy": "node scripts/deploy-registry.mjs",
     "registry:proof": "node scripts/ccp-gated-registry-proof.mjs",
-    "test": "npm run typecheck && npm run registry:compile && node scripts/security-smoke.mjs",
+    "credit:deploy": "node scripts/deploy-credit.mjs",
+    "credit:proof": "node scripts/cvi-gated-credit-proof.mjs",
+    "test": "npm run typecheck && npm run registry:compile && npm run registry:test && node scripts/security-smoke.mjs",
     "test:integration": "npm run cleanverse:audit"
   },
   "dependencies": {

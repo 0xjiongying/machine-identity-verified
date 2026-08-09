@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none" role="img" aria-label="Machine Trust">
+  <rect width="512" height="512" fill="#000000"/>
+  <!-- Chamfered outer frame -->
+  <path
+    fill="#F2F2F2"
+    fill-rule="evenodd"
+    d="M104 40H408L472 104V408L408 472H104L40 408V104L104 40ZM128 96L96 128V384L128 416H384L416 384V128L384 96H128Z"
+  />
+  <!-- Left M stem -->
+  <path fill="#F2F2F2" d="M152 148H220L200 176V368H152V148Z"/>
+  <!-- Purple right M stem -->
+  <path fill="#8A63D2" d="M292 148H360V368H292V148Z"/>
+  <!-- Checkmark — M valley + trust slash through purple stem -->
+  <path
+    fill="#F2F2F2"
+    d="M220 236L256 318L448 92L398 56L256 236L236 208Z"
+  />
+</svg>

@@ -42,15 +42,16 @@ export const ComplianceService = {
     const envelope = await verifyApass(cfg, atoken, address, chain);
     if (envelope.code !== "0000") {
       const msg = envelope.message || `Cleanverse deny (envelope ${envelope.code}).`;
-      // Envelope 0002 with ComplianceFailed is a Sandbox/chain validation failure — not approval.
-      const sandboxInfra = /ComplianceFailed|failed to validate atoken|failed to check apass/i.test(
-        msg,
-      );
+      // On-chain ComplianceFailed(address) — A-Token rule evaluation rejected the wallet.
+      // Root cause observed on UAT: empty A-Token rules (`POST /atoken/rules` → rules: []).
+      // This is a real CCP deny, not a transport timeout.
+      const complianceFailed =
+        /ComplianceFailed|failed to validate atoken|failed to check apass/i.test(msg);
       return {
         allowed: false,
         code: envelope.code,
-        reason: sandboxInfra
-          ? `Sandbox CCP unavailable for this A-Token right now (${msg}). Fail-closed — not approved.`
+        reason: complianceFailed
+          ? `CCP ComplianceFailed for this A-Token/wallet (on-chain). ${msg} — often empty or mismatched A-Token compliance rules (tier/group/countries). Fail-closed — not approved.`
           : msg,
         magickLink: envelope.data?.magickLink ?? null,
         envelope,

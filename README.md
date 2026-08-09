@@ -4,20 +4,24 @@
 
 Turn high-value physical machines into verified, traceable, compliance-aware programmable RWAs — using the Cleanverse Trust Framework (CVI + CVA + Programmed Governance via CCP) before value moves, with Monad as the execution / settlement layer.
 
-Built for the **Cleanverse Build: Trusted Assets Hackathon — Track 1 RWA**.
+Built for the **Cleanverse Build: Trusted Assets Hackathon** — Track 1 RWA and **Track 2 DeFi (CVI-gated)**.
 
 |                     |                                                                     |
 | ------------------- | ------------------------------------------------------------------- |
-| **Live demo**       | https://machine-trust.onrender.com                                  |
+| **Live demo**       | https://machine-trust.onrender.com · Track 2 `#defi` requires deploy of PR branch + Cleanverse/Monad/`MACHINE_TRUST_CREDIT_ADDRESS` env (health currently reports Cleanverse/Monad **unconfigured**) |
 | **Health**          | https://machine-trust.onrender.com/health                           |
-| **Demo video**      | _Add 2–4 min walkthrough — [DEMO_SCRIPT.md](./docs/DEMO_SCRIPT.md)_ |
-| **One-pager**       | [docs/ONE_PAGE_SUMMARY.md](./docs/ONE_PAGE_SUMMARY.md)              |
+| **Demo video**      | _Record walkthrough — [Track 2 script](./docs/DEMO_SCRIPT_TRACK2.md) / [Track 1](./docs/DEMO_SCRIPT.md)_ |
+| **Track 2 one-pager** | [docs/CLEANVERSE_TRACK2.md](./docs/CLEANVERSE_TRACK2.md)          |
+| **Track 1 one-pager** | [docs/ONE_PAGE_SUMMARY.md](./docs/ONE_PAGE_SUMMARY.md)            |
 | **Integration map** | [docs/INTEGRATION_MAP.md](./docs/INTEGRATION_MAP.md)                |
-| **Contract**        | [MachineTrustRegistry](https://testnet.monadvision.com/address/0x83753166684AfB4912a61713c49Feada6298dF19) on **Monad Testnet** · [`0x8375…8dF19`](./contracts/deployments/monad-testnet.json) |
+| **Registry**        | [MachineTrustRegistry](https://testnet.monadvision.com/address/0x83753166684AfB4912a61713c49Feada6298dF19) · [`0x8375…8dF19`](./contracts/deployments/monad-testnet.json) |
+| **Credit (Track 2)** | [MachineTrustCredit](https://testnet.monadvision.com/address/0x918f4Db6F072b28E2eA379Cb53314892D36122B8) · [`0x918f…22B8`](./contracts/deployments/monad-testnet-credit.json) |
+| **DeFi TX**         | [`0xfb7c0476…1acb91`](https://testnet.monadvision.com/tx/0xfb7c0476fd3ffc94bab31c50f0e947cbfbe914a0f862eb3fb2fb59ec041acb91) |
 | **Deploy tx**       | [`0xa6fbe2a7…af8033`](https://testnet.monadvision.com/tx/0xa6fbe2a7da222eabda364fce8230e98d18d8add31db6e0c5dc3cb8bcecaf8033) |
+| **Register tx**     | [`0xdb70d058…df8fa6`](https://testnet.monadvision.com/tx/0xdb70d0585ef0afb6662f0813c6eec2822510c7233ad894b6eb8df131e0df8fa6) |
 | **Repo**            | https://github.com/0xjiongying/machine-identity-verified            |
 
-> **Submission blockers (owner):** (1) make this GitHub repository **public**, (2) set Cleanverse Sandbox secrets on Render when UAT `verify_apass` returns `data.code` 4 again, (3) upload demo video.
+> **Track 2 ship blockers (verified 2026-08-09):** (1) Render production health = Cleanverse **unconfigured** + Monad **unconfigured** (no live CVI/DeFi writes), (2) production build does not yet include Track 2 `#defi` (deploy PR [`#4`](https://github.com/0xjiongying/machine-identity-verified/pull/4) / branch `cursor/cleanverse-track2-cvi-defi-df18` with `MACHINE_TRUST_CREDIT_ADDRESS=0x918f4Db6F072b28E2eA379Cb53314892D36122B8`), (3) record/upload Track 2 demo video per [DEMO_SCRIPT_TRACK2.md](./docs/DEMO_SCRIPT_TRACK2.md). On-chain DeFi TX already confirmed on Monad Testnet.
 
 ---
 
@@ -79,11 +83,12 @@ src/
     service.server.ts         # Track 1 orchestration (fail closed)
   lib/cleanverse-adapter.ts   # Browser → server boundary (no secrets)
 contracts/
-  MachineTrustRegistry.sol    # Minimal ownership registry — NOT DEPLOYED
+  MachineTrustRegistry.sol    # Minimal ownership registry — DEPLOYED Monad Testnet
+  deployments/monad-testnet.json
 docs/                         # One-pager, integration map, demo script
 ```
 
-Secrets stay in server env (`CLEANVERSE_SANDBOX_API_*`). Never `VITE_*`. Never in the browser, logs, or UI.
+Secrets stay in server env (`CLEANVERSE_SANDBOX_API_*`, `MONAD_TESTNET_*`, `MACHINETRUST_REGISTRY_ADDRESS`). Never `VITE_*`. Never in the browser, logs, or UI.
 
 ---
 
@@ -106,11 +111,15 @@ If the live Sandbox is unreachable, the adapter **fails closed** (no approval, n
 | CVI `query_apass` | **SANDBOX / REAL** | Live UAT with credentials |
 | CVA registered bind (aUSDC) | **SANDBOX / REAL** | Status `bound` · address from `query_deposit_atoken_list` (UAT can rotate) |
 | CVA custom `/atoken/launch` | **UNAVAILABLE** | Not on hot path; UAT `ISSUE_FAILED` — never faked as ISSUED |
-| CCP `verify_apass` | **SANDBOX / REAL** | Unknown → `data.code` 2 (BLOCK). Issuer/Fund currently may return envelope `0002` / atoken validation failure on UAT — app **fails closed** (never fabricates code 4). When UAT recovers, code 4 is the only APPROVE path. |
+| CCP `verify_apass` | **SANDBOX / REAL** | Unknown → `data.code` 2 (BLOCK). Issuer/Fund → `data.code` 4 (APPROVE) after A-Token rules present. Only code 4 opens Monad writes. |
 | Validator pool `/validator/verify` | **UNAVAILABLE** | Needs owned registered pool |
-| Monad settlement | **On-chain after CCP only** | Registry **deployed** on Testnet; `registerMachine` / `transferOwnership` refused while UAT CCP returns ComplianceFailed |
-| `MachineTrustRegistry` | **DEPLOYED · Monad Testnet** | `0x83753166684AfB4912a61713c49Feada6298dF19` · deploy tx confirmed on [MonadVision](https://testnet.monadvision.com/tx/0xa6fbe2a7da222eabda364fce8230e98d18d8add31db6e0c5dc3cb8bcecaf8033) |
+| Monad settlement | **ON-CHAIN · Testnet** | CCP-gated `registerMachine` + `transferOwnership` confirmed on explorer |
+| `MachineTrustRegistry` | **DEPLOYED · Monad Testnet** | [`0x83753166684AfB4912a61713c49Feada6298dF19`](https://testnet.monadvision.com/address/0x83753166684AfB4912a61713c49Feada6298dF19) · chain id **10143** · RPC `https://testnet-rpc.monad.xyz` ([docs](https://docs.monad.xyz/developer-essentials/testnet)) |
+| Register tx | **CONFIRMED** | [`0xdb70d058…df8fa6`](https://testnet.monadvision.com/tx/0xdb70d0585ef0afb6662f0813c6eec2822510c7233ad894b6eb8df131e0df8fa6) |
+| Ownership tx | **CONFIRMED** | [`0x5fa64683…e09513`](https://testnet.monadvision.com/tx/0x5fa6468338d03c1d18f53e08e8e45fa6c9371641763708a6413dd9ab86e09513) · owner Fund B |
 | Passport / maintenance / parts | **DEMO** | Labelled demo machine metadata |
+
+**What the contract does:** `MachineTrustRegistry` stores machine id → owner after Cleanverse APPROVE. Operator calls `registerMachine` then `transferOwnership`. No Cleanverse bypass.
 
 ---
 
@@ -196,7 +205,7 @@ Also see [contracts/README.md](./contracts/README.md). Never claim Mainnet witho
 
 - Custom A-Token launch unavailable on Monad UAT (`ISSUE_FAILED`) — CVA uses registered aUSDC bind
 - On-chain validator pool CCP unavailable without an owned pool
-- Live UAT `verify_apass` for issuer/fund currently returns **ComplianceFailed** — Machine Trust **fails closed** (no fabricated `registerMachine` / `transferOwnership` txs)
+- If an A-Token has **empty compliance rules**, Cleanverse returns on-chain `ComplianceFailed` for A-Pass holders — Machine Trust now ensures a rule via `/atoken/add_rule` when permitted
 - Passport / maintenance / parts are DEMO fixtures
 - Not Mainnet
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { LogoMark } from "./Logo";
+import { WalletConnectButton } from "@/components/wallet/WalletConnectButton";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -9,6 +10,7 @@ const links = [
   { label: "Passport", href: "#passport" },
   { label: "Issue", href: "#issuance" },
   { label: "Transfer", href: "#transfer" },
+  { label: "DeFi", href: "#defi" },
 ];
 
 export function SiteNav() {
@@ -38,7 +40,7 @@ export function SiteNav() {
         className="mx-auto flex h-14 w-full max-w-[1280px] items-center gap-6 px-6 md:px-10 lg:px-16"
       >
         <Link to="/" className="flex min-w-0 shrink-0 items-center gap-2.5" data-cursor="home">
-          <LogoMark className="size-5 shrink-0 text-foreground" />
+          <LogoMark className="size-6 shrink-0 rounded-[3px]" />
           <span className="truncate text-[13px] font-medium tracking-[-0.01em]">Machine Trust</span>
         </Link>
 
@@ -62,10 +64,11 @@ export function SiteNav() {
           >
             Explorer
           </Link>
+          <WalletConnectButton />
           <a
             href="#issuance"
             data-cursor="issue"
-            className="mt-mono border border-border px-3 py-1.5 text-[11px] uppercase tracking-[0.14em] text-foreground transition-colors hover:border-primary hover:text-primary"
+            className="mt-mono hidden border border-border px-3 py-1.5 text-[11px] uppercase tracking-[0.14em] text-foreground transition-colors hover:border-primary hover:text-primary sm:inline-block"
           >
             Issue RWA
           </a>

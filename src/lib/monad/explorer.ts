@@ -10,7 +10,6 @@ export const MONAD_TESTNET = {
   networkName: "Monad Testnet",
   currency: "MON",
   rpcUrl: "https://testnet-rpc.monad.xyz",
-  /** Official explorers from docs.monad.xyz testnet network information */
   explorers: {
     monadvision: "https://testnet.monadvision.com",
     monadscan: "https://testnet.monadscan.com",
@@ -18,26 +17,54 @@ export const MONAD_TESTNET = {
   faucet: "https://faucet.monad.xyz",
 } as const;
 
-/** Primary explorer used in Machine Trust UI links. */
 export const MONAD_TESTNET_EXPLORER = MONAD_TESTNET.explorers.monadvision;
 
 /**
- * Public, explorer-verified MachineTrustRegistry deployment (no secrets).
- * Mirrored from contracts/deployments/monad-testnet.json after real deploy.
- * Ownership register/transfer txs stay null until CCP data.code 4 approves a write.
+ * Public, explorer-verified MachineTrustRegistry deployment + CCP-gated txs.
+ * Mirrored from contracts/deployments/monad-testnet.json (no secrets).
  */
 export const MACHINE_TRUST_REGISTRY_DEPLOYMENT = {
   network: "Monad Testnet",
   chainId: 10143,
   contractAddress: "0x83753166684AfB4912a61713c49Feada6298dF19" as const,
   deployTx: "0xa6fbe2a7da222eabda364fce8230e98d18d8add31db6e0c5dc3cb8bcecaf8033" as const,
-  registrationTx: null as string | null,
-  ownershipTransferTx: null as string | null,
-  cleanverseGate: "BLOCKED" as const,
+  registrationTx: "0xdb70d0585ef0afb6662f0813c6eec2822510c7233ad894b6eb8df131e0df8fa6" as const,
+  ownershipTransferTx:
+    "0x5fa6468338d03c1d18f53e08e8e45fa6c9371641763708a6413dd9ab86e09513" as const,
+  ruleAddTx: "0x903fed2f853ca3d92447ce08badd9ed512a16dd6f71732c72415f44ec5f7d6e2" as const,
+  ownerAfterTransfer: "0xC8bA032092cC2499637f4E331E841ab24d1c9964" as const,
+  ownerAfterRegister: "0x5D6b84e2CAB95b72eD74FB4768324763F4950D9e" as const,
+  cleanverseGate: "PASS" as const,
+  proofAt: "2026-08-09T01:47:12.454Z" as const,
   explorers: {
     contract: "https://testnet.monadvision.com/address/0x83753166684AfB4912a61713c49Feada6298dF19",
     deployTx:
       "https://testnet.monadvision.com/tx/0xa6fbe2a7da222eabda364fce8230e98d18d8add31db6e0c5dc3cb8bcecaf8033",
+    registrationTx:
+      "https://testnet.monadvision.com/tx/0xdb70d0585ef0afb6662f0813c6eec2822510c7233ad894b6eb8df131e0df8fa6",
+    ownershipTransferTx:
+      "https://testnet.monadvision.com/tx/0x5fa6468338d03c1d18f53e08e8e45fa6c9371641763708a6413dd9ab86e09513",
+    ruleAddTx:
+      "https://testnet.monadvision.com/tx/0x903fed2f853ca3d92447ce08badd9ed512a16dd6f71732c72415f44ec5f7d6e2",
+  },
+} as const;
+
+/** Track 2 — CVI-gated MachineTrustCredit on Monad Testnet. */
+export const MACHINE_TRUST_CREDIT_DEPLOYMENT = {
+  network: "Monad Testnet",
+  chainId: 10143,
+  contractAddress: "0x918f4Db6F072b28E2eA379Cb53314892D36122B8" as const,
+  deployTx: "0x78cf511b134dab8129cffc30d95bf31c9ea3bd1e1a6e3eda04976217e96ead0c" as const,
+  setCviEligibleTx: "0xe4f627571781d15a05552d8fbcf3b9ce947424dd5de8db14cd8a5b95ebf081d7" as const,
+  openCreditDepositTx:
+    "0xfb7c0476fd3ffc94bab31c50f0e947cbfbe914a0f862eb3fb2fb59ec041acb91" as const,
+  registryAddress: "0x83753166684AfB4912a61713c49Feada6298dF19" as const,
+  explorers: {
+    contract: "https://testnet.monadvision.com/address/0x918f4Db6F072b28E2eA379Cb53314892D36122B8",
+    deployTx:
+      "https://testnet.monadvision.com/tx/0x78cf511b134dab8129cffc30d95bf31c9ea3bd1e1a6e3eda04976217e96ead0c",
+    openCreditDeposit:
+      "https://testnet.monadvision.com/tx/0xfb7c0476fd3ffc94bab31c50f0e947cbfbe914a0f862eb3fb2fb59ec041acb91",
   },
 } as const;
 
