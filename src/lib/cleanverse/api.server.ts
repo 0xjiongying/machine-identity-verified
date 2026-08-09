@@ -407,6 +407,43 @@ export function listMyAtokens(
   }>(cfg, { method: "GET", path: `/atoken/list_my_atokens${suffix}` });
 }
 
+/** Docs: POST /atoken/rules — query compliance rules for an A-Token. */
+export function queryAtokenRules(cfg: CleanverseConfig, atokenAddress: string, chain = cfg.chain) {
+  return cooperateRequest<{
+    chain?: string;
+    atoken_address?: string;
+    rules?: ComplianceRule[];
+  }>(cfg, {
+    path: "/atoken/rules",
+    body: { chain, atoken_address: atokenAddress },
+  });
+}
+
+/**
+ * Docs: POST /atoken/add_rule (encrypted) — create-only compliance rule.
+ * Required when an A-Token has zero rules; empty rules cause on-chain
+ * ComplianceFailed(address) for wallets that already have an A-Pass.
+ */
+export function addAtokenRule(
+  cfg: CleanverseConfig,
+  atokenAddress: string,
+  rule: ComplianceRule,
+  chain = cfg.chain,
+) {
+  return cooperateRequest<{
+    chain?: string;
+    atoken_address?: string;
+    tx_hash?: string;
+  }>(cfg, {
+    path: "/atoken/add_rule",
+    body: {
+      chain,
+      atoken_address: atokenAddress,
+      rule,
+    },
+  });
+}
+
 /* ── CCP / pre-transaction (verify_apass) + Validator ─────────────────── */
 
 /**

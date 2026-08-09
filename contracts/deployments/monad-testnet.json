@@ -9,12 +9,26 @@
   "deployer": "0x9B41e219d533cEe084a4f909C8aC318Fe4C413bA",
   "operator": "0x9B41e219d533cEe084a4f909C8aC318Fe4C413bA",
   "deployedAt": "2026-08-09T01:05:00.000Z",
-  "registrationTx": null,
-  "ownershipTransferTx": null,
-  "cleanverseGate": "BLOCKED",
-  "cleanverseNote": "Live UAT verify_apass for issuer/fund returns ComplianceFailed / atoken validation failure — Machine Trust fails closed and does not submit registerMachine or transferOwnership without data.code 4.",
+  "passportId": "MT-PROOF-1786239472542",
+  "machineId": "0x80a741fb1d4a2d37203dd61814a06b7e0f2a85cf7e25a66a09be40d4bd7e50fe",
+  "registrationTx": "0xcb713131d44286761e2a866fbc9e9db0520de77327f83f68d5bde7dba663a7be",
+  "ownershipTransferTx": "0x445c62e758fff51d623c389421a72885dc9c8976a4b03780f7dc3ce784bb90b5",
+  "ownerAfterRegister": "0x5D6b84e2CAB95b72eD74FB4768324763F4950D9e",
+  "ownerAfterTransfer": "0xC8bA032092cC2499637f4E331E841ab24d1c9964",
+  "cleanverseGate": "PASS",
+  "cleanverse": {
+    "cvi": true,
+    "cva": "0xfa96de5b8f434c26fdff953303dd66ff80af1026",
+    "ccpIssuance": true,
+    "ccpTransfer": true,
+    "rootCauseFixed": "aUSDC had empty compliance rules; POST /atoken/add_rule added permissive rule; verify_apass then returned data.code 4",
+    "ruleAddTx": "0x903fed2f853ca3d92447ce08badd9ed512a16dd6f71732c72415f44ec5f7d6e2"
+  },
   "explorers": {
     "contract": "https://testnet.monadvision.com/address/0x83753166684AfB4912a61713c49Feada6298dF19",
-    "deployTx": "https://testnet.monadvision.com/tx/0xa6fbe2a7da222eabda364fce8230e98d18d8add31db6e0c5dc3cb8bcecaf8033"
+    "deployTx": "https://testnet.monadvision.com/tx/0xa6fbe2a7da222eabda364fce8230e98d18d8add31db6e0c5dc3cb8bcecaf8033",
+    "registrationTx": "https://testnet.monadvision.com/tx/0xcb713131d44286761e2a866fbc9e9db0520de77327f83f68d5bde7dba663a7be",
+    "ownershipTransferTx": "https://testnet.monadvision.com/tx/0x445c62e758fff51d623c389421a72885dc9c8976a4b03780f7dc3ce784bb90b5",
+    "ruleAddTx": "https://testnet.monadvision.com/tx/0x903fed2f853ca3d92447ce08badd9ed512a16dd6f71732c72415f44ec5f7d6e2"
   }
 }

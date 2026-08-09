@@ -11,8 +11,8 @@ Source of truth: https://docs.cleanverse.com (Cooperate API **v5.6**, revision 2
 | Chain used      | `monad`                                                                                                                 |
 | Envelope        | `code "0000"` = API call OK — **not** compliance approval                                                               |
 | CCP approval    | `POST /verify_apass` → `data.code === 4` only; envelope ≠ `0000` or codes 1–3 → BLOCK; transport failure → fail-closed |
-| Sandbox CCP risk | UAT may return envelope `0002` + `ComplianceFailed` for registered aUSDC — app fails closed, never fabricates code 4  |
-| On-chain registry | `contracts/MachineTrustRegistry.sol` — **NOT DEPLOYED**; settlement refs remain DEMO                                  |
+| Sandbox CCP risk | Empty A-Token rules → on-chain `ComplianceFailed(address)` for A-Pass holders; app calls `POST /atoken/rules` + `POST /atoken/add_rule` when empty, then `verify_apass` |
+| On-chain registry | **DEPLOYED** Monad Testnet — see `contracts/deployments/monad-testnet.json` |
 
 ## Endpoints used by Machine Trust
 
@@ -49,8 +49,16 @@ Source of truth: https://docs.cleanverse.com (Cooperate API **v5.6**, revision 2
 
 | Role                       | Address                                      | Expected              |
 | -------------------------- | -------------------------------------------- | --------------------- |
-| Issuer (ABC Manufacturing) | `0x5d6b84e2cab95b72ed74fb4768324763f4950d9e` | A-Pass active · CCP 4 |
+| Issuer (ABC Manufacturing) | `0x5d6b84e2cab95b72ed74fb4768324763f4950d9e` | A-Pass active · CCP 4 (after aUSDC rules present) |
 | Buyer (Equipment Fund B)   | `0xc8ba032092cc2499637f4e331e841ab24d1c9964` | A-Pass active · CCP 4 |
 | Unknown                    | `0xda45b2481b679b6a2eacb413fdcf761ab1637d2e` | No A-Pass · CCP 2     |
+
+### CCP root cause (verified 2026-08-09)
+
+`POST /verify_apass` for issuer/fund against Monad aUSDC returned envelope `0002` with on-chain error `ComplianceFailed(address)` (`0x8a4e1859`).  
+`POST /query_apass` showed both wallets had **active** A-Passes.  
+`POST /atoken/rules` for aUSDC returned **`rules: []`**.  
+After `POST /atoken/add_rule` with a permissive rule, the same `verify_apass` calls returned **`data.code` 4**.  
+Unknown wallet still returns `data.code` 2. Request schema was never wrong.
 
 Typed map also lives in `src/lib/cleanverse/integration-map.ts`.

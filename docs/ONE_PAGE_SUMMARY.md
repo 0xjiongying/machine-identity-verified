@@ -45,8 +45,10 @@ Aligned with the Cleanverse Trust Framework: interlocking **CVI** (verified iden
 | Cleanverse Sandbox (Monad chain param) | **REAL** API calls |
 | Monad Testnet | Official RPC · chain id **10143** · explorer [testnet.monadvision.com](https://testnet.monadvision.com) |
 | `MachineTrustRegistry` | **DEPLOYED** [`0x83753166684AfB4912a61713c49Feada6298dF19`](https://testnet.monadvision.com/address/0x83753166684AfB4912a61713c49Feada6298dF19) |
-| Deploy tx | [`0xa6fbe2a7…af8033`](https://testnet.monadvision.com/tx/0xa6fbe2a7da222eabda364fce8230e98d18d8add31db6e0c5dc3cb8bcecaf8033) · confirmed |
-| Ownership txs | **Not submitted** — live CCP for issuer/fund is ComplianceFailed; gate BLOCKS Monad writes (correct) |
+| Deploy tx | [`0xa6fbe2a7…af8033`](https://testnet.monadvision.com/tx/0xa6fbe2a7da222eabda364fce8230e98d18d8add31db6e0c5dc3cb8bcecaf8033) |
+| Register tx | [`0xcb713131…a663a7be`](https://testnet.monadvision.com/tx/0xcb713131d44286761e2a866fbc9e9db0520de77327f83f68d5bde7dba663a7be) |
+| Ownership tx | [`0x445c62e7…84bb90b5`](https://testnet.monadvision.com/tx/0x445c62e758fff51d623c389421a72885dc9c8976a4b03780f7dc3ce784bb90b5) |
+| CCP | Issuer + Fund **`data.code` 4** after aUSDC compliance rule restored (empty rules were the blocker) |
 
 ## CORE FLOW
 
@@ -99,4 +101,4 @@ Open `/?demo=1` — see `docs/DEMO_SCRIPT.md`.
 **Repo:** https://github.com/0xjiongying/machine-identity-verified
 
 > **Submission blockers (owner):** (1) make GitHub **public**, (2) set Cleanverse secrets on Render (`CLEANVERSE_SANDBOX_API_*`), (3) upload demo video.  
-> **Sandbox note:** Live UAT may return `ComplianceFailed` on `verify_apass` for the current aUSDC listing — Machine Trust **fails closed** and never fabricates `data.code` 4.
+> **CCP note:** Empty A-Token rules caused on-chain `ComplianceFailed` for A-Pass holders. Machine Trust queries `/atoken/rules` and adds a permissive rule via `/atoken/add_rule` when empty, then requires `verify_apass` `data.code` 4 before Monad writes.

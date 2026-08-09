@@ -108,8 +108,10 @@ If the live Sandbox is unreachable, the adapter **fails closed** (no approval, n
 | CVA custom `/atoken/launch` | **UNAVAILABLE** | Not on hot path; UAT `ISSUE_FAILED` — never faked as ISSUED |
 | CCP `verify_apass` | **SANDBOX / REAL** | Unknown → `data.code` 2 (BLOCK). Issuer/Fund currently may return envelope `0002` / atoken validation failure on UAT — app **fails closed** (never fabricates code 4). When UAT recovers, code 4 is the only APPROVE path. |
 | Validator pool `/validator/verify` | **UNAVAILABLE** | Needs owned registered pool |
-| Monad settlement | **On-chain after CCP only** | Registry **deployed** on Testnet; `registerMachine` / `transferOwnership` refused while UAT CCP returns ComplianceFailed |
-| `MachineTrustRegistry` | **DEPLOYED · Monad Testnet** | `0x83753166684AfB4912a61713c49Feada6298dF19` · deploy tx confirmed on [MonadVision](https://testnet.monadvision.com/tx/0xa6fbe2a7da222eabda364fce8230e98d18d8add31db6e0c5dc3cb8bcecaf8033) |
+| Monad settlement | **ON-CHAIN · Testnet** | CCP-gated `registerMachine` + `transferOwnership` confirmed |
+| `MachineTrustRegistry` | **DEPLOYED · Monad Testnet** | [`0x8375…8dF19`](https://testnet.monadvision.com/address/0x83753166684AfB4912a61713c49Feada6298dF19) |
+| Register tx | **CONFIRMED** | [`0xcb713131…a663a7be`](https://testnet.monadvision.com/tx/0xcb713131d44286761e2a866fbc9e9db0520de77327f83f68d5bde7dba663a7be) |
+| Ownership tx | **CONFIRMED** | [`0x445c62e7…84bb90b5`](https://testnet.monadvision.com/tx/0x445c62e758fff51d623c389421a72885dc9c8976a4b03780f7dc3ce784bb90b5) |
 | Passport / maintenance / parts | **DEMO** | Labelled demo machine metadata |
 
 ---
@@ -196,7 +198,7 @@ Also see [contracts/README.md](./contracts/README.md). Never claim Mainnet witho
 
 - Custom A-Token launch unavailable on Monad UAT (`ISSUE_FAILED`) — CVA uses registered aUSDC bind
 - On-chain validator pool CCP unavailable without an owned pool
-- Live UAT `verify_apass` for issuer/fund currently returns **ComplianceFailed** — Machine Trust **fails closed** (no fabricated `registerMachine` / `transferOwnership` txs)
+- If an A-Token has **empty compliance rules**, Cleanverse returns on-chain `ComplianceFailed` for A-Pass holders — Machine Trust now ensures a rule via `/atoken/add_rule` when permitted
 - Passport / maintenance / parts are DEMO fixtures
 - Not Mainnet
 

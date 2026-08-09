@@ -92,6 +92,17 @@ export type Evaluation = {
    * timeout/error. Never present this as a live Cleanverse approval.
    */
   degraded?: boolean;
+  /**
+   * Structured compliance diagnostic for judges/operators.
+   * Built only from real CVI/CVA/CCP rule results — never invents CCP fields.
+   */
+  diagnostics?: {
+    issuer: { identifier: string; status: string; reason: string };
+    fund: { identifier: string; status: string; reason: string } | null;
+    network: { name: string; chainId: number | string };
+    registry: { address: string | null; deploymentTx: string | null };
+    ownership: { submitted: boolean; reason: string };
+  };
 };
 
 export type PolicyInput = {

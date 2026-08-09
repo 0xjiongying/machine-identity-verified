@@ -190,6 +190,23 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
       notices.push(
         `CVA: bound registered A-Token ${bound?.symbol ?? "A-Token"} at ${atokenAddress.slice(0, 12)}… (not a custom /atoken/launch mint).`,
       );
+
+      // Empty A-Token rules → on-chain ComplianceFailed for A-Pass holders (verified UAT).
+      try {
+        const ensured = await ATokenService.ensureComplianceRule(cfg, atokenAddress);
+        notices.push(ensured.notice);
+        rules.push({
+          code: "CVA-05.rules",
+          label: "A-Token compliance rules",
+          requirement: "A-Token must expose at least one CCP rule for verify_apass evaluation",
+          observed: `${ensured.rules.length} rule(s)${ensured.added ? " · rule added" : ""}`,
+          status: ensured.rules.length > 0 ? "pass" : "fail",
+          reason: ensured.notice,
+          source: "CVA",
+        });
+      } catch (error) {
+        notices.push(`A-Token rules check failed: ${errText(error)}`);
+      }
     }
   } catch (error) {
     return failClosed(input, "CVA", errText(error));
@@ -311,6 +328,13 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
     source: "MONAD",
   });
 
+  const issuerRule =
+    rules.find((r) => r.code === "CCP-10.pretx") ?? rules.find((r) => r.code === "CVI-01.apass");
+  const fundRule =
+    rules.find((r) => r.code === "CCP-20.pretx") ?? rules.find((r) => r.code === "CVI-10.apass");
+  const statusOf = (r: RuleResult | undefined) =>
+    !r ? "Not checked" : r.status === "pass" ? "Compliant" : "ComplianceFailed";
+
   const evaluation: Evaluation = {
     decisionId: decisionRef,
     policyId: RULESET[input.kind],
@@ -330,6 +354,33 @@ export async function evaluateWithCleanverse(input: PolicyInput): Promise<Evalua
       ccp: { decisionRef, rulesetId: RULESET[input.kind] },
     },
     evaluatedAt: now.toISOString(),
+    diagnostics: {
+      issuer: {
+        identifier: input.sender.holder.wallet,
+        status: statusOf(issuerRule),
+        reason: issuerRule?.reason ?? "Issuer CCP not evaluated.",
+      },
+      fund: input.recipient
+        ? {
+            identifier: input.recipient.holder.wallet,
+            status: statusOf(fundRule),
+            reason: fundRule?.reason ?? "Fund CCP not evaluated.",
+          }
+        : null,
+      network: { name: "Monad Testnet", chainId: 10143 },
+      registry: {
+        address: settlement?.registryAddress ?? null,
+        deploymentTx: null,
+      },
+      ownership: {
+        submitted: settlement?.kind === "on-chain",
+        reason: approved
+          ? settlement?.kind === "on-chain"
+            ? "Ownership/registry write submitted after CCP APPROVE."
+            : "CCP approved; on-chain write skipped or DEMO settlement ref."
+          : `Compliance prerequisites not satisfied — blocked at ${blocked?.code ?? "unknown"}.`,
+      },
+    },
   };
 
   const sandboxNotice =

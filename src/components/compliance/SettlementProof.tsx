@@ -31,6 +31,45 @@ export function SettlementProof({ result, className }: { result: Evaluation; cla
             <li className={cvaOk ? "text-primary" : "text-destructive"}>CVA {cvaOk ? "✓" : "×"}</li>
             <li className={ccpOk ? "text-primary" : "text-destructive"}>CCP {ccpOk ? "✓" : "×"}</li>
           </ul>
+          {result.diagnostics ? (
+            <ul className="mt-3 space-y-1.5 text-[11px] leading-relaxed text-muted-foreground">
+              <li>
+                Issuer ·{" "}
+                <span
+                  className={
+                    result.diagnostics.issuer.status === "Compliant"
+                      ? "text-primary"
+                      : "text-destructive"
+                  }
+                >
+                  {result.diagnostics.issuer.status}
+                </span>
+              </li>
+              {result.diagnostics.fund ? (
+                <li>
+                  Fund ·{" "}
+                  <span
+                    className={
+                      result.diagnostics.fund.status === "Compliant"
+                        ? "text-primary"
+                        : "text-destructive"
+                    }
+                  >
+                    {result.diagnostics.fund.status}
+                  </span>
+                </li>
+              ) : null}
+              {(result.diagnostics.issuer.status === "ComplianceFailed" ||
+                result.diagnostics.fund?.status === "ComplianceFailed") && (
+                <li className="text-[11px]">
+                  Reason:{" "}
+                  {result.diagnostics.fund?.status === "ComplianceFailed"
+                    ? result.diagnostics.fund.reason
+                    : result.diagnostics.issuer.reason}
+                </li>
+              )}
+            </ul>
+          ) : null}
           <p className="mt-mono mt-3 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
             Mode {result.mode}
             {result.degraded ? " · degraded" : ""}
