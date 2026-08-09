@@ -40,9 +40,9 @@ DeFi eligibility → real Monad Testnet transaction
 - **Rejection:** CVI unverified **OR** not machine owner → simulate/write reverts (`NotCviVerified` / `NotMachineOwner`); server refuses submit
 - **Bypass resistance:** `openCreditDeposit` is `onlyOracle` and still checks `cviEligible` + registry ownership on-chain
 
-## Track 1 CCP honesty
+## CCP honesty (Track 1 surface, not Track 2 gate)
 
-Issuer/fund CCP `ComplianceFailed` states are **not** rewritten. Track 2 requires **CVI or CVA** — this implementation uses **CVI only**.
+Track 2 eligibility is **CVI-only** (no CCP required). Live UAT `verify_apass` currently returns `data.code` **4** for issuer and fund; that status is displayed by the Track 1 UI as returned by Cleanverse and is never hardcoded. Historical `ComplianceFailed` episodes (empty A-Token rules) are documented in `contracts/deployments/monad-testnet.json` and must not be fabricated as Passed when the API fails.
 
 ## Deployed Chain
 

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   Section,
@@ -65,6 +66,20 @@ export function LendingMarket() {
     runAuthorizeCvi,
     runOpenCredit,
   } = useLending();
+
+  useEffect(() => {
+    function onDemo(e: Event) {
+      const detail = (e as CustomEvent<{ action: string; wallet?: LendingWalletId }>).detail;
+      if (!detail?.action) return;
+      if (detail.action === "select" && detail.wallet && detail.wallet in LENDING_WALLETS) {
+        setSelectedWalletId(detail.wallet);
+      }
+      if (detail.action === "refresh") void refresh();
+      if (detail.action === "attempt") void runOpenCredit();
+    }
+    window.addEventListener("mt:defi", onDemo as EventListener);
+    return () => window.removeEventListener("mt:defi", onDemo as EventListener);
+  }, [setSelectedWalletId, refresh, runOpenCredit]);
 
   const cviOk = eligibility?.layers.cvi === "VERIFIED";
   const machineOk = eligibility?.layers.machine === "AUTHORIZED";

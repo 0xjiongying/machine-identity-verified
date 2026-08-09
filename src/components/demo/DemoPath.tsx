@@ -159,6 +159,66 @@ export function DemoPath() {
           window.setTimeout(() => go("architecture"), 500);
         },
       },
+      // Track 2 — CVI-gated DeFi (Cleanverse CVI → MachineTrust → credit deposit)
+      {
+        n: "10",
+        label: "T2 · CVI + DeFi",
+        target: "defi",
+        say: "CVI verifies identity → MachineTrust authorizes → DeFi eligibility",
+        caption: "TRACK 2 · CVI → MachineTrustRegistry → DeFi eligibility",
+        holdMs: 3500,
+        action: () => {
+          window.dispatchEvent(
+            new CustomEvent("mt:defi", { detail: { action: "select", wallet: "verifiedBuyer" } }),
+          );
+          window.setTimeout(
+            () =>
+              window.dispatchEvent(new CustomEvent("mt:defi", { detail: { action: "refresh" } })),
+            600,
+          );
+        },
+      },
+      {
+        n: "11",
+        label: "T2 · Eligible path",
+        target: "defi",
+        say: "Fund B · CVI verified · machine owner · credit deposit enabled",
+        caption: "T2 ELIGIBLE · Fund B · CVI ✓ · Machine AUTHORIZED · DeFi ELIGIBLE",
+        holdMs: 4500,
+        action: () => {
+          window.dispatchEvent(
+            new CustomEvent("mt:defi", { detail: { action: "select", wallet: "verifiedBuyer" } }),
+          );
+          window.setTimeout(
+            () =>
+              window.dispatchEvent(new CustomEvent("mt:defi", { detail: { action: "refresh" } })),
+            500,
+          );
+        },
+      },
+      {
+        n: "12",
+        label: "T2 · Rejected path",
+        target: "defi",
+        say: "Unknown wallet · CVI missing · DeFi locked / rejected",
+        caption: "T2 REJECTED · Unknown · CVI ✗ · Machine LOCKED · DeFi LOCKED",
+        holdMs: 4500,
+        action: () => {
+          window.dispatchEvent(
+            new CustomEvent("mt:defi", { detail: { action: "select", wallet: "unknown" } }),
+          );
+          window.setTimeout(
+            () =>
+              window.dispatchEvent(new CustomEvent("mt:defi", { detail: { action: "refresh" } })),
+            500,
+          );
+          window.setTimeout(
+            () =>
+              window.dispatchEvent(new CustomEvent("mt:defi", { detail: { action: "attempt" } })),
+            1800,
+          );
+        },
+      },
     ],
     [go],
   );
@@ -267,7 +327,7 @@ export function DemoPath() {
             Demo Controller
           </span>
           <span className="mt-mono flex items-center gap-1.5 text-[9px] text-muted-foreground">
-            {open ? progress : "01–09"}
+            {open ? progress : `01–${String(steps.length).padStart(2, "0")}`}
             <span aria-hidden="true">{open ? "−" : "+"}</span>
           </span>
         </button>
