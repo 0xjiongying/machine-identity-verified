@@ -15,6 +15,7 @@ import { LENDING_WALLETS, type LendingWalletId } from "@/data/lendingWallets";
 import { useLending } from "@/lib/lending-state";
 import { useWallet } from "@/lib/wallet/wallet-state";
 import { WalletConnectButton } from "@/components/wallet/WalletConnectButton";
+import { InteractiveInstructions } from "@/components/guide/InteractiveInstructions";
 import { cn } from "@/lib/utils";
 
 function shortAddr(a: string) {
@@ -26,14 +27,19 @@ function LayerRow({
   value,
   ok,
   locked,
+  guideTarget,
 }: {
   label: string;
   value: string;
   ok?: boolean;
   locked?: boolean;
+  guideTarget?: string;
 }) {
   return (
-    <div className="bg-background px-4 py-4">
+    <div
+      className="bg-background px-4 py-4 transition-[box-shadow]"
+      data-guide-target={guideTarget}
+    >
       <dt className="mt-label">{label}</dt>
       <dd
         className={cn(
@@ -110,10 +116,17 @@ export function LendingMarket() {
           <DemoTag className="mt-5" />
         </Reveal>
 
-        <div className="mt-12 grid gap-8 lg:grid-cols-[1fr_1.15fr]">
+        <div className="mt-10">
+          <InteractiveInstructions />
+        </div>
+
+        <div className="mt-4 grid gap-8 lg:grid-cols-[1fr_1.15fr]">
           <Reveal>
             <div className="border border-border bg-surface/50">
-              <div className="border-b border-border px-5 py-4">
+              <div
+                className="border-b border-border px-5 py-4 transition-[box-shadow,border-color]"
+                data-guide-target="wallet"
+              >
                 <p className="mt-label">Operator wallet</p>
                 <p className="mt-2 text-[13px] text-muted-foreground">
                   Connect a real wallet. CVI uses that address via Cleanverse{" "}
@@ -201,7 +214,10 @@ export function LendingMarket() {
                 </MagneticButton>
               </div>
 
-              <div className="border-t border-border px-5 py-4">
+              <div
+                className="border-t border-border px-5 py-4 transition-[box-shadow,border-color]"
+                data-guide-target="cvi"
+              >
                 <p className="mt-label">Cleanverse Identity</p>
                 <p className="mt-mono mt-2 text-[11px] text-muted-foreground">
                   Operator {shortAddr(walletAddress)}
@@ -209,7 +225,10 @@ export function LendingMarket() {
                 </p>
               </div>
 
-              <dl className="grid grid-cols-2 gap-px border-t border-border bg-border">
+              <dl
+                className="grid grid-cols-2 gap-px border-t border-border bg-border"
+                data-guide-target="eligibility"
+              >
                 <LayerRow
                   label="CVI"
                   value={
@@ -228,10 +247,12 @@ export function LendingMarket() {
                 />
                 <LayerRow
                   label="Machine"
+                  guideTarget="machine"
                   value={eligibility ? eligibility.machine.passportId : (config?.passportId ?? "—")}
                 />
                 <LayerRow
                   label="Machine Trust"
+                  guideTarget="trust"
                   value={eligibility ? (machineOk ? "✓ AUTHORIZED" : "LOCKED") : "—"}
                   ok={machineOk}
                   locked={Boolean(eligibility && !machineOk)}
@@ -291,6 +312,7 @@ export function LendingMarket() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="mt-6 border border-primary/40 bg-primary/10 p-5"
+                    data-guide-target="execute"
                   >
                     <p className="mt-mono text-[11px] uppercase tracking-[0.2em] text-primary">
                       Stake / credit deposit enabled
@@ -358,7 +380,7 @@ export function LendingMarket() {
               ) : null}
 
               {lastTxHash ? (
-                <div className="mt-6 border border-success/40 p-5">
+                <div className="mt-6 border border-success/40 p-5" data-guide-target="tx">
                   <p className="mt-mono text-[11px] uppercase tracking-[0.2em] text-success">
                     Transaction proof
                   </p>
