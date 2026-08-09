@@ -21,7 +21,7 @@ Built for the **Cleanverse Build: Trusted Assets Hackathon** — Track 1 RWA and
 | **Register tx**     | [`0xdb70d058…df8fa6`](https://testnet.monadvision.com/tx/0xdb70d0585ef0afb6662f0813c6eec2822510c7233ad894b6eb8df131e0df8fa6) |
 | **Repo**            | https://github.com/0xjiongying/machine-identity-verified            |
 
-> **Track 2 submission blockers (owner):** (1) keep GitHub **public**, (2) deploy this branch to Render with `MACHINE_TRUST_CREDIT_ADDRESS=0x918f4Db6F072b28E2eA379Cb53314892D36122B8`, (3) record/upload Track 2 demo video per [DEMO_SCRIPT_TRACK2.md](./docs/DEMO_SCRIPT_TRACK2.md).
+> **Track 2 ship blockers (verified 2026-08-09):** (1) Render production health = Cleanverse **unconfigured** + Monad **unconfigured** (no live CVI/DeFi writes), (2) production build does not yet include Track 2 `#defi` (deploy PR [`#4`](https://github.com/0xjiongying/machine-identity-verified/pull/4) / branch `cursor/cleanverse-track2-cvi-defi-df18` with `MACHINE_TRUST_CREDIT_ADDRESS=0x918f4Db6F072b28E2eA379Cb53314892D36122B8`), (3) record/upload Track 2 demo video per [DEMO_SCRIPT_TRACK2.md](./docs/DEMO_SCRIPT_TRACK2.md). On-chain DeFi TX already confirmed on Monad Testnet.
 
 ---
 

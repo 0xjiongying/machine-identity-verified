@@ -21,6 +21,7 @@ import { PerfProvider } from "../lib/perf";
 import { AssetStateProvider } from "../lib/asset-state";
 import { CleanverseProvider } from "../lib/cleanverse-state";
 import { LendingProvider } from "../lib/lending-state";
+import { WalletProvider } from "../lib/wallet/wallet-state";
 
 function NotFoundComponent() {
   return (
@@ -143,17 +144,19 @@ function RootComponent() {
       <PerfProvider>
         <AssetStateProvider>
           <CleanverseProvider>
-            <LendingProvider>
-              <SmoothScroll />
-              <MachineCursor />
-              <AmbientField />
-              <BootSequence />
-              {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-              <SystemControls />
-              <PageTransition>
-                <Outlet />
-              </PageTransition>
-            </LendingProvider>
+            <WalletProvider>
+              <LendingProvider>
+                <SmoothScroll />
+                <MachineCursor />
+                <AmbientField />
+                <BootSequence />
+                {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+                <SystemControls />
+                <PageTransition>
+                  <Outlet />
+                </PageTransition>
+              </LendingProvider>
+            </WalletProvider>
           </CleanverseProvider>
         </AssetStateProvider>
       </PerfProvider>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { LogoMark } from "./Logo";
+import { WalletConnectButton } from "@/components/wallet/WalletConnectButton";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -63,10 +64,11 @@ export function SiteNav() {
           >
             Explorer
           </Link>
+          <WalletConnectButton />
           <a
             href="#issuance"
             data-cursor="issue"
-            className="mt-mono border border-border px-3 py-1.5 text-[11px] uppercase tracking-[0.14em] text-foreground transition-colors hover:border-primary hover:text-primary"
+            className="mt-mono hidden border border-border px-3 py-1.5 text-[11px] uppercase tracking-[0.14em] text-foreground transition-colors hover:border-primary hover:text-primary sm:inline-block"
           >
             Issue RWA
           </a>

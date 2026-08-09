@@ -13,6 +13,8 @@ import {
 import { MagneticButton } from "@/components/motion/MagneticButton";
 import { LENDING_WALLETS, type LendingWalletId } from "@/data/lendingWallets";
 import { useLending } from "@/lib/lending-state";
+import { useWallet } from "@/lib/wallet/wallet-state";
+import { WalletConnectButton } from "@/components/wallet/WalletConnectButton";
 import { cn } from "@/lib/utils";
 
 function shortAddr(a: string) {
@@ -47,10 +49,12 @@ function LayerRow({
 }
 
 export function LendingMarket() {
+  const wallet = useWallet();
   const {
     selectedWalletId,
     setSelectedWalletId,
     walletAddress,
+    usingConnectedWallet,
     eligibility,
     position,
     config,
@@ -72,14 +76,16 @@ export function LendingMarket() {
       const detail = (e as CustomEvent<{ action: string; wallet?: LendingWalletId }>).detail;
       if (!detail?.action) return;
       if (detail.action === "select" && detail.wallet && detail.wallet in LENDING_WALLETS) {
-        setSelectedWalletId(detail.wallet);
+        // Demo sandbox path only when no live wallet is connected
+        if (!wallet.address) setSelectedWalletId(detail.wallet);
       }
       if (detail.action === "refresh") void refresh();
       if (detail.action === "attempt") void runOpenCredit();
+      if (detail.action === "connect") void wallet.connect();
     }
     window.addEventListener("mt:defi", onDemo as EventListener);
     return () => window.removeEventListener("mt:defi", onDemo as EventListener);
-  }, [setSelectedWalletId, refresh, runOpenCredit]);
+  }, [setSelectedWalletId, refresh, runOpenCredit, wallet]);
 
   const cviOk = eligibility?.layers.cvi === "VERIFIED";
   const machineOk = eligibility?.layers.machine === "AUTHORIZED";
@@ -110,47 +116,80 @@ export function LendingMarket() {
               <div className="border-b border-border px-5 py-4">
                 <p className="mt-label">Operator wallet</p>
                 <p className="mt-2 text-[13px] text-muted-foreground">
-                  Sandbox wallets. CVI is resolved live via Cleanverse <code>query_apass</code> —
-                  never hardcoded.
+                  Connect a real wallet. CVI uses that address via Cleanverse{" "}
+                  <code>query_apass</code> — never a mock.
                 </p>
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <WalletConnectButton />
+                  {usingConnectedWallet ? (
+                    <span className="mt-mono text-[10px] uppercase tracking-[0.14em] text-success">
+                      Bound to connected wallet
+                    </span>
+                  ) : (
+                    <span className="mt-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                      Sandbox demo path until you connect
+                    </span>
+                  )}
+                </div>
+                {wallet.status === "wrong_network" ? (
+                  <p className="mt-3 text-[12px] text-destructive">
+                    Connected on the wrong network. Switch to Monad Testnet (chain 10143).
+                  </p>
+                ) : null}
               </div>
-              <ul className="grid gap-2 p-4">
-                {(Object.keys(LENDING_WALLETS) as LendingWalletId[]).map((id) => {
-                  const w = LENDING_WALLETS[id];
-                  return (
-                    <li key={id}>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedWalletId(id)}
-                        data-cursor="connect"
-                        aria-pressed={selectedWalletId === id}
-                        className={cn(
-                          "flex w-full items-center justify-between gap-3 border px-4 py-3.5 text-left transition-colors",
-                          selectedWalletId === id
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-foreground",
-                        )}
-                      >
-                        <span>
-                          <span className="mt-label block">{w.role}</span>
-                          <span className="mt-1.5 block text-[14px]">{w.label}</span>
-                          <span className="mt-mono mt-1 block text-[11px] text-muted-foreground">
-                            {shortAddr(w.address)}
-                          </span>
-                        </span>
-                        <span
+
+              {!usingConnectedWallet ? (
+                <ul className="grid gap-2 p-4">
+                  {(Object.keys(LENDING_WALLETS) as LendingWalletId[]).map((id) => {
+                    const w = LENDING_WALLETS[id];
+                    return (
+                      <li key={id}>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedWalletId(id)}
+                          data-cursor="connect"
+                          aria-pressed={selectedWalletId === id}
                           className={cn(
-                            "mt-mono text-[10px] uppercase tracking-[0.16em]",
-                            id === "unknown" ? "text-destructive" : "text-muted-foreground",
+                            "flex w-full items-center justify-between gap-3 border px-4 py-3.5 text-left transition-colors",
+                            selectedWalletId === id
+                              ? "border-primary bg-primary/10"
+                              : "border-border hover:border-foreground",
                           )}
                         >
-                          {id === "unknown" ? "negative" : id === "verifiedBuyer" ? "owner" : "cvi"}
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
+                          <span>
+                            <span className="mt-label block">{w.role}</span>
+                            <span className="mt-1.5 block text-[14px]">{w.label}</span>
+                            <span className="mt-mono mt-1 block text-[11px] text-muted-foreground">
+                              {shortAddr(w.address)}
+                            </span>
+                          </span>
+                          <span
+                            className={cn(
+                              "mt-mono text-[10px] uppercase tracking-[0.16em]",
+                              id === "unknown" ? "text-destructive" : "text-muted-foreground",
+                            )}
+                          >
+                            {id === "unknown"
+                              ? "negative"
+                              : id === "verifiedBuyer"
+                                ? "owner"
+                                : "cvi"}
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : (
+                <div className="border-b border-border px-5 py-4">
+                  <p className="mt-label">Connected operator</p>
+                  <p className="mt-mono mt-2 break-all text-[12px]">{walletAddress}</p>
+                  <p className="mt-mono mt-2 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                    Network · Monad Testnet {wallet.onMonadTestnet ? "✓" : "— switch required"}
+                  </p>
+                </div>
+              )}
+
               <div className="flex gap-2 border-t border-border px-4 py-4">
                 <MagneticButton
                   onClick={() => void refresh()}
@@ -166,6 +205,7 @@ export function LendingMarket() {
                 <p className="mt-label">Cleanverse Identity</p>
                 <p className="mt-mono mt-2 text-[11px] text-muted-foreground">
                   Operator {shortAddr(walletAddress)}
+                  {usingConnectedWallet ? " · live wallet" : " · sandbox"}
                 </p>
               </div>
 

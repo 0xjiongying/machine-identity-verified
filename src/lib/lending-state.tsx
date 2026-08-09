@@ -17,11 +17,15 @@ import {
 } from "@/lib/lending-adapter";
 import type { CreditPosition, EligibilityDecision } from "@/lib/lending/types";
 import { LENDING_WALLETS, type LendingWalletId } from "@/data/lendingWallets";
+import { useWallet } from "@/lib/wallet/wallet-state";
 
 type LendingState = {
   selectedWalletId: LendingWalletId;
   setSelectedWalletId: (id: LendingWalletId) => void;
+  /** Address used for CVI / MachineTrust / DeFi eligibility (connected wallet preferred). */
   walletAddress: string;
+  /** True when Track 2 is bound to the live EIP-1193 wallet. */
+  usingConnectedWallet: boolean;
   eligibility: EligibilityDecision | null;
   position: CreditPosition | null;
   config: CreditMarketConfig | null;
@@ -41,6 +45,7 @@ type LendingState = {
 const Ctx = createContext<LendingState | null>(null);
 
 export function LendingProvider({ children }: { children: ReactNode }) {
+  const wallet = useWallet();
   const [selectedWalletId, setSelectedWalletId] = useState<LendingWalletId>("verifiedBuyer");
   const [eligibility, setEligibility] = useState<EligibilityDecision | null>(null);
   const [position, setPosition] = useState<CreditPosition | null>(null);
@@ -53,7 +58,8 @@ export function LendingProvider({ children }: { children: ReactNode }) {
   const [lastExplorerUrl, setLastExplorerUrl] = useState<string | null>(null);
   const [lastAction, setLastAction] = useState<string | null>(null);
 
-  const walletAddress = LENDING_WALLETS[selectedWalletId].address;
+  const usingConnectedWallet = Boolean(wallet.address);
+  const walletAddress = wallet.address ?? LENDING_WALLETS[selectedWalletId].address;
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -78,7 +84,20 @@ export function LendingProvider({ children }: { children: ReactNode }) {
     void refresh();
   }, [refresh]);
 
+  // Disconnect clears last tx UI belonging to previous session
+  useEffect(() => {
+    if (!wallet.address) {
+      setLastTxHash(null);
+      setLastExplorerUrl(null);
+      setLastAction(null);
+    }
+  }, [wallet.address]);
+
   const runAuthorizeCvi = useCallback(async () => {
+    if (wallet.address && !wallet.onMonadTestnet) {
+      setError("Switch to Monad Testnet before authorizing CVI on-chain.");
+      return;
+    }
     setActing(true);
     setError(null);
     try {
@@ -96,9 +115,13 @@ export function LendingProvider({ children }: { children: ReactNode }) {
     } finally {
       setActing(false);
     }
-  }, [walletAddress, refresh]);
+  }, [wallet.address, wallet.onMonadTestnet, walletAddress, refresh]);
 
   const runOpenCredit = useCallback(async () => {
+    if (wallet.address && !wallet.onMonadTestnet) {
+      setError("Switch to Monad Testnet before opening a credit deposit.");
+      return;
+    }
     setActing(true);
     setError(null);
     try {
@@ -123,13 +146,14 @@ export function LendingProvider({ children }: { children: ReactNode }) {
     } finally {
       setActing(false);
     }
-  }, [walletAddress, amountMon, refresh]);
+  }, [wallet.address, wallet.onMonadTestnet, walletAddress, amountMon, refresh]);
 
   const value = useMemo(
     () => ({
       selectedWalletId,
       setSelectedWalletId,
       walletAddress,
+      usingConnectedWallet,
       eligibility,
       position,
       config,
@@ -148,6 +172,7 @@ export function LendingProvider({ children }: { children: ReactNode }) {
     [
       selectedWalletId,
       walletAddress,
+      usingConnectedWallet,
       eligibility,
       position,
       config,
